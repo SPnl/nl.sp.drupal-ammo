@@ -1,0 +1,7 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function ammo_schema() {
+}

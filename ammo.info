@@ -1,0 +1,6 @@
+name = Ammo
+description = SP Amendementen en Moties
+core = 7.x
+package = sprbs
+
+dependencies[] = number
