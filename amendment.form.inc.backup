@@ -1,0 +1,500 @@
+<?php
+
+function ammo_amendment_form($form, &$form_state) {
+  if (!empty($form_state['values']['amendment'])) {
+    $amendment = entity_load_single('amendment', $form_state['values']['amendment']);
+  }
+
+  $form['#theme'] = 'amendment_form';
+  $form['#prefix'] = '<div id="ammo-amendment-ajax">';
+  $form['#suffix'] = '</div>';
+
+  $form['form_title'] = array(
+    '#type' => 'item',
+    '#markup' => 'Voeg een amendement toe',
+    '#prefix' => '<h2>',
+    '#suffix' => '</h2>',
+  );
+
+  $form['info'] = array(
+    '#type' => 'fieldset',
+  );
+  $meetings = entity_load('meeting');
+  $options = array();
+  foreach ($meetings as $meeting) {
+    $options[$meeting->id] = $meeting->title;
+  }
+  $form['info']['meeting'] = array(
+    '#type' => 'select',
+    '#title' => 'Meeting',
+    '#options' => $options,
+    '#empty_option' => 'kies:',
+    '#ajax' => array(
+      'callback' => 'ammo_amendment_form_ajax',
+      'wrapper' => 'ammo-amendment-ajax',
+      'method' => 'replace',
+      'effect' => 'fade',
+      'event' => 'change',
+    ),
+  );
+
+  if (!empty($form_state['values']['meeting'])) {
+    $documents = entity_load('document');
+    $options = array();
+    foreach ($documents as $document) {
+      if ($document->meeting_id == $form_state['values']['meeting']) {
+        $options[$document->id] = $document->title;
+      }
+    }
+    $form['info']['document'] = array(
+      '#type' => 'select',
+      '#title' => 'Document',
+      '#options' => $options,
+      '#empty_option' => 'kies:',
+      '#ajax' => array(
+        'callback' => 'ammo_amendment_form_ajax',
+        'wrapper' => 'ammo-amendment-ajax',
+        'method' => 'replace',
+        'effect' => 'fade',
+        'event' => 'change',
+      ),
+    );
+  }
+
+  if (!empty($form_state['values']['document'])) {
+    #$afdelingen = ammo_get_afdelingen(61619);
+    $afdelingen = ammo_get_afdelingen();
+    $form['info']['branch_id'] = array(
+      '#type' => 'select',
+      '#title' => 'Afdeling',
+      '#options' => $afdelingen,
+      '#empty_option' => 'kies:',
+      '#ajax' => array(
+        'callback' => 'ammo_amendment_form_ajax',
+        'wrapper' => 'ammo-amendment-ajax',
+        'method' => 'replace',
+        'effect' => 'fade',
+        'event' => 'change',
+      ),
+    );
+
+    if (!empty($form_state['values']['branch_id'])) {
+      $amendments = _get_amendments($form_state['values']['branch_id'], $form_state['values']['document']);
+      $form['info']['amendment'] = array(
+        '#type' => 'select',
+        '#title' => 'Amendement nr.',
+        '#options' => $amendments,
+        '#empty_option' => 'nieuw',
+        '#ajax' => array(
+          'callback' => 'ammo_amendment_form_ajax',
+          'wrapper' => 'ammo-amendment-ajax',
+          'method' => 'replace',
+          'effect' => 'fade',
+          'event' => 'change',
+        ),
+      );
+
+      // Make fields hidden.
+      if (!empty($form_state['values']['amendment'])) {
+        $form['info']['meeting']['#attributes'] = array('disabled' => 'disabled');
+        $form['info']['document']['#attributes'] = array('disabled' => 'disabled');
+        $form['info']['branch_id']['#attributes'] = array('disabled' => 'disabled');
+        $form['info']['amendment']['#attributes'] = array('disabled' => 'disabled');
+      }
+
+      if (!empty($form_state['values']['branch_id'])) {
+        $form['owners'] = array(
+          '#type' => 'fieldset',
+        );
+
+        if (empty($form_state['values']['backed'])) {
+          unset($form_state['input']['backed']);
+        }
+        $default = !empty($amendment->backed) ? $amendment->backed : FALSE;
+        $form['owners']['backed'] = array(
+          '#type' => 'checkbox',
+          '#title' => 'ondersteund door afdeling',
+          '#default_value' => $default,
+        );
+
+        $form['owners']['owner'] = array(
+          '#type' => 'textfield',
+          '#title' => 'naam / lidnummer',
+          '#autocomplete_path' => 'ammo/autocomplete_members/' . $form_state['values']['branch_id'],
+        );
+
+        // create add participant button.
+        $form['owners']['add_owner'] = array(
+          '#type' => 'button',
+          '#value' => 'Voeg toe',
+          '#name' => 'add_owner',
+          '#ajax' => array(
+            'callback' => 'ammo_amendment_form_ajax',
+            'wrapper' => 'ammo-amendment-ajax',
+          ),
+        );
+
+        $owners = ammo_get_related_contacts($form_state['amendment_id'], 'amendment', 'owner');
+        foreach ($owners as $owner) {
+          $form['owners']['del_owner_' . $owner->contact_id] = array(
+            '#type' => 'button',
+            '#value' => 'x',
+            '#name' => 'del_owner_' . $owner->contact_id,
+            '#prefix' => '<p>',
+            '#suffix' =>  $owner->contact_id . '</p> ',
+            '#ajax' => array(
+              'callback' => 'ammo_amendment_form_ajax',
+              'wrapper' => 'ammo-amendment-ajax',
+            ),
+            '#attributes' => array('class' => array('ammo_owner_del_button')),
+          );
+        }
+
+        $form['amendment_fieldset'] = array(
+          '#type' => 'fieldset',
+          '#title' => 'Amendement',
+        );
+
+        if (empty($form_state['values']['chapter'])) {
+          unset($form_state['input']['chapter']);
+        }
+        $default = !empty($amendment->chapter) ? $amendment->chapter : FALSE;
+        $form['amendment_fieldset']['chapter'] = array(
+          '#type' => 'textfield',
+          '#title' => 'Hoofdstuk nr.',
+          '#default_value' => $default,
+        );
+
+        if (empty($form_state['values']['paragraph'])) {
+          unset($form_state['input']['paragraph']);
+        }
+        $default = !empty($amendment->paragraph) ? $amendment->paragraph : FALSE;
+        $form['amendment_fieldset']['paragraph'] = array(
+          '#type' => 'textfield',
+          '#title' => 'Paragraaf nr.',
+          '#default_value' => $default,
+        );
+
+        if (empty($form_state['values']['section'])) {
+          unset($form_state['input']['section']);
+        }
+        $default = !empty($amendment->section) ? $amendment->section : FALSE;
+        $form['amendment_fieldset']['section'] = array(
+          '#type' => 'textfield',
+          '#title' => 'Sectie nr.',
+          '#default_value' => $default,
+        );
+
+        if (empty($form_state['values']['line'])) {
+          unset($form_state['input']['line']);
+        }
+        $default = !empty($amendment->line) ? $amendment->line : FALSE;
+        $form['amendment_fieldset']['line'] = array(
+          '#type' => 'textfield',
+          '#title' => 'Regelnr.',
+          '#default_value' => $default,
+        );
+
+        $options = _amendment_actions();
+        if (empty($form_state['values']['action'])) {
+          unset($form_state['input']['action']);
+        }
+        $default = !empty($amendment->action) ? $amendment->action : FALSE;
+        $form['amendment_fieldset']['action'] = array(
+          '#type' => 'select',
+          '#title' => 'Soort amendement',
+          '#options' => $options,
+          '#empty_option' => 'kies:',
+          '#default_value' => $default,
+          '#ajax' => array(
+            'callback' => 'ammo_amendment_form_ajax',
+            'wrapper' => 'ammo-amendment-ajax',
+            'method' => 'replace',
+            'effect' => 'fade',
+            'event' => 'change',
+          ),
+        );
+      }
+
+      $check = empty($form_state['values']['action']) ? $form['amendment_fieldset']['action']['#default_value'] : $form_state['values']['action'];
+      if (in_array($check, array('replace', 'delete'))) {
+        if (empty($form_state['values']['current_text'])) {
+          unset($form_state['input']['current_text']);
+        }
+        $default = !empty($amendment->current_text) ? $amendment->current_text : FALSE;
+        $form['amendment_fieldset']['current_text'] = array(
+          '#type' => 'textarea',
+          '#title' => 'Huidige tekst',
+          '#default_value' => $default,
+        );
+      }
+
+      if (in_array($check, array('add', 'replace'))) {
+        if (empty($form_state['values']['new_text'])) {
+          unset($form_state['input']['new_text']);
+        }
+        $default = !empty($amendment->new_text) ? $amendment->new_text : FALSE;
+        $form['amendment_fieldset']['new_text'] = array(
+          '#type' => 'textarea',
+          '#title' => 'Nieuwe tekst',
+          '#default_value' => $default,
+        );
+      }
+
+      if (empty($form_state['values']['supplement'])) {
+        unset($form_state['input']['supplement']);
+      }
+      $default = !empty($amendment->amendment_supplement) ? $amendment->amendment_supplement : FALSE;
+      $form['amendment_fieldset']['supplement'] = array(
+        '#type' => 'textarea',
+        '#title' => 'Toelichting',
+        '#default_value' => $default,
+      );
+
+      $form['admin'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'Admin',
+      );
+
+      $options = _amendment_advice();
+      if (empty($form_state['values']['advice'])) {
+        unset($form_state['input']['advice']);
+      }
+      $default = !empty($amendment->advice) ? $amendment->advice : FALSE;
+      $form['admin']['advice'] = array(
+        '#type' => 'select',
+        '#title' => 'Advies',
+        '#options'=> $options,
+        '#empty_option' => 'kies:',
+        '#default_value' => $default,
+        '#ajax' => array(
+          'callback' => 'ammo_amendment_form_ajax',
+          'wrapper' => 'ammo-amendment-ajax',
+          'method' => 'replace',
+          'effect' => 'fade',
+          'event' => 'change',
+        ),
+      );
+
+      $check = empty($form_state['values']['advice']) ? $form['admin']['advice']['#default_value'] : $form_state['values']['advice'];
+      if ($check == 'accept_amended') {
+        $options = _amendment_actions();
+        if (empty($form_state['values']['advice_action'])) {
+          unset($form_state['input']['advice_action']);
+        }
+        $default = !empty($amendment->advice_action) ? $amendment->advice_action : FALSE;
+        $form['admin']['advice_action'] = array(
+          '#type' => 'select',
+          '#title' => 'Soort amendement',
+          '#options' => $options,
+          '#empty_option' => 'kies:',
+          '#default_value' => $default,
+          '#ajax' => array(
+            'callback' => 'ammo_amendment_form_ajax',
+            'wrapper' => 'ammo-amendment-ajax',
+            'method' => 'replace',
+            'effect' => 'fade',
+            'event' => 'change',
+          ),
+        );
+
+        $check = empty($form_state['values']['advice_action']) ? $form['admin']['advice_action']['#default_value'] : $form_state['values']['advice_action'];
+        if (in_array($check, array('replace', 'delete'))) {
+          if (empty($form_state['values']['advice_current_text'])) {
+            unset($form_state['input']['advice_current_text']);
+          }
+          $default = !empty($amendment->advice_current_text) ? $amendment->advice_current_text : FALSE;
+          $form['admin']['advice_current_text'] = array(
+            '#type' => 'textarea',
+            '#title' => 'Huidige tekst',
+            '#default_value' => $default,
+          );
+        }
+
+        if (in_array($check, array('add', 'replace'))) {
+          if (empty($form_state['values']['advice_new_text'])) {
+            unset($form_state['input']['advice_new_text']);
+          }
+          $default = !empty($amendment->advice_new_text) ? $amendment->advice_new_text : FALSE;
+          $form['admin']['advice_new_text'] = array(
+            '#type' => 'textarea',
+            '#title' => 'Nieuwe tekst',
+            '#default_value' => $default,
+          );
+        }
+
+        if (!empty($check)) {
+          if (empty($form_state['values']['advice_supplement'])) {
+            unset($form_state['input']['advice_supplement']);
+          }
+          $default = !empty($amendment->advice_supplement) ? $amendment->advice_supplement : FALSE;
+          $form['admin']['advice_supplement'] = array(
+            '#type' => 'textarea',
+            '#title' => 'Toelichting',
+            '#default_value' => $default,
+          );
+        }
+      }
+
+      $options = _amendment_states();
+      if (empty($form_state['values']['state'])) {
+        unset($form_state['input']['state']);
+      }
+      $default = !empty($amendment->state) ? $amendment->state : FALSE;
+      $form['admin']['state'] = array(
+        '#type' => 'select',
+        '#title' => 'Status',
+        '#options' => $options,
+        '#empty_option' => 'kies:',
+        '#default_value' => $default,
+      );
+
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'submit',
+        '#name' => 'submit',
+        '#ajax' => array(
+          'callback' => 'ammo_amendment_form_ajax',
+          'wrapper' => 'ammo-amendment-ajax',
+          'method' => 'replace',
+          'effect' => 'fade',
+          'event' => 'click',
+        ),
+      );
+    }
+  }
+
+  return $form;
+}
+
+function ammo_amendment_form_validate($form, &$form_state) {
+}
+
+function ammo_amendment_form_ajax($form, &$form_state) {
+  $values = $form_state['values'];
+  $trigger = $form_state['triggering_element']['#name'];
+
+  // Check if delete amendment button was clicked.
+  /*
+  $pattern = '/^del_(\d+)$/';
+  if (preg_match($pattern, $trigger, $matches)) {
+    $result = entity_delete('amendment', $matches[1]);
+    if (FALSE === $result) {
+      drupal_set_message('Verwijderen amendement is mislukt.', 'error');
+    }
+    else {
+      drupal_set_message('Amendement is verwijderd');
+      $form = _amendment_clear($form, $form_state);
+    }
+    return $form;
+  }
+   */
+
+  switch ($trigger) {
+  /*
+  case 'add_owner':
+    $amendment_id = isset($form_state['amendment_id']) ? $form_state['amendment_id'] : NULL;
+    if (empty($form_state['amendment_id'])) {
+      // First save amendment to get id.
+      $amendment = ammo_save_entity('amendment', array(
+        'document_id' => $document,
+        'branch_id' => $branch_id,
+      ), $amendment_id);    
+      if ($amendment) {
+
+        // Sla nieuwe owner op.
+        $owner = ammo_save_entity('amendments_owners', array(
+          'amendment_id' => $amendment->id,
+          'contact_id' => $form_state['values']['owner'],
+        ));
+        if ($owner) {
+          drupal_set_message('Contact is toegevoegd');
+          $form = drupal_rebuild_form('ammo_amendment_form', $form_state);
+          $form_state['amendment_id'] = $amendment->id;
+          $form['form_title']['#markup'] = 'Bewerk amendement';
+          $form['meeting']['#value'] = $meeting;
+          $form['document']['#value'] = $document;
+          $form['branch_id']['#value'] = $branch_id;
+          return $form;
+        }
+        else {
+          drupal_set_message('Er is een fout opgetreden.' , 'error');
+        }
+      }
+      else {
+        drupal_set_message('Er is een fout opgetreden.' , 'error');
+      }
+    }
+    break;
+    // Save amendment.
+  */
+  case 'submit':
+    // Validate form values.
+    /*
+    $error = FALSE;
+    if (empty($values['title'])) {
+      $form['title']['#prefix'] = ammo_error('Vul een titel in.');
+      $error = TRUE;
+    }
+    if ($error) {
+      return $form;
+    }
+     */
+
+    // Save amendment.
+    $amendment_id = !empty($values['amendment']) ? $values['amendment'] : NULL;
+    $new_values = array(
+      'document_id' => $values['document'],
+      'branch_id' => $values['branch_id'],
+      'backed' => $values['backed'],
+      'chapter' => $values['chapter'],
+      'paragraph' => $values['paragraph'],
+      'section' => $values['section'],
+      'line' => $values['line'],
+      'action' => $values['action'],
+      'current_text' => $values['current_text'],
+      'new_text' => $values['new_text'],
+      'amendment_supplement' => $values['supplement'],
+      'advice' => $values['advice'],
+      'advice_supplement' => $values['advice_supplement'],
+      'advice_action' => $values['advice_action'],
+      'advice_current_text' => $values['advice_current_text'],
+      'advice_new_text' => $values['advice_new_text'],
+      'state' => $values['state'],
+    );
+    $saved = ammo_save_entity('amendment', $new_values, $amendment_id);    
+    if ($saved) {
+      drupal_set_message('Amendement is opgeslagen.');
+      ctools_include('ajax');
+      ctools_add_js('ajax-responder');
+      $commands[] = ctools_ajax_command_redirect('ammo/amendment');
+      print ajax_render($commands);
+      exit;
+    }
+    else {
+      drupal_set_message('Amendement is niet opgeslagen.' , 'error');
+    }
+    break;
+  }
+  return $form;
+}
+
+function _get_amendments($branch_id, $document_id) {
+  $data = array();
+  $items = array();
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'amendment')
+    ->propertyCondition('document_id', $document_id)
+    ->propertyCondition('branch_id', $branch_id);
+
+  $result = $query->execute();
+
+  if (isset($result['amendment'])) {
+    $items_ids = array_keys($result['amendment']);
+    $items = entity_load('amendment', $items_ids);
+  }
+  foreach($items as $item) {
+    $data[$item->id] = $item->id;
+  }
+  return $data;
+}

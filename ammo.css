@@ -1,0 +1,10 @@
+.page-ammo .tabs li.active {
+  display: inline-block;
+  background-color: #000;
+  color: #fff;
+}
+
+.page-ammo .tabs li.active a {
+  background-color: #000;
+  color: #fff;
+}

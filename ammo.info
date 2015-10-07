@@ -4,3 +4,6 @@ core = 7.x
 package = sprbs
 
 dependencies[] = number
+dependencies[] = date_popup
+
+stylesheets[all][] = ammo.css

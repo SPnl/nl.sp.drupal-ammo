@@ -1,1 +1,208 @@
 <?php
+
+/**
+ * ammo_menu
+ * ammo_theme
+ * ammo_overview_content
+ * ammo_entity_info
+ */
+
+/**
+ * Implements hook_init().
+ */
+function ammo_init() {
+  module_load_include("inc", "ammo", "ammo");
+}
+
+function ammo_menu() {
+  $items = array();
+
+  $items['ammo'] = array(
+    'title' => 'Amendments and Motions',
+    'page callback' => 'ammo_overview_content',
+    'type' => MENU_NORMAL_ITEM,
+    'access callback' => TRUE,
+  );
+
+  $items['ammo/ammo'] = array(
+    'title' => 'Overview',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access callback' => TRUE,
+  );
+
+  $items['ammo/motion'] = array(
+    'title' => 'Motion',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_motion_form'),
+    'file' => 'motion.form.inc',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => TRUE,
+  );
+
+  $items['ammo/amendment'] = array(
+    'title' => 'Amendment',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_amendment_form'),
+    'file' => 'amendment.form.inc',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => TRUE,
+  );
+
+  $items['ammo/meeting'] = array(
+    'title' => 'Meeting',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_meeting_form'),
+    'file' => 'meeting.form.inc',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => TRUE,
+  );
+
+  $items['ammo/document'] = array(
+    'title' => 'Document',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_document_form'),
+    'file' => 'document.form.inc',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => TRUE,
+  );
+
+  $items['ammo/autocomplete_members/%/%'] = array(
+    'page callback' => 'ammo_autocomplete_members',
+    'page arguments' => array(2, 3),
+    'file' => 'ammo.inc',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+function ammo_theme() {
+  $theme = array(
+    'overview' => array(
+      'template' => 'overview',
+      'variables' => array(
+        'test' => 'TEST',
+      ),
+    ),
+    'amendment_form' => array(
+      'render element' => 'form',
+      'template' => 'amendment-form',
+    ),
+    'motion_form' => array(
+      'render element' => 'form',
+      'template' => 'motion-form',
+    ),
+    'meeting_form' => array(
+      'render element' => 'form',
+      'template' => 'meeting-form',
+    ),
+    'document_form' => array(
+      'render element' => 'form',
+      'template' => 'document-form',
+    ),
+  );
+  return $theme;
+}
+
+function ammo_overview_content() {
+  return theme('overview', array());
+}
+
+/**
+ * Implements hook_entity_info().
+ */
+function ammo_entity_info() {
+  $info = array();
+
+  $info['meeting'] = array(
+    'label' => t('Meeting'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ammo_meetings',
+    'entity keys' => array(
+      'id' => 'id',
+    ),
+    'fieldable' => FALSE,
+  );
+  
+  $info['document'] = array(
+    'label' => t('Document'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ammo_documents',
+    'entity keys' => array(
+      'id' => 'id',
+    ),
+    'fieldable' => FALSE,
+  );
+  
+  $info['amendment'] = array(
+    'label' => t('Amendment'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ammo_amendments',
+    'entity keys' => array(
+      'id' => 'id',
+    ),
+    'fieldable' => FALSE,
+  );
+  
+  $info['motion'] = array(
+    'label' => t('Motion'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ammo_motions',
+    'entity keys' => array(
+      'id' => 'id',
+    ),
+    'fieldable' => FALSE,
+  );
+
+  $info['amendments_backers'] = array(
+    'label' => t('Amendments backers relation'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ammo_amendments_backers',
+    'entity keys' => array(
+      'id' => 'id',
+    ),
+    'fieldable' => FALSE,
+  );
+
+  $info['amendments_owners'] = array(
+    'label' => t('Amendments owners relation'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ammo_amendments_owners',
+    'entity keys' => array(
+      'id' => 'id',
+    ),
+    'fieldable' => FALSE,
+  );
+
+  $info['motions_backers'] = array(
+    'label' => t('Motions backers relation'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ammo_motions_backers',
+    'entity keys' => array(
+      'id' => 'id',
+    ),
+    'fieldable' => FALSE,
+  );
+
+  $info['motions_owners'] = array(
+    'label' => t('Motions owners relation'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ammo_motions_owners',
+    'entity keys' => array(
+      'id' => 'id',
+    ),
+    'fieldable' => FALSE,
+  );
+
+  return $info;
+}
+

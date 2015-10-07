@@ -4,4 +4,341 @@
  * Implements hook_schema().
  */
 function ammo_schema() {
+  $schema['ammo_meetings'] = array(
+    'description' => 'Meetings have documents that get amendments and motions.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'date' => array(
+        'description' => 'The lunch date in Unix timestamp format.',
+        'type' => 'datetime',
+        'mysql_type' => 'datetime',
+      ),
+      'title' => array(
+        'description' => 'Event title.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'description' => array(
+        'description' => 'Event description.',
+        'type' => 'text',
+      ),
+    ),
+    'primary key' => array(
+      'id',
+    ),
+  );
+
+  $schema['ammo_documents'] = array(
+    'description' => 'Documents get amendments and motions.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'title' => array(
+        'description' => 'Document title.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'description' => array(
+        'description' => 'Document description.',
+        'type' => 'text',
+      ),
+      'meeting_id' => array(
+        'description' => 'Id of the meeting this document will be amended.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      'id',
+    ),
+  );
+
+  $schema['ammo_amendments'] = array(
+    'description' => 'Documents get amendmended.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'document_id' => array(
+        'description' => 'Id of the document that is amended.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'branch_id' => array(
+        'description' => 'CiviCRM contact id of the local branch that owns the amendment.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'backed' => array(
+        'description' => 'Is the amendment backed by the local branch.',
+        'type' => int,
+        'size' => 'tiny',
+      ),
+      'state' => array(
+        'description' => 'State of the amendment.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'chapter' => array(
+        'type' => 'int',
+        'size' => 'small',
+      ),
+      'paragraph' => array(
+        'type' => 'int',
+        'size' => 'small',
+      ),
+      'section' => array(
+        'type' => 'int',
+        'size' => 'small',
+      ),
+      'line' => array(
+        'type' => 'int',
+        'size' => 'small',
+      ),
+      'action' => array(
+        'description' => 'Action to take on the amended text.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'supplement' => array(
+        'description' => 'Supplementary information about the amendment.',
+        'type' => 'text',
+      ),
+      'current_text' => array(
+        'description' => 'Text that is amended.',
+        'type' => 'text',
+      ),
+      'new_text' => array(
+        'description' => 'Text that replaces or is added to amended text.',
+        'type' => 'text',
+      ),
+      'advice' => array(
+        'description' => 'Advice to voters about the amendment.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'advice_supplement' => array(
+        'description' => 'Supplementary information about the advice.',
+        'type' => 'text',
+      ),
+      'advice_action' => array(
+        'description' => 'Action to take on the amended text.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'advice_current_text' => array(
+        'description' => 'Text that is amended.',
+        'type' => 'text',
+      ),
+      'advice_new_text' => array(
+        'description' => 'Text that replaces or is added to amended text.',
+        'type' => 'text',
+      ),
+    ),
+    'primary key' => array(
+      'id',
+    ),
+  );
+
+  $schema['ammo_motions'] = array(
+    'description' => 'Events get motions.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'meeting_id' => array(
+        'description' => 'Id of the meeting where the motion is placed.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'branch_id' => array(
+        'description' => 'CiviCRM contact id of the local branch that placed the amendment.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'backed' => array(
+        'description' => 'Is the amendment backed by the local branch.',
+        'type' => int,
+        'size' => 'tiny',
+      ),
+      'state' => array(
+        'description' => 'State of the motion.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'consideration_opening' => array(
+        'description' => 'Opening line of the consideration.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'consideration_body' => array(
+        'description' => 'Body text of the consideration.',
+        'type' => 'text',
+      ),
+      'follow_up_opening' => array(
+        'description' => 'Opening line of the follow_up.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'follow_up_body' => array(
+        'description' => 'Body text of the follow_up.',
+        'type' => 'text',
+      ),
+      'supplement' => array(
+        'description' => 'Supplementary information about the motion.',
+        'type' => 'text',
+      ),
+      'advice' => array(
+        'description' => 'Advice to voters about the motion.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'advice_supplement' => array(
+        'description' => 'Supplementary information about the advice.',
+        'type' => 'text',
+      ),
+      'advice_consideration_opening' => array(
+        'description' => 'Advice opening line of the consideration.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'advice_consideration_body' => array(
+        'description' => 'Advice body text of the consideration.',
+        'type' => 'text',
+      ),
+      'advice_follow_up_opening' => array(
+        'description' => 'Advice opening line of the advice follow up.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'advice_follow_up_body' => array(
+        'description' => 'Advice body text of the advice follow up.',
+        'type' => 'text',
+      ),
+    ),
+    'primary key' => array(
+      'id',
+    ),
+  );
+
+  $schema['ammo_motions_owners'] = array(
+    'description' => 'Motions are placed by a branch and owned by branch members.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'motion_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'contact_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      'id',
+    ),
+    'unique keys' => array(
+      'motion_contact' => array('motion_id', 'contact_id'),
+    ),
+  );
+
+  $schema['ammo_motions_backers'] = array(
+    'description' => 'Motions are placed by a branch and can be backed by members if the motion is not backed by the branch.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'motion_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'contact_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      'id',
+    ),
+    'unique keys' => array(
+      'motion_contact' => array('motion_id', 'contact_id'),
+    ),
+  );
+
+  $schema['ammo_amendments_owners'] = array(
+    'description' => 'Amendments are placed by a branch and owned by branch members.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'amendment_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'contact_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      'id',
+    ),
+    'unique keys' => array(
+      'amendment_contact' => array('amendment_id', 'contact_id'),
+    ),
+  );
+
+  $schema['ammo_amendments_backers'] = array(
+    'description' => 'Amendments are placed by a branch and can be backed by members if the amendment is not backed by the branch.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'amendment_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'contact_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      'id',
+    ),
+    'unique keys' => array(
+      'amendment_contact' => array('amendment_id', 'contact_id'),
+    ),
+  );
+
+  return $schema;
 }
