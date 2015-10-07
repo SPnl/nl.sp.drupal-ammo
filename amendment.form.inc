@@ -407,6 +407,7 @@ function ammo_amendment_form_submit($form, &$form_state)
     else {
       // Get and store values from existing amendment in form.
       $amendment = entity_load_single('amendment', $values['amendment']);
+      $form_state['storage']['amendment'] = $values['amendment'];
       $mapping = array(
         'document_id' => 'document',
         'branch_id' => 'branch_id',
