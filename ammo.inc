@@ -77,13 +77,13 @@ function ammo_get_afdelingen($contact_id = 'all') {
       else {
         $afdelingen[$contact_id] = ammo_get_afdelingen_helper($contact_id);
         $data['afdelingen'][$contact_id] = $afdelingen[$contact_id];
-        cache_set('ammo_data', $data, 'cache', time() + 3600);
+        cache_set('ammo_data', $data, 'cache', time() + 86400);
       }
     }
     else {
       $afdelingen[$contact_id] = ammo_get_afdelingen_helper($contact_id);
       $data['afdelingen'][$contact_id] = $afdelingen[$contact_id];
-      cache_set('ammo_data', $data, 'cache', time() + 3600);
+      cache_set('ammo_data', $data, 'cache', time() + 86400);
     }
   }
   return $afdelingen[$contact_id];
@@ -145,13 +145,13 @@ function ammo_get_afdeling_members($afdeling_id) {
       else {
         $afdelingmembers[$afdeling_id] = ammo_get_afdeling_members_helper($afdeling_id);
         $data['afdelingmembers'][$afdeling_id] = $afdelingmembers[$afdeling_id];
-        cache_set('ammo_data', $data, 'cache', time() + 3600);
+        cache_set('ammo_data', $data, 'cache', time() + 86400);
       }
     }
     else {
       $afdelingmembers[$afdeling_id] = ammo_get_afdeling_members_helper($afdeling_id);
       $data['afdelingmembers'][$afdeling_id] = $afdelingmembers[$afdeling_id];
-      cache_set('ammo_data', $data, 'cache', time() + 3600);
+      cache_set('ammo_data', $data, 'cache', time() + 86400);
     }
   }
   return $afdelingmembers[$afdeling_id];
@@ -201,9 +201,9 @@ function ammo_autocomplete_members($afdeling_id, $string) {
  *
  */
 function ammo_get_related_contacts($entity_id, $entity_type, $relation_type) {
-  $items = array();
+  $contacts = array();
   $relation_entity_type = $entity_type . 's_' . $relation_type . 's';
-  watchdog('test', $relation_entity_type);
+  // Get related contacts.
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', $relation_entity_type)
     ->propertyCondition($entity_type . '_id', $entity_id);
@@ -214,22 +214,46 @@ function ammo_get_related_contacts($entity_id, $entity_type, $relation_type) {
     $items_ids = array_keys($result[$relation_entity_type]);
     $items = entity_load($relation_entity_type, $items_ids);
   }
-  return $items;
+  if (!empty($items)) {
+    // Create list of related contact ids.
+    foreach ($items as $item) {
+      $contact_entity_data[$item->contact_id] = array(
+        'id' => $item->id,
+        'contact_id' => $item->contact_id,
+      );
+    }
+    civicrm_initialize();
+    $result = db_query("SELECT id, display_name FROM {civicrm_contact} WHERE id IN (:ids)", array(':ids' => array_keys($contact_entity_data)));
+    if ($result) {
+      while ($row = $result->fetchAssoc()) {
+        $contacts[$row['id']] = array(
+          'contact_id' => $row['id'],
+          'entity_id' => $contact_entity_data[$row['id']]['id'],
+          'display_name' => $row['display_name'],
+        );
+      }
+    }
+  }
+  return $contacts;
 }
 
-function ammo_get_amendments($branch_id, $document_id) {
+/*
+ * @item_id: either meeting_id or document_id.
+ */
+function ammo_get_amendments_or_motions($type, $branch_id, $item_id) {
   $data = array();
   $items = array();
+  $property = ($type == 'amendment') ? 'document_id' : 'meeting_id';
   $query = new EntityFieldQuery();
-  $query->entityCondition('entity_type', 'amendment')
-    ->propertyCondition('document_id', $document_id)
+  $query->entityCondition('entity_type', $type)
+    ->propertyCondition($property, $item_id)
     ->propertyCondition('branch_id', $branch_id);
 
   $result = $query->execute();
 
-  if (isset($result['amendment'])) {
-    $items_ids = array_keys($result['amendment']);
-    $items = entity_load('amendment', $items_ids);
+  if (isset($result[$type])) {
+    $items_ids = array_keys($result[$type]);
+    $items = entity_load($type, $items_ids);
   }
   foreach($items as $item) {
     $data[$item->id] = $item->id;
@@ -238,7 +262,7 @@ function ammo_get_amendments($branch_id, $document_id) {
 }
 
 function ammo_default($form_state, $field) {
-  $default_value = '';
+  $default_value = NULL;
   if(isset($form_state['values'][$field]))
   {
     $default_value = $form_state['values'][$field];

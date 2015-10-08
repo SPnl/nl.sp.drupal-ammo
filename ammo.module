@@ -18,43 +18,47 @@ function ammo_menu() {
   $items = array();
 
   $items['ammo'] = array(
-    'title' => 'Amendments and Motions',
+    'title' => 'Amendementen en Moties',
     'page callback' => 'ammo_overview_content',
     'type' => MENU_NORMAL_ITEM,
-    'access callback' => TRUE,
+    'access callback' => 'user_is_logged_in',
   );
 
   $items['ammo/ammo'] = array(
-    'title' => 'Overview',
+    'title' => 'Overzicht',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'access callback' => TRUE,
-  );
-
-  $items['ammo/motion'] = array(
-    'title' => 'Motion',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_motion_form'),
-    'file' => 'motion.form.inc',
-    'type' => MENU_LOCAL_TASK,
-    'access callback' => TRUE,
+    'access callback' => 'user_is_logged_in',
+    'weight' => 0,
   );
 
   $items['ammo/amendment'] = array(
-    'title' => 'Amendment',
+    'title' => 'Amendementen',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ammo_amendment_form'),
     'file' => 'amendment.form.inc',
     'type' => MENU_LOCAL_TASK,
-    'access callback' => TRUE,
+    'access callback' => 'ammo_add_access',
+    'weight' => 1,
+  );
+
+  $items['ammo/motion'] = array(
+    'title' => 'Moties',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_motion_form'),
+    'file' => 'motion.form.inc',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'ammo_add_access',
+    'weight' => 2,
   );
 
   $items['ammo/meeting'] = array(
-    'title' => 'Meeting',
+    'title' => 'Bijeenkomst',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ammo_meeting_form'),
     'file' => 'meeting.form.inc',
     'type' => MENU_LOCAL_TASK,
-    'access callback' => TRUE,
+    'access callback' => 'ammo_superadmin_access',
+    'weight' => 3,
   );
 
   $items['ammo/document'] = array(
@@ -63,7 +67,8 @@ function ammo_menu() {
     'page arguments' => array('ammo_document_form'),
     'file' => 'document.form.inc',
     'type' => MENU_LOCAL_TASK,
-    'access callback' => TRUE,
+    'access callback' => 'ammo_superadmin_access',
+    'weight' => 4,
   );
 
   $items['ammo/autocomplete_members/%/%'] = array(
@@ -71,10 +76,36 @@ function ammo_menu() {
     'page arguments' => array(2, 3),
     'file' => 'ammo.inc',
     'type' => MENU_CALLBACK,
-    'access callback' => TRUE,
+    'access callback' => 'user_is_logged_in',
   );
 
   return $items;
+}
+
+function ammo_permission() {
+  return array(
+    'administer ammo' => array(
+      'title' => 'Beheer ammo',
+    ),
+    'administer amendments and motions' => array(
+      'title' => 'Beheer amendementen en moties',
+    ),
+    'add amendments and motions' => array(
+      'title' => 'Voeg amendementen en moties toe',
+    ),
+  );
+}
+
+function ammo_superadmin_access() {
+  return user_access('administer ammo');
+}
+
+function ammo_admin_access() {
+  return user_access('administer ammo') || user_access('administer amendments and motions');
+}
+
+function ammo_add_access() {
+  return user_access('administer ammo') || user_access('administer amendments and motions') || user_access('add amendments and motions');
 }
 
 function ammo_theme() {
