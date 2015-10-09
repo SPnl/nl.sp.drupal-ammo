@@ -3,6 +3,7 @@
 function ammo_motion_form($form, &$form_state, $path_id = NULL)
 {
   global $user;
+  dpm($form_state['storage']);
 
   // Check if motion is set in path and preset form if so.
   if (!empty($path_id) && empty($form_state['storage']['first_step'])) {
@@ -43,6 +44,22 @@ function ammo_motion_form($form, &$form_state, $path_id = NULL)
       $form_state['storage']['branch_id'] = current(array_keys($afdelingen));
       $form_state['step'] = 3;
       drupal_set_message('Stap 2 is automatisch ingevuld.');
+    }
+  }
+  if ($form_state['step'] === 3) {
+    $entities = ammo_get_amendments_or_motions('motion', $form_state['storage']['branch_id'], $form_state['storage']['meeting']);
+    if (count($entities) === 0) {
+      // Save new motion.
+      $form_state['storage']['state'] = 'concept';
+      $mapping = array(
+        'meeting_id' => 'meeting',
+        'branch_id' => 'branch_id',
+        'state' => 'state',
+      );
+      $new_motion = ammo_store('motion', NULL, $mapping, $form_state);
+      $form_state['storage']['motion'] = $new_motion->id;
+      $form_state['step'] = 4;
+      drupal_set_message('Stap 3 is automatisch ingevuld.');
     }
   }
 

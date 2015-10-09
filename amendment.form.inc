@@ -53,6 +53,22 @@ function ammo_amendment_form($form, &$form_state, $path_id = NULL)
       drupal_set_message('Stap 3 is automatisch ingevuld.');
     }
   }
+  if ($form_state['step'] === 4) {
+    $entities = ammo_get_amendments_or_motions('amendment', $form_state['storage']['branch_id'], $form_state['storage']['document']);
+    if (count($entities) === 0) {
+      // Save new amendment.
+      $form_state['storage']['state'] = 'concept';
+      $mapping = array(
+        'document_id' => 'document',
+        'branch_id' => 'branch_id',
+        'state' => 'state',
+      );
+      $new_amendment = ammo_store('amendment', NULL, $mapping, $form_state);
+      $form_state['storage']['amendment'] = $new_amendment->id;
+      $form_state['step'] = 5;
+      drupal_set_message('Stap 4 is automatisch ingevuld.');
+    }
+  }
 
 
   // Add a wrapper div that will be used by the Form API to update the form using AJAX
