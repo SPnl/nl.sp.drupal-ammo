@@ -28,6 +28,24 @@ function ammo_motion_form($form, &$form_state, $path_id = NULL)
   // If $form_state['step'] is not set, we set it to 1
   $form_state['step'] = isset($form_state['step']) ? $form_state['step'] : $form_state['storage']['first_step'];
 
+  // Skip single selection forms.
+  if ($form_state['step'] === 1) {
+    $meetings = entity_load('meeting');
+    if (count($meetings) === 1) {
+      $form_state['storage']['meeting'] = $meetings[1]->id;
+      $form_state['step'] = 2;
+      drupal_set_message('Stap 1 is automatisch ingevuld.');
+    }
+  }
+  if ($form_state['step'] === 2) {
+    $afdelingen = ammo_afdelingen_access();
+    if (count($afdelingen) === 1) {
+      $form_state['storage']['afdeling'] = current(array_keys($afdelingen));
+      $form_state['step'] = 3;
+      drupal_set_message('Stap 2 is automatisch ingevuld.');
+    }
+  }
+
   // Add a wrapper div that will be used by the Form API to update the form using AJAX
   $form['#prefix'] = '<div id="ajax_form_multistep_form">';
   $form['#suffix'] = '</div>';
@@ -42,96 +60,19 @@ function ammo_motion_form($form, &$form_state, $path_id = NULL)
   {
 
   case 1:
-    $meetings = entity_load('meeting');
-    $options = array();
-    foreach ($meetings as $meeting) {
-      $options[$meeting->id] = $meeting->title;
-    }
-    $form['meeting'] = array(
-      '#type' => 'select',
-      '#title' => 'Bijeenkomst',
-      '#options' => $options,
-      '#empty_option' => 'kies:',
-      '#default_value' => ammo_default($form_state, 'meeting'),
-      '#required' => true,
-      '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
-    );
+    ammo_select_meeting_form('amendment', $form, $form_state);
     break;
 
   case 2:
-    // Afdelingen filteren op gebruikers id.
-    $afdelingen = ammo_afdelingen_access();
-    $form['branch_id'] = array(
-      '#type' => 'select',
-      '#title' => 'Afdeling',
-      '#options' => $afdelingen,
-      '#empty_option' => 'kies:',
-      '#default_value' => ammo_default($form_state, 'branch_id'),
-      '#required' => true,
-      '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
-    );
+    ammo_select_afdeling_form('amendment', $form, $form_state);
     break;
 
   case 3:
-    $motions = ammo_get_amendments_or_motions('motion', $form_state['storage']['branch_id'], $form_state['storage']['meeting']);
-    $form['motion'] = array(
-      '#type' => 'select',
-      '#title' => 'Motie nr.',
-      '#options' => $motions,
-      '#empty_option' => 'nieuw',
-      '#default_value' => ammo_default($form_state, 'motion'),
-      '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
-    );
+    ammo_select_ammo_form('motion', $form, $form_state);
     break;
 
   case 4:
-    $form['owners'] = array(
-      '#type' => 'fieldset',
-    );
-    $owners = ammo_get_related_contacts($form_state['storage']['motion'], 'motion', 'owner');
-    // Show owners.
-    $form['owners']['intro'] = array(
-      '#type' => 'item',
-      '#markup' => '<p><strong>Motie ingediend door:</strong></p>',
-    );
-    foreach ($owners as $owner_id => $data) {
-      $form['owners']['del_owner_' . $owner_id] = array(
-        '#type' => 'submit',
-        '#value' => 'x',
-        '#name' => 'del-motions_owners-' . $data['entity_id'],
-        '#prefix' => '<p>',
-        '#suffix' =>  $data['display_name'] . ' - ' . $owner_id . '</p> ',
-        '#ajax' => array(
-          'callback' => 'ammo_motion_form_ajax_callback',
-          'wrapper' => 'ajax_form_multistep_form',
-        ),
-        '#attributes' => array('class' => array('ammo_owner_del_button')),
-      );
-    }
-    // create add participant button.
-    $form['owners']['owner'] = array(
-      '#type' => 'textfield',
-      '#title' => 'naam / lidnummer',
-      '#autocomplete_path' => 'ammo/autocomplete_members/' . $form_state['storage']['branch_id'],
-    );
-    $form['owners']['add_owner'] = array(
-      '#type' => 'submit',
-      '#value' => 'Voeg toe',
-      '#name' => 'add_owner',
-      '#validate' => array('ammo_motion_form_validate'),
-      '#submit' => array('ammo_motion_form_submit'),
-      '#ajax' => array
-      (
-        'wrapper' => 'ajax_form_multistep_form',
-        'callback' => 'ammo_motion_form_ajax_callback',
-      ),
-    );
-    // Backed by local branch?
-    $form['backed'] = array(
-      '#type' => 'checkbox',
-      '#title' => 'Motie wordt ondersteund door afdeling',
-      '#default_value' => ammo_default($form_state, 'backed'),
-    );
+    ammo_select_owner_form('motion', $form, $form_state);
     break;
 
   case 5:
@@ -298,18 +239,22 @@ function ammo_motion_form_validate($form, &$form_state)
   $trigger = $form_state['triggering_element']['#name'];
   $step = $form_state['step'];
 
+  $backed = $values['backed'];
+
   // First we set up a switch for each of our three steps
   switch($step)
   {
   case "4":
     switch ($trigger) {
     case 'action_button':
-      $motion = entity_load_single('motion', $storage['motion']);
-      $owners =  ammo_get_related_contacts($motion->id, 'motion', 'owner');
-      // Get motion owners.
-      if(empty($owners))
-      {
-        form_set_error('add_owner', t('Selecteer minstens één contact.'));
+      if (!$backed) {
+        $motion = entity_load_single('motion', $storage['motion']);
+        $owners =  ammo_get_related_contacts($motion->id, 'motion', 'owner');
+        // Get motion owners.
+        if(empty($owners))
+        {
+          form_set_error('add_owner', t('Selecteer minstens één contact.'));
+        }
       }
       break;
     case 'add_owner':

@@ -291,7 +291,7 @@ function ammo_save_entity($type, $values, $entity_id = NULL) {
 function ammo_store($entity_type, $entity_id, $mapping, &$form_state) {
   foreach($mapping as $database_field => $form_field) {
     // Store values.
-    if (!empty($form_state['values'][$form_field])) {
+    if (isset($form_state['values'][$form_field])) {
       $form_state['storage'][$form_field] = $form_state['values'][$form_field];
     }
     $fields[$database_field] = $form_state['storage'][$form_field];
@@ -422,4 +422,103 @@ function ammo_preset_form($type, $entity_id, &$form_state) {
       drupal_set_message('Data kon niet worden geladen.', 'error');
     }
   }
+}
+
+function ammo_select_owner_form($type, &$form, &$form_state) {
+  // Backed by local branch?
+  $form['backed'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Ingediend door afdeling',
+    '#default_value' => ammo_default($form_state, 'backed'),
+    '#name' => 'backed',
+  );
+  $form['owners'] = array(
+    '#type' => 'fieldset',
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="backed"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  $owners = ammo_get_related_contacts($form_state['storage'][$type], $type, 'owner');
+  // Show owners.
+  $form['owners']['intro'] = array(
+    '#type' => 'item',
+    '#markup' => '<p><strong>Ingediend door:</strong></p>',
+  );
+  foreach ($owners as $owner_id => $data) {
+    $form['owners']['del_owner_' . $owner_id] = array(
+      '#type' => 'submit',
+      '#value' => 'x',
+      '#name' => 'del-'.$type.'s_owners-' . $data['entity_id'],
+      '#prefix' => '<p>',
+      '#suffix' =>  $data['display_name'] . ' - ' . $owner_id . '</p> ',
+      '#ajax' => array(
+        'callback' => 'ammo_'.$type.'_form_ajax_callback',
+        'wrapper' => 'ajax_form_multistep_form',
+      ),
+      '#attributes' => array('class' => array('ammo_owner_del_button')),
+    );
+  }
+  // create add participant button.
+  $form['owners']['owner'] = array(
+    '#type' => 'textfield',
+    '#title' => 'naam / lidnummer',
+    '#autocomplete_path' => 'ammo/autocomplete_members/' . $form_state['storage']['branch_id'],
+  );
+  $form['owners']['add_owner'] = array(
+    '#type' => 'submit',
+    '#value' => 'Voeg toe',
+    '#name' => 'add_owner',
+    '#validate' => array('ammo_amendment_form_validate'),
+    '#submit' => array('ammo_amendment_form_submit'),
+    '#ajax' => array
+    (
+      'wrapper' => 'ajax_form_multistep_form',
+      'callback' => 'ammo_amendment_form_ajax_callback',
+    ),
+  );
+}
+
+function ammo_select_ammo_form($type, &$form, &$form_state) {
+  $title = ($type == 'amendment') ? 'Amendement' : 'Motie';
+  $entities = ammo_get_amendments_or_motions($type, $form_state['storage']['branch_id'], $form_state['storage']['document']);
+  $form[$type] = array(
+    '#type' => 'select',
+    '#title' => $title,
+    '#options' => $entities,
+    '#empty_option' => 'nieuw',
+    '#default_value' => ammo_default($form_state, 'amendment'),
+    '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
+  );
+}
+
+function ammo_select_afdeling_form($type, &$form, &$form_state) {
+  $afdelingen = ammo_afdelingen_access();
+  $form['branch_id'] = array(
+    '#type' => 'select',
+    '#title' => 'Afdeling',
+    '#options' => $afdelingen,
+    '#empty_option' => 'kies:',
+    '#default_value' => ammo_default($form_state, 'branch_id'),
+    '#required' => true,
+    '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
+  );
+}
+
+function ammo_select_meeting_form($type, &$form, &$form_state) {
+  $meetings = entity_load('meeting');
+  $options = array();
+  foreach ($meetings as $meeting) {
+    $options[$meeting->id] = $meeting->title;
+  }
+  $form['meeting'] = array(
+    '#type' => 'select',
+    '#title' => 'Bijeenkomst',
+    '#options' => $options,
+    '#empty_option' => 'kies:',
+    '#default_value' => ammo_default($form_state, 'meeting'),
+    '#required' => true,
+    '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
+  );
 }
