@@ -48,7 +48,7 @@ function ammo_amendment_form($form, &$form_state, $path_id = NULL)
   if ($form_state['step'] === 3) {
     $afdelingen = ammo_afdelingen_access();
     if (count($afdelingen) === 1) {
-      $form_state['storage']['afdeling'] = current(array_keys($afdelingen));
+      $form_state['storage']['branch_id'] = current(array_keys($afdelingen));
       $form_state['step'] = 4;
       drupal_set_message('Stap 3 is automatisch ingevuld.');
     }
