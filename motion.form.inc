@@ -1,14 +1,29 @@
 <?php
 
-function ammo_motion_form($form, &$form_state, $path_id = NULL)
+function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
 {
   global $user;
-  dpm($form_state['storage']);
 
   // Check if motion is set in path and preset form if so.
-  if (!empty($path_id) && empty($form_state['storage']['first_step'])) {
-    $form_state['storage']['first_step'] = 4;
-    ammo_preset_form('motion', $path_id, $form_state);
+  if (!empty($path_id) && !empty($form_action) && empty($form_state['storage']['first_step'])) {
+    switch ($form_action) {
+    case 'edit':
+      if (ammo_preset_form('motion', $path_id, $form_state)) {
+        $form_state['storage']['first_step'] = 4;
+      }
+      break;
+    case 'advice':
+      if (ammo_admin_access()) {
+        if (ammo_preset_form('motion', $path_id, $form_state)) {
+          $form_state['storage']['first_step'] = 6;
+        }
+      }
+      break;
+    case 'view':
+      $form = ammo_view_entity_form('motion', $path_id);
+      return $form;
+      break;
+    }
   }
 
   // Always set first step.
@@ -26,42 +41,8 @@ function ammo_motion_form($form, &$form_state, $path_id = NULL)
     }
   }
 
-  // If $form_state['step'] is not set, we set it to 1
+  // If $form_state['step'] is not set, we set it to the first step.
   $form_state['step'] = isset($form_state['step']) ? $form_state['step'] : $form_state['storage']['first_step'];
-
-  // Skip single selection forms.
-  if ($form_state['step'] === 1) {
-    $meetings = entity_load('meeting');
-    if (count($meetings) === 1) {
-      $form_state['storage']['meeting'] = $meetings[1]->id;
-      $form_state['step'] = 2;
-      drupal_set_message('Stap 1 is automatisch ingevuld.');
-    }
-  }
-  if ($form_state['step'] === 2) {
-    $afdelingen = ammo_afdelingen_access();
-    if (count($afdelingen) === 1) {
-      $form_state['storage']['branch_id'] = current(array_keys($afdelingen));
-      $form_state['step'] = 3;
-      drupal_set_message('Stap 2 is automatisch ingevuld.');
-    }
-  }
-  if ($form_state['step'] === 3) {
-    $entities = ammo_get_amendments_or_motions('motion', $form_state['storage']['branch_id'], $form_state['storage']['meeting']);
-    if (count($entities) === 0) {
-      // Save new motion.
-      $form_state['storage']['state'] = 'concept';
-      $mapping = array(
-        'meeting_id' => 'meeting',
-        'branch_id' => 'branch_id',
-        'state' => 'state',
-      );
-      $new_motion = ammo_store('motion', NULL, $mapping, $form_state);
-      $form_state['storage']['motion'] = $new_motion->id;
-      $form_state['step'] = 4;
-      drupal_set_message('Stap 3 is automatisch ingevuld.');
-    }
-  }
 
   // Add a wrapper div that will be used by the Form API to update the form using AJAX
   $form['#prefix'] = '<div id="ajax_form_multistep_form">';

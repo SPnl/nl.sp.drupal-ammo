@@ -34,7 +34,7 @@ function ammo_menu() {
   $items['ammo/amendment'] = array(
     'title' => 'Amendementen',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_amendment_form', 2),
+    'page arguments' => array('ammo_amendment_form', 2, 3),
     'file' => 'amendment.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'ammo_add_access',
@@ -44,7 +44,7 @@ function ammo_menu() {
   $items['ammo/motion'] = array(
     'title' => 'Moties',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_motion_form', 2),
+    'page arguments' => array('ammo_motion_form', 2, 3),
     'file' => 'motion.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'ammo_add_access',
@@ -132,28 +132,104 @@ function ammo_theme() {
       'render element' => 'form',
       'template' => 'document-form',
     ),
+    'amendment' => array(
+      'variables' => array(),
+      'template' => 'amendment',
+    ),
+    'motion' => array(
+      'variables' => array(),
+      'template' => 'motion',
+    ),
   );
   return $theme;
+}
+
+function template_preprocess_amendment(&$variables) {
+  if (isset($variables['entity_id'])) {
+    $entity = entity_load_single('amendment', $variables['entity_id']);
+    $document = entity_load_single('document', $entity->document_id);
+    $meeting = entity_load_single('meeting', $document->meeting_id);
+    $vars = array(
+      'document_id' => $entity->document_id,
+      'branch_id' => $entity->branch_id,
+      'backed' => $entity->backed,
+      'type' => $entity->type,
+      'general' => $entity->general,
+      'chapter' => $entity->chapter,
+      'page' => $entity->page,
+      'line' => $entity->line,
+      'action' => $entity->action,
+      'supplement' => $entity->supplement,
+      'current_text' => $entity->current_text,
+      'new_text' => $entity->new_text,
+      'advice' => $entity->advice,
+      'advice_general' => $entity->advice_general,
+      'advice_supplement' => $entity->advice_supplement,
+      'advice_action' => $entity->advice_action,
+      'advice_current_text' => $entity->advice_current_text,
+      'advice_new_text' => $entity->advice_new_text,
+      'state' => $entity->state,
+      'document_title' => $document->title,
+      'document_description' => $document->description,
+      'meeting_title' => $meeting->title,
+      'meeting_description' => $meeting->description,
+    );
+    foreach($vars as $key => &$value) {
+      $value = check_plain($value);
+    }
+    $variables = $variables + $vars;
+  }
+}
+
+function template_preprocess_motion(&$variables) {
+  if (isset($variables['entity_id'])) {
+    $entity = entity_load_single('motion', $variables['entity_id']);
+    $meeting = entity_load_single('meeting', $entity->meeting_id);
+    $vars = array(
+      'id' => $entity->id,
+      'document_id' => $entity->document_id,
+      'branch_id' => $entity->branch_id,
+      'backed' => $entity->backed,
+      'consideration_opening' => $entity->consideration_opening,
+      'consideration_body' => $entity->consideration_body,
+      'follow_up_opening' => $entity->follow_up_opening,
+      'follow_up_body' => $entity->follow_up_body,
+      'supplement' => $entity->supplement,
+      'advice' => $entity->advice,
+      'advice_consideration_opening' => $entity->advice_consideration_opening,
+      'advice_consideration_body' => $entity->advice_consideration_body,
+      'advice_follow_up_opening' => $entity->advice_follow_up_opening,
+      'advice_follow_up_body' => $entity->advice_follow_up_body,
+      'advice_supplement' => $entity->advice_supplement,
+      'state' => $entity->state,
+      'meeting_title' => $meeting->title,
+      'meeting_description' => $meeting->description,
+    );
+    foreach($vars as $key => &$value) {
+      $value = check_plain($value);
+    }
+    $variables = $variables + $vars;
+  }
 }
 
 function ammo_overview_content() {
   return theme('overview', array());
 }
 
-/**
- * Implements hook_entity_info().
- */
-function ammo_entity_info() {
-  $info = array();
+  /**
+   * Implements hook_entity_info().
+   */
+  function ammo_entity_info() {
+    $info = array();
 
-  $info['meeting'] = array(
-    'label' => t('Meeting'),
-    'entity class' => 'Entity',
-    'controller class' => 'EntityAPIController',
-    'base table' => 'ammo_meetings',
-    'entity keys' => array(
-      'id' => 'id',
-    ),
+    $info['meeting'] = array(
+      'label' => t('Meeting'),
+      'entity class' => 'Entity',
+      'controller class' => 'EntityAPIController',
+      'base table' => 'ammo_meetings',
+      'entity keys' => array(
+        'id' => 'id',
+      ),
     'fieldable' => FALSE,
   );
   

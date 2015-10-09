@@ -417,11 +417,16 @@ function ammo_preset_form($type, $entity_id, &$form_state) {
       // Set form step and get data.
       $form_state['storage'][$type] = $path_id;
       ammo_populate_form($type, $entity_id, $form_state); 
+      return TRUE;
     }
     else {
       drupal_set_message('Data kon niet worden geladen.', 'error');
     }
   }
+  else {
+      drupal_set_message('Data kon niet worden geladen.', 'error');
+  }
+  return FALSE;
 }
 
 function ammo_select_owner_form($type, &$form, &$form_state) {
@@ -521,4 +526,13 @@ function ammo_select_meeting_form($type, &$form, &$form_state) {
     '#required' => true,
     '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
   );
+}
+
+function ammo_view_entity_form($type, $entity_id) {
+  $markup = theme($type, array('entity_id' => $entity_id, 'entity_type' => $type));
+  $form['view'] = array(
+    '#type' => 'item',
+    '#markup' => $markup,
+  );
+  return $form;
 }
