@@ -14,7 +14,12 @@ function ammo_schema() {
         'not null' => TRUE,
       ),
       'date' => array(
-        'description' => 'The lunch date in Unix timestamp format.',
+        'description' => 'The meeting date.',
+        'type' => 'datetime',
+        'mysql_type' => 'datetime',
+      ),
+      'submission_closing_date' => array(
+        'description' => 'The last date amendments and motions can be submitted/changed.',
         'type' => 'datetime',
         'mysql_type' => 'datetime',
       ),
@@ -91,15 +96,19 @@ function ammo_schema() {
         'type' => 'varchar',
         'length' => '255',
       ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'general' => array(
+        'description' => 'General amendment content.',
+        'type' => 'text',
+      ),
       'chapter' => array(
         'type' => 'int',
         'size' => 'small',
       ),
-      'paragraph' => array(
-        'type' => 'int',
-        'size' => 'small',
-      ),
-      'section' => array(
+      'page' => array(
         'type' => 'int',
         'size' => 'small',
       ),
@@ -128,6 +137,10 @@ function ammo_schema() {
         'description' => 'Advice to voters about the amendment.',
         'type' => 'varchar',
         'length' => '255',
+      ),
+      'advice_general' => array(
+        'description' => 'General amendment content.',
+        'type' => 'text',
       ),
       'advice_supplement' => array(
         'description' => 'Supplementary information about the advice.',

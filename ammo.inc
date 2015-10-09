@@ -306,3 +306,120 @@ function ammo_store($entity_type, $entity_id, $mapping, &$form_state) {
   }
   return $entity;
 }
+
+function ammo_populate_form($type, $entity_id, &$form_state) {
+  $values = $form_state['values'];
+  $storage = $form_state['storage'];
+
+  switch ($type) {
+  case 'amendment':
+    // Get and store values from existing amendment in form.
+    $amendment = entity_load_single('amendment', $entity_id);
+    $form_state['storage']['amendment'] = $entity_id;
+    $mapping = array(
+      'document_id' => 'document',
+      'branch_id' => 'branch_id',
+      'backed' => 'backed',
+      'type' => 'type',
+      'general' => 'general',
+      'chapter' => 'chapter',
+      'page' => 'page',
+      'line' => 'line',
+      'action' => 'action',
+      'current_text' => 'current_text',
+      'new_text' => 'new_text',
+      'supplement' => 'supplement',
+      'advice' => 'advice',
+      'advice_supplement' => 'advice_supplement',
+      'state' => 'state',
+    );
+    foreach ($mapping as $database_field => $form_field) {
+      $form_state['storage'][$form_field] = $amendment->$database_field;
+    }
+    // Prefill advice fields.
+    $prefill_fields = array(
+      'general' => 'general',
+      'action' => 'action',
+      'current_text' => 'current_text',
+      'new_text' => 'new_text',
+    );
+    foreach ($prefill_fields as $database_field => $form_field) {
+      $advice_database_field = 'advice_' . $database_field;
+      $advice_form_field = 'advice_' . $form_field;
+      if (empty($amendment->$advice_database_field)) {
+        $form_state['storage'][$advice_form_field] = $amendment->$database_field;
+      }
+      else {
+        $form_state['storage'][$advice_form_field] = $amendment->$advice_database_field;
+      }
+    }
+    break;
+  case 'motion':
+    // Get and store values from existing motion in form.
+    $motion = entity_load_single('motion', $entity_id);
+    $form_state['storage']['motion'] = $entity_id;
+    $mapping = array(
+      'meeting_id' => 'document',
+      'branch_id' => 'branch_id',
+      'backed' => 'backed',
+      'consideration_opening' => 'consideration_opening',
+      'consideration_body' => 'consideration_text',
+      'follow_up_opening' => 'follow_up_opening',
+      'follow_up_body' => 'follow_up_text',
+      'supplement' => 'supplement',
+      'advice' => 'advice',
+      'advice_supplement' => 'advice_supplement',
+      'state' => 'state',
+    );
+    foreach ($mapping as $database_field => $form_field) {
+      $form_state['storage'][$form_field] = $motion->$database_field;
+    }
+    // Prefill advice fields.
+    $prefill_fields = array(
+      'consideration_opening' => 'consideration_opening',
+      'consideration_body' => 'consideration_text',
+      'follow_up_opening' => 'follow_up_opening',
+      'follow_up_body' => 'follow_up_text',
+    );
+    foreach ($prefill_fields as $database_field => $form_field) {
+      $advice_database_field = 'advice_' . $database_field;
+      $advice_form_field = 'advice_' . $form_field;
+      if (empty($motion->$advice_database_field)) {
+        $form_state['storage'][$advice_form_field] = $motion->$database_field;
+      }
+      else {
+        $form_state['storage'][$advice_form_field] = $motion->$advice_database_field;
+      }
+    }
+    break;
+  }
+}
+
+function ammo_afdelingen_access() {
+  global $user;
+  // Afdelingen filteren op gebruikers id.
+  if(ammo_admin_access()) {
+    $afdelingen = ammo_get_afdelingen();
+  }
+  else {
+    $afdelingen = ammo_get_afdelingen($user->name);
+  }
+  return $afdelingen;
+}
+
+function ammo_preset_form($type, $entity_id, &$form_state) {
+  $entity = entity_load_single($type, $entity_id);
+  // check if exists.
+  if ($entity) {
+    // Check access. 
+    $afdelingen = ammo_afdelingen_access();
+    if (array_key_exists($entity->branch_id, $afdelingen)) {
+      // Set form step and get data.
+      $form_state['storage'][$type] = $path_id;
+      ammo_populate_form($type, $entity_id, $form_state); 
+    }
+    else {
+      drupal_set_message('Data kon niet worden geladen.', 'error');
+    }
+  }
+}

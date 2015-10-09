@@ -1,8 +1,19 @@
 <?php
 
-function ammo_motion_form($form, &$form_state)
+function ammo_motion_form($form, &$form_state, $path_id = NULL)
 {
   global $user;
+
+  // Check if motion is set in path and preset form if so.
+  if (!empty($path_id) && empty($form_state['storage']['first_step'])) {
+    $form_state['storage']['first_step'] = 4;
+    ammo_preset_form('motion', $path_id, $form_state);
+  }
+
+  // Always set first step.
+  if (empty($form_state['storage']['first_step'])) {
+    $form_state['storage']['first_step'] = 1;
+  }
 
   // Set laste page depending on permissions.
   if (empty($form_state['storage']['last_step'])) {
@@ -15,8 +26,7 @@ function ammo_motion_form($form, &$form_state)
   }
 
   // If $form_state['step'] is not set, we set it to 1
-  $form_state['step'] = isset($form_state['step']) ? $form_state['step'] : 1;
-
+  $form_state['step'] = isset($form_state['step']) ? $form_state['step'] : $form_state['storage']['first_step'];
 
   // Add a wrapper div that will be used by the Form API to update the form using AJAX
   $form['#prefix'] = '<div id="ajax_form_multistep_form">';
@@ -24,7 +34,7 @@ function ammo_motion_form($form, &$form_state)
 
   $form['title'] = array(
     '#type' => 'item',
-    '#markup' => '<h2>Stap '.$form_state['step'].' / '.$form_state['storage']['last_step'].'</h2>',
+    '#markup' => '<h2>Stap '.($form_state['step'] - $form_state['storage']['first_step'] + 1).' / '.($form_state['storage']['last_step'] - $form_state['storage']['first_step'] + 1).'</h2>',
   );
 
   // Depending on which step of the form we are on, we output different form fields
@@ -50,13 +60,7 @@ function ammo_motion_form($form, &$form_state)
 
   case 2:
     // Afdelingen filteren op gebruikers id.
-    //$afdelingen = ammo_get_afdelingen(61619);
-    if(ammo_admin_access()) {
-      $afdelingen = ammo_get_afdelingen();
-    }
-    else {
-      $afdelingen = ammo_get_afdelingen($user->name);
-    }
+    $afdelingen = ammo_afdelingen_access();
     $form['branch_id'] = array(
       '#type' => 'select',
       '#title' => 'Afdeling',
@@ -181,24 +185,40 @@ function ammo_motion_form($form, &$form_state)
       ),
     );
 
+    $form['texts']['original_consideration_opening'] = array(
+      '#type' => 'item',
+      '#markup' => '<p><strong>Overweging openingszin origineel</strong><br/>' . check_plain($form_state['storage']['consideration_opening']),
+    );
     $form['texts']['advice_consideration_opening'] = array(
       '#type' => 'textfield',
-      '#title' => 'Overweging openingszin',
+      '#title' => 'Overweging openingszin in advies',
       '#default_value' => ammo_default($form_state, 'advice_consideration_opening'),
     );
 
+    $form['texts']['original_consideration_text'] = array(
+      '#type' => 'item',
+      '#markup' => '<p><strong>Overweging inhoud orgineel</strong><br/>' . check_plain($form_state['storage']['consideration_text']),
+    );
     $form['texts']['advice_consideration_text'] = array(
       '#type' => 'textarea',
-      '#title' => 'Overweging inhoud',
+      '#title' => 'Overweging inhoud in advies',
       '#default_value' => ammo_default($form_state, 'advice_consideration_text'),
     );
 
+    $form['texts']['original_follow_up_opening'] = array(
+      '#type' => 'item',
+      '#markup' => '<p><strong>Overweging inhoud orgineel</strong><br/>' . check_plain($form_state['storage']['follow_up_opening']),
+    );
     $form['texts']['advice_follow_up_opening'] = array(
       '#type' => 'textfield',
       '#title' => 'Vervolg openingszin',
       '#default_value' => ammo_default($form_state, 'advice_follow_up_opening'),
     );
 
+    $form['texts']['original_consideration_text'] = array(
+      '#type' => 'item',
+      '#markup' => '<p><strong>Overweging inhoud orgineel</strong><br/>' . check_plain($form_state['storage']['consideration_text']),
+    );
     $form['texts']['advice_follow_up_text'] = array(
       '#type' => 'textarea',
       '#title' => 'Vervolg inhoud',
@@ -226,8 +246,8 @@ function ammo_motion_form($form, &$form_state)
     (
       '#type' => 'container',
     );
-  // If we are on step 1, we do not want a back button
-  if($form_state['step'] !== 1)
+  // If we are on first step, we do not want a back button
+  if($form_state['step'] > $form_state['storage']['first_step'])
   {
     $form['buttons']['back'] = array
       (
@@ -350,41 +370,7 @@ function ammo_motion_form_submit($form, &$form_state)
       }
       else {
         // Get and store values from existing motion in form.
-        $motion = entity_load_single('motion', $values['motion']);
-        $form_state['storage']['motion'] = $values['motion'];
-        $mapping = array(
-          'meeting_id' => 'document',
-          'branch_id' => 'branch_id',
-          'backed' => 'backed',
-          'consideration_opening' => 'consideration_opening',
-          'consideration_body' => 'consideration_text',
-          'follow_up_opening' => 'follow_up_opening',
-          'follow_up_body' => 'follow_up_text',
-          'supplement' => 'supplement',
-          'advice' => 'advice',
-          'advice_supplement' => 'advice_supplement',
-          'state' => 'state',
-        );
-        foreach ($mapping as $database_field => $form_field) {
-          $form_state['storage'][$form_field] = $motion->$database_field;
-        }
-        // Prefill advice fields.
-        $prefill_fields = array(
-          'consideration_opening' => 'consideration_opening',
-          'consideration_body' => 'consideration_text',
-          'follow_up_opening' => 'follow_up_opening',
-          'follow_up_body' => 'follow_up_text',
-        );
-        foreach ($prefill_fields as $database_field => $form_field) {
-          $advice_database_field = 'advice_' . $database_field;
-          $advice_form_field = 'advice_' . $form_field;
-          if (empty($motion->$advice_database_field)) {
-            $form_state['storage'][$advice_form_field] = $motion->$database_field;
-          }
-          else {
-            $form_state['storage'][$advice_form_field] = $motion->$advice_database_field;
-          }
-        }
+        ammo_populate_form('motion', $values['motion'], $form_state);
       }
       break;
     case 4:
@@ -426,6 +412,7 @@ function ammo_motion_form_submit($form, &$form_state)
       // Reset form.
       $form_state['step'] = 1;
       $form_state['storage'] = array();
+      $form_state['storage']['first_step'] = 1;
     }
     else {
       // Increase the step by one, to move on to the next step

@@ -1,8 +1,19 @@
 <?php
 
-function ammo_amendment_form($form, &$form_state)
+function ammo_amendment_form($form, &$form_state, $path_id = NULL)
 {
   global $user;
+
+  // Check if motion is set in path and preset form if so.
+  if (!empty($path_id) && empty($form_state['storage']['first_step'])) {
+    $form_state['storage']['first_step'] = 5;
+    ammo_preset_form('amendment', $path_id, $form_state);
+  }
+
+  // Always set first step.
+  if (empty($form_state['storage']['first_step'])) {
+    $form_state['storage']['first_step'] = 1;
+  }
 
   // Set laste page depending on permissions.
   if (empty($form_state['storage']['last_step'])) {
@@ -14,8 +25,8 @@ function ammo_amendment_form($form, &$form_state)
     }
   }
 
-  // If $form_state['step'] is not set, we set it to 1
-  $form_state['step'] = isset($form_state['step']) ? $form_state['step'] : 1;
+  // If $form_state['step'] is not set, we set it to the first step.
+  $form_state['step'] = isset($form_state['step']) ? $form_state['step'] : $form_state['storage']['first_step'];
 
 
   // Add a wrapper div that will be used by the Form API to update the form using AJAX
@@ -24,7 +35,7 @@ function ammo_amendment_form($form, &$form_state)
 
   $form['title'] = array(
     '#type' => 'item',
-    '#markup' => '<h2>Stap '.$form_state['step'].' / '.$form_state['storage']['last_step'].'</h2>',
+    '#markup' => '<h2>Stap '.($form_state['step'] - $form_state['storage']['first_step'] + 1).' / '.($form_state['storage']['last_step'] - $form_state['storage']['first_step'] + 1).'</h2>',
   );
 
   // Depending on which step of the form we are on, we output different form fields
@@ -68,14 +79,7 @@ function ammo_amendment_form($form, &$form_state)
     break;
 
   case 3:
-    // Afdelingen filteren op gebruikers id.
-    //$afdelingen = ammo_get_afdelingen(61619);
-    if(ammo_admin_access()) {
-      $afdelingen = ammo_get_afdelingen();
-    }
-    else {
-      $afdelingen = ammo_get_afdelingen($user->name);
-    }
+    $afdelingen = ammo_afdelingen_access();
     $form['branch_id'] = array(
       '#type' => 'select',
       '#title' => 'Afdeling',
@@ -150,27 +154,50 @@ function ammo_amendment_form($form, &$form_state)
     break;
 
   case 6:
-    $form['chapter'] = array(
+    $form['type'] = array(
+      '#type' => 'select',
+      '#title' => 'Type amendement',
+      '#options' => array('specific' => 'Wijziging', 'general' => 'Algemeen'),
+      '#default_value' => ammo_default($form_state, 'type'),
+      '#name' => 'type',
+    );
+    $form['general'] = array(
+      '#type' => 'fieldset',
+      '#states' => array(
+        'visible' => array(
+          ':input[name="type"]' => array('value' => 'general'),
+        ),
+      ),
+    );
+    $form['general']['general'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Amendement',
+      '#default_value' => ammo_default($form_state, 'general'),
+    );
+    $form['specific'] = array(
+      '#type' => 'fieldset',
+      '#states' => array(
+        'visible' => array(
+          ':input[name="type"]' => array('value' => 'specific'),
+        ),
+      ),
+    );
+    $form['specific']['chapter'] = array(
       '#type' => 'textfield',
       '#title' => 'Hoofdstuk nr.',
       '#default_value' => ammo_default($form_state, 'chapter'),
     );
-    $form['paragraph'] = array(
+    $form['specific']['page'] = array(
       '#type' => 'textfield',
-      '#title' => 'Paragraaf nr.',
+      '#title' => 'Pagina nr.',
       '#default_value' => ammo_default($form_state, 'paragraph'),
     );
-    $form['section'] = array(
-      '#type' => 'textfield',
-      '#title' => 'Sectie nr.',
-      '#default_value' => ammo_default($form_state, 'section'),
-    );
-    $form['line'] = array(
+    $form['specific']['line'] = array(
       '#type' => 'textfield',
       '#title' => 'Regelnr.',
       '#default_value' => ammo_default($form_state, 'line'),
     );
-    $form['action'] = array(
+    $form['specific']['action'] = array(
       '#type' => 'select',
       '#title' => 'Soort amendement',
       '#name' => 'action',
@@ -178,7 +205,7 @@ function ammo_amendment_form($form, &$form_state)
       '#empty_option' => 'kies:',
       '#default_value' => ammo_default($form_state, 'action'),
     );
-    $form['current_text'] = array(
+    $form['specific']['current_text'] = array(
       '#type' => 'textarea',
       '#title' => 'Huidige tekst',
       '#default_value' => ammo_default($form_state, 'current_text'),
@@ -193,7 +220,7 @@ function ammo_amendment_form($form, &$form_state)
         ),
       ),
     );
-    $form['new_text'] = array(
+    $form['specific']['new_text'] = array(
       '#type' => 'textarea',
       '#title' => 'Nieuwe tekst',
       '#default_value' => ammo_default($form_state, 'new_text'),
@@ -225,53 +252,106 @@ function ammo_amendment_form($form, &$form_state)
       '#default_value' => ammo_default($form_state, 'advice'),
     );
 
-    $form['texts'] = array(
-      '#type' => 'fieldset',
-      '#states' => array(
-        'visible' => array(
-          ':input[name="advice"]' => array('value' => 'accept_amended'),
+    switch ($form_state['storage']['type']) {
+    case 'general':
+      $form['original_general'] = array(
+        '#type' => 'item',
+        '#markup' => '<p><strong>Ingediende amendement tekst</strong><br/>' . check_plain($form_state['storage']['general']) . '</p>',
+        '#states' => array(
+          'visible' => array(
+            ':input[name="advice"]' => array('value' => 'accept_amended'),
+          ),
         ),
-      ),
-    );
-    $form['texts']['advice_action'] = array(
-      '#type' => 'select',
-      '#title' => 'Soort amendement',
-      '#name' => 'advice_action',
-      '#options' => ammo_amendment_actions(),
-      '#empty_option' => 'kies:',
-      '#default_value' => ammo_default($form_state, 'advice_action'),
-    );
+      );
+      $form['advice_general'] = array(
+        '#type' => 'textarea',
+        '#title' => 'Advies amendement tekst',
+        '#default_value' => ammo_default($form_state, 'advice_general'),
+        '#states' => array(
+          'visible' => array(
+            ':input[name="advice"]' => array('value' => 'accept_amended'),
+          ),
+        ),
+      );
+      break;
+    case 'specific':
+      $form['texts'] = array(
+        '#type' => 'fieldset',
+        '#states' => array(
+          'visible' => array(
+            ':input[name="advice"]' => array('value' => 'accept_amended'),
+          ),
+        ),
+      );
+      $form['texts']['advice_action'] = array(
+        '#type' => 'select',
+        '#title' => 'Soort amendement',
+        '#name' => 'advice_action',
+        '#options' => ammo_amendment_actions(),
+        '#empty_option' => 'kies:',
+        '#default_value' => ammo_default($form_state, 'advice_action'),
+      );
 
-    $form['texts']['advice_current_text'] = array(
-      '#type' => 'textarea',
-      '#title' => 'Huidige tekst',
-      '#default_value' => ammo_default($form_state, 'advice_current_text'),
-      '#states' => array(
-        'visible' => array(
-          array(
-            ':input[name="advice_action"]' => array('value' => 'delete'),
-          ),
-          array(
-            ':input[name="advice_action"]' => array('value' => 'replace'),
-          ),
-        ),
-      ),
-    );
-    $form['texts']['advice_new_text'] = array(
-      '#type' => 'textarea',
-      '#title' => 'Nieuwe tekst',
-      '#default_value' => ammo_default($form_state, 'advice_new_text'),
-      '#states' => array(
-        'visible' => array(
-          array(
-            ':input[name="advice_action"]' => array('value' => 'add'),
-          ),
-          array(
-            ':input[name="advice_action"]' => array('value' => 'replace'),
+      $form['texts']['original_current_text'] = array(
+        '#type' => 'item',
+        '#markup' => '<p><strong>Te vervangen/schrappen tekst orgineel</strong><br/>' . check_plain($form_state['storage']['current_text']) . '</p>',
+        '#states' => array(
+          'visible' => array(
+            array(
+              ':input[name="advice_action"]' => array('value' => 'delete'),
+            ),
+            array(
+              ':input[name="advice_action"]' => array('value' => 'replace'),
+            ),
           ),
         ),
-      ),
-    );
+      );
+      $form['texts']['advice_current_text'] = array(
+        '#type' => 'textarea',
+        '#title' => 'Te vervangen/schrappen tekst in advies',
+        '#default_value' => ammo_default($form_state, 'advice_current_text'),
+        '#states' => array(
+          'visible' => array(
+            array(
+              ':input[name="advice_action"]' => array('value' => 'delete'),
+            ),
+            array(
+              ':input[name="advice_action"]' => array('value' => 'replace'),
+            ),
+          ),
+        ),
+      );
+      $form['texts']['original_new_text'] = array(
+        '#type' => 'item',
+        '#markup' => '<p><strong>Nieuwe tekst orgineel</strong><br/>' . check_plain($form_state['storage']['current_text']) . '</p>',
+        '#states' => array(
+          'visible' => array(
+            array(
+              ':input[name="advice_action"]' => array('value' => 'add'),
+            ),
+            array(
+              ':input[name="advice_action"]' => array('value' => 'replace'),
+            ),
+          ),
+        ),
+      );
+      $form['texts']['advice_new_text'] = array(
+        '#type' => 'textarea',
+        '#title' => 'Nieuwe tekst in advies',
+        '#default_value' => ammo_default($form_state, 'advice_new_text'),
+        '#states' => array(
+          'visible' => array(
+            array(
+              ':input[name="advice_action"]' => array('value' => 'add'),
+            ),
+            array(
+              ':input[name="advice_action"]' => array('value' => 'replace'),
+            ),
+          ),
+        ),
+      );
+      break;
+    }
     $form['advice_supplement'] = array(
       '#type' => 'textarea',
       '#title' => 'Toelichting',
@@ -292,8 +372,8 @@ function ammo_amendment_form($form, &$form_state)
     (
       '#type' => 'container',
     );
-  // If we are on step 1, we do not want a back button
-  if($form_state['step'] !== 1)
+  // If we are on first step, we do not want a back button
+  if($form_state['step'] > $form_state['storage']['first_step'])
   {
     $form['buttons']['back'] = array
       (
@@ -419,43 +499,7 @@ function ammo_amendment_form_submit($form, &$form_state)
       }
       else {
         // Get and store values from existing amendment in form.
-        $amendment = entity_load_single('amendment', $values['amendment']);
-        $form_state['storage']['amendment'] = $values['amendment'];
-        $mapping = array(
-          'document_id' => 'document',
-          'branch_id' => 'branch_id',
-          'backed' => 'backed',
-          'chapter' => 'chapter',
-          'paragraph' => 'paragraph',
-          'section' => 'section',
-          'line' => 'line',
-          'action' => 'action',
-          'current_text' => 'current_text',
-          'new_text' => 'new_text',
-          'supplement' => 'supplement',
-          'advice' => 'advice',
-          'advice_supplement' => 'advice_supplement',
-          'state' => 'state',
-        );
-        foreach ($mapping as $database_field => $form_field) {
-          $form_state['storage'][$form_field] = $amendment->$database_field;
-        }
-        // Prefill advice fields.
-        $prefill_fields = array(
-          'action' => 'action',
-          'current_text' => 'current_text',
-          'new_text' => 'new_text',
-        );
-        foreach ($prefill_fields as $database_field => $form_field) {
-          $advice_database_field = 'advice_' . $database_field;
-          $advice_form_field = 'advice_' . $form_field;
-          if (empty($amendment->$advice_database_field)) {
-            $form_state['storage'][$advice_form_field] = $amendment->$database_field;
-          }
-          else {
-            $form_state['storage'][$advice_form_field] = $amendment->$advice_database_field;
-          }
-        }
+        ammo_populate_form('amendment', $values['amendment'], $form_state);
       }
       break;
     case 5:
@@ -470,9 +514,11 @@ function ammo_amendment_form_submit($form, &$form_state)
         $form_state['values']['state'] = 'submitted';
       }
       $mapping = array(
+        'type' => 'amendment_type',
         'chapter' => 'chapter',
-        'paragraph' => 'paragraph',
-        'section' => 'section',
+        'type' => 'type',
+        'general' => 'general',
+        'page' => 'page',
         'line' => 'line',
         'action' => 'action',
         'current_text' => 'current_text',
@@ -485,6 +531,7 @@ function ammo_amendment_form_submit($form, &$form_state)
     case 7:
       $mapping = array(
         'advice' => 'advice',
+        'advice_general' => 'advice_general',
         'advice_supplement' => 'advice_supplement',
         'advice_action' => 'advice_action',
         'advice_current_text' => 'advice_current_text',
@@ -499,6 +546,7 @@ function ammo_amendment_form_submit($form, &$form_state)
       // Reset form.
       $form_state['step'] = 1;
       $form_state['storage'] = array();
+      $form_state['storage']['first_step'] = 1;
     }
     else {
       // Increase the step by one, to move on to the next step

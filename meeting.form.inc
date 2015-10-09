@@ -16,15 +16,22 @@ function ammo_meeting_form($form, &$form_state) {
 
   $form['title'] = array(
     '#type' => 'textfield',
-    '#title' => 'Title',
+    '#title' => 'Titel',
   );
 
   $form['description'] = array(
     '#type' => 'textarea',
-    '#title' => 'Description',
+    '#title' => 'Beschrijving',
   );
 
   $form['date'] = array(
+    '#title' => 'Datum bijeenkomst',
+    '#type' => 'date_popup',
+    '#date_format' => 'd-m-Y',
+  );
+
+  $form['submission_closing_date'] = array(
+    '#title' => 'Laatste inleverdatum',
     '#type' => 'date_popup',
     '#date_format' => 'd-m-Y',
   );
@@ -95,6 +102,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
   $title = $values['title'];
   $description = $values['description'];
   $date = $values['date'];
+  $submission_closing_date = $values['submission_closing_date'];
 
   // Check if delete meeting button was clicked.
   $pattern = '/^del_(\d+)$/';
@@ -123,6 +131,8 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     $form['description']['#value'] = $meeting->description;
     $date = new DateTime($meeting->date);
     $form['date']['date']['#value'] = $date->format('d-m-Y');;
+    $date = new DateTime($meeting->submission_closing_date);
+    $form['submission_closing_date']['date']['#value'] = $date->format('d-m-Y');;
     return $form;
   }
 
@@ -137,6 +147,10 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     }
     if (empty($values['date'])) {
       $form['date']['#prefix'] = ammo_error('Kies een datum.');
+      $error = TRUE;
+    }
+    if (empty($values['submission_closing_date'])) {
+      $form['date']['#prefix'] = ammo_error('Kies een laatste inleverdatum.');
       $error = TRUE;
     }
     if (empty($form_state['meeting_id'])) {
@@ -157,6 +171,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
         'title' => $title,
         'description' => $description,
         'date' => $date,
+        'submission_closing_date' => $submission_closing_date,
       ), $meeting_id);    
     if ($saved) {
       drupal_set_message('Bijeenkomst is opgeslagen.');

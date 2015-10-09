@@ -34,7 +34,7 @@ function ammo_menu() {
   $items['ammo/amendment'] = array(
     'title' => 'Amendementen',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_amendment_form'),
+    'page arguments' => array('ammo_amendment_form', 2),
     'file' => 'amendment.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'ammo_add_access',
@@ -44,7 +44,7 @@ function ammo_menu() {
   $items['ammo/motion'] = array(
     'title' => 'Moties',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_motion_form'),
+    'page arguments' => array('ammo_motion_form', 2),
     'file' => 'motion.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'ammo_add_access',
@@ -236,4 +236,3 @@ function ammo_entity_info() {
 
   return $info;
 }
-
