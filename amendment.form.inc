@@ -3,7 +3,6 @@
 function ammo_amendment_form($form, &$form_state, $path_id = NULL)
 {
   global $user;
-  dpm($form_state['storage']);
 
   // Check if motion is set in path and preset form if so.
   if (!empty($path_id) && empty($form_state['storage']['first_step'])) {
@@ -97,7 +96,7 @@ function ammo_amendment_form($form, &$form_state, $path_id = NULL)
     break;
 
   case 4:
-    ammo_select_ammo_form('amendment', $form, $form_state);
+    ammo_select_ammo_form('amendment', $form, $form_state, $form_state['storage']['document']);
     break;
 
   case 5:

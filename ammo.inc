@@ -480,15 +480,15 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
   );
 }
 
-function ammo_select_ammo_form($type, &$form, &$form_state) {
+function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
   $title = ($type == 'amendment') ? 'Amendement' : 'Motie';
-  $entities = ammo_get_amendments_or_motions($type, $form_state['storage']['branch_id'], $form_state['storage']['document']);
+  $entities = ammo_get_amendments_or_motions($type, $form_state['storage']['branch_id'], $entity_id);
   $form[$type] = array(
     '#type' => 'select',
     '#title' => $title,
     '#options' => $entities,
     '#empty_option' => 'nieuw',
-    '#default_value' => ammo_default($form_state, 'amendment'),
+    '#default_value' => ammo_default($form_state, $type),
     '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
   );
 }

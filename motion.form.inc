@@ -68,7 +68,7 @@ function ammo_motion_form($form, &$form_state, $path_id = NULL)
     break;
 
   case 3:
-    ammo_select_ammo_form('motion', $form, $form_state);
+    ammo_select_ammo_form('motion', $form, $form_state, $form_state['storage']['meeting']);
     break;
 
   case 4:
