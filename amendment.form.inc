@@ -4,6 +4,9 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
 {
   global $user;
 
+  // Store destination before ajax call.
+  ammo_set_destination($form_state);
+
   // Check if motion is set in path and preset form if so.
   if (!empty($path_id) && !empty($form_action) && empty($form_state['storage']['first_step'])) {
     switch ($form_action) {
@@ -11,12 +14,21 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       if (ammo_preset_form('amendment', $path_id, $form_state)) {
         $form_state['storage']['first_step'] = 5;
       }
+      else {
+        return;
+      }
       break;
     case 'advice':
       if (ammo_admin_access()) {
         if (ammo_preset_form('amendment', $path_id, $form_state)) {
           $form_state['storage']['first_step'] = 7;
         }
+        else {
+          return;
+        }
+      }
+      else {
+        return;
       }
       break;
     case 'view':
@@ -427,6 +439,7 @@ function ammo_amendment_form_submit($form, &$form_state)
       break;
     case 3:
       $form_state['storage']['branch_id'] = $values['branch_id'];
+      $form_state['storage']['branch_display_name'] = $form['branch_id']['#options'][$values['branch_id']];
       break;
     case 4:
       if (empty($values['amendment'])) {
@@ -435,6 +448,7 @@ function ammo_amendment_form_submit($form, &$form_state)
         $mapping = array(
           'document_id' => 'document',
           'branch_id' => 'branch_id',
+          'branch_display_name' => 'branch_display_name',
           'state' => 'state',
         );
         $new_amendment = ammo_store('amendment', NULL, $mapping, $form_state);
@@ -486,10 +500,13 @@ function ammo_amendment_form_submit($form, &$form_state)
     }
     // Set next page, or finish form.
     if ($storage['last_step'] == $step) {
+      // Redirect user if destination is set.
+      ammo_ajax_redirect($form_state['storage']['destination']);
       // Reset form.
       $form_state['step'] = 1;
       $form_state['storage'] = array();
       $form_state['storage']['first_step'] = 1;
+      // Redirect users to page they came from.
     }
     else {
       // Increase the step by one, to move on to the next step

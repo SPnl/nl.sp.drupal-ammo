@@ -18,37 +18,46 @@ function ammo_menu() {
   $items = array();
 
   $items['ammo'] = array(
-    'title' => 'Amendementen en Moties',
-    'page callback' => 'ammo_overview_content',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_overview_amendments_form'),
     'type' => MENU_NORMAL_ITEM,
     'access callback' => 'user_is_logged_in',
   );
 
-  $items['ammo/ammo'] = array(
-    'title' => 'Overzicht',
+  $items['ammo/ammendments'] = array(
+    'title' => 'Overzicht amendementen',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'access callback' => 'user_is_logged_in',
     'weight' => 0,
   );
 
+  $items['ammo/motions'] = array(
+    'title' => 'Overzicht moties',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_overview_motions_form'),
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'user_is_logged_in',
+    'weight' => 1,
+  );
+
   $items['ammo/amendment'] = array(
-    'title' => 'Amendementen',
+    'title' => 'Amendement',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ammo_amendment_form', 2, 3),
     'file' => 'amendment.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'ammo_add_access',
-    'weight' => 1,
+    'weight' => 2,
   );
 
   $items['ammo/motion'] = array(
-    'title' => 'Moties',
+    'title' => 'Motie',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ammo_motion_form', 2, 3),
     'file' => 'motion.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'ammo_add_access',
-    'weight' => 2,
+    'weight' => 3,
   );
 
   $items['ammo/meeting'] = array(
@@ -58,7 +67,7 @@ function ammo_menu() {
     'file' => 'meeting.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'ammo_superadmin_access',
-    'weight' => 3,
+    'weight' => 4,
   );
 
   $items['ammo/document'] = array(
@@ -68,7 +77,7 @@ function ammo_menu() {
     'file' => 'document.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'ammo_superadmin_access',
-    'weight' => 4,
+    'weight' => 5,
   );
 
   $items['ammo/autocomplete_members/%/%'] = array(
@@ -110,10 +119,14 @@ function ammo_add_access() {
 
 function ammo_theme() {
   $theme = array(
-    'overview' => array(
-      'template' => 'overview',
+    'overview_amendments' => array(
+      'template' => 'amendments',
       'variables' => array(
-        'test' => 'TEST',
+      ),
+    ),
+    'overview_motions' => array(
+      'template' => 'motions',
+      'variables' => array(
       ),
     ),
     'amendment_form' => array(
@@ -173,6 +186,8 @@ function template_preprocess_amendment(&$variables) {
       'document_description' => $document->description,
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
+      'edit_access' => ammo_edit_access($entity->branch_id),
+      'admin_access' => ammo_admin_access(),
     );
     foreach($vars as $key => &$value) {
       $value = check_plain($value);
@@ -204,6 +219,8 @@ function template_preprocess_motion(&$variables) {
       'state' => $entity->state,
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
+      'edit_access' => ammo_edit_access($entity->branch_id),
+      'admin_access' => ammo_admin_access(),
     );
     foreach($vars as $key => &$value) {
       $value = check_plain($value);
@@ -212,27 +229,127 @@ function template_preprocess_motion(&$variables) {
   }
 }
 
-function ammo_overview_content() {
-  return theme('overview', array());
+function template_preprocess_overview_amendments(&$variables) {
+  if (isset($variables['meeting_id'])) {
+    $meeting = entity_load_single('meeting', $variables['meeting_id']);
+    $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title", array(":meeting_id" => $variables['meeting_id']));
+    foreach ($documents_results as $document) {
+      $amendments_results = db_query("SELECT id FROM {ammo_amendments} WHERE document_id = :document_id ORDER BY chapter, page, line, id", array(":document_id" => $document->id));
+      foreach ($amendments_results as $amendment) {
+        $amendments[$amendment->id] = $amendment->id;
+      }
+      $documents[$document->id] = array(
+        'id' => $document->id,
+        'title' => check_plain($document->title),
+        'description' => check_plain($document->description),
+        'meeting_id' => check_plain($document->meeting_id),
+        'amendments' => $amendments,
+      );
+    }
+    $data['meetings'][$meeting->id] = array(
+      'id' => $meeting->id,
+      'title' => check_plain($meeting->title),
+      'description' => check_plain($meeting->description),
+      'date' => $meeting->date,
+      'submission_closing_date' => $meeting->submission_closing_date,
+      'documents' => $documents,
+    );
+    $variables = $variables + $data;
+  }
 }
 
-  /**
-   * Implements hook_entity_info().
-   */
-  function ammo_entity_info() {
-    $info = array();
+function template_preprocess_overview_motions(&$variables) {
+  if (isset($variables['meeting_id'])) {
+    $meeting = entity_load_single('meeting', $variables['meeting_id']);
+    $motions_results = db_query("SELECT id FROM {ammo_motions} WHERE meeting_id = :meeting_id ORDER BY branch_display_name", array(":meeting_id" => $meeting->id));
+    foreach ($motions_results as $motion) {
+      $motions[$motion->id] = $motion->id;
+    }
+    $data['meetings'][$meeting->id] = array(
+      'id' => $meeting->id,
+      'title' => check_plain($meeting->title),
+      'description' => check_plain($meeting->description),
+      'date' => $meeting->date,
+      'submission_closing_date' => $meeting->submission_closing_date,
+      'motions' => $motions,
+    );
+    $variables = $variables + $data;
+  }
+}
 
-    $info['meeting'] = array(
-      'label' => t('Meeting'),
-      'entity class' => 'Entity',
-      'controller class' => 'EntityAPIController',
-      'base table' => 'ammo_meetings',
-      'entity keys' => array(
-        'id' => 'id',
+function ammo_overview_amendments_form() {
+  $form['#prefix'] = '<div id="ajax_form">';
+  $form['#suffix'] = '</div>';
+  ammo_select_meeting_form('amendment', $form, $form_state);
+  $form['submit'] = array
+    (
+      '#type' => 'submit',
+      '#value' => 'kies',
+      '#name' => 'action_button',
+      '#id' => 'action_button',
+      '#ajax' => array
+      (
+        'wrapper' => 'ajax_form',
+        'callback' => 'ammo_overview_amendments_form_ajax_callback',
       ),
+    );
+  $form['overview'] = array(
+    '#type' => 'item',
+  );
+  return $form;
+}
+
+function ammo_overview_motions_form() {
+  $form['#prefix'] = '<div id="ajax_form">';
+  $form['#suffix'] = '</div>';
+  ammo_select_meeting_form('amendment', $form, $form_state);
+  $form['submit'] = array
+    (
+      '#type' => 'submit',
+      '#value' => 'kies',
+      '#name' => 'action_button',
+      '#id' => 'action_button',
+      '#ajax' => array
+      (
+        'wrapper' => 'ajax_form',
+        'callback' => 'ammo_overview_motions_form_ajax_callback',
+      ),
+    );
+  $form['overview'] = array(
+    '#type' => 'item',
+  );
+  return $form;
+}
+
+function ammo_overview_amendments_form_ajax_callback($form, &$form_state) {
+  $values = $form_state['values'];
+  $form['overview']['#markup'] = theme('overview_amendments', array('meeting_id' => $values['meeting']));
+  return $form;
+}
+
+function ammo_overview_motions_form_ajax_callback($form, &$form_state) {
+  $values = $form_state['values'];
+  $form['overview']['#markup'] = theme('overview_motions', array('meeting_id' => $values['meeting']));
+  return $form;
+}
+
+/**
+ * Implements hook_entity_info().
+ */
+function ammo_entity_info() {
+  $info = array();
+
+  $info['meeting'] = array(
+    'label' => t('Meeting'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ammo_meetings',
+    'entity keys' => array(
+      'id' => 'id',
+    ),
     'fieldable' => FALSE,
   );
-  
+
   $info['document'] = array(
     'label' => t('Document'),
     'entity class' => 'Entity',
@@ -243,7 +360,7 @@ function ammo_overview_content() {
     ),
     'fieldable' => FALSE,
   );
-  
+
   $info['amendment'] = array(
     'label' => t('Amendment'),
     'entity class' => 'Entity',
@@ -254,7 +371,7 @@ function ammo_overview_content() {
     ),
     'fieldable' => FALSE,
   );
-  
+
   $info['motion'] = array(
     'label' => t('Motion'),
     'entity class' => 'Entity',

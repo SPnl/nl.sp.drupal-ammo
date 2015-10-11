@@ -86,6 +86,11 @@ function ammo_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
+      'branch_display_name' => array(
+        'description' => 'Name of local branch.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
       'backed' => array(
         'description' => 'Is the amendment backed by the local branch.',
         'type' => int,
@@ -183,6 +188,11 @@ function ammo_schema() {
         'description' => 'CiviCRM contact id of the local branch that placed the amendment.',
         'type' => 'int',
         'not null' => TRUE,
+      ),
+      'branch_display_name' => array(
+        'description' => 'Name of local branch.',
+        'type' => 'varchar',
+        'length' => '255',
       ),
       'backed' => array(
         'description' => 'Is the amendment backed by the local branch.',

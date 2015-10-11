@@ -4,6 +4,9 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
 {
   global $user;
 
+  // Store destination before ajax call.
+  ammo_set_destination($form_state);
+
   // Check if motion is set in path and preset form if so.
   if (!empty($path_id) && !empty($form_action) && empty($form_state['storage']['first_step'])) {
     switch ($form_action) {
@@ -298,6 +301,7 @@ function ammo_motion_form_submit($form, &$form_state)
       break;
     case 2:
       $form_state['storage']['branch_id'] = $values['branch_id'];
+      $form_state['storage']['branch_display_name'] = $form['branch_id']['#options'][$values['branch_id']];
       break;
     case 3:
       if (empty($values['motion'])) {
@@ -306,6 +310,7 @@ function ammo_motion_form_submit($form, &$form_state)
         $mapping = array(
           'meeting_id' => 'meeting',
           'branch_id' => 'branch_id',
+          'branch_display_name' => 'branch_display_name',
           'state' => 'state',
         );
         $new_motion = ammo_store('motion', NULL, $mapping, $form_state);
@@ -352,7 +357,9 @@ function ammo_motion_form_submit($form, &$form_state)
     }
     // Set next page, or finish form.
     if ($storage['last_step'] == $step) {
-      // Reset form.
+      // Redirect user if destination is set.
+      ammo_ajax_redirect($form_state['storage']['destination']);
+      // Otherwise reset form.
       $form_state['step'] = 1;
       $form_state['storage'] = array();
       $form_state['storage']['first_step'] = 1;

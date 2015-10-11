@@ -1,4 +1,4 @@
-<h1>Amendement nr. <?php print $id; ?></h1>
+<h1>Amendement nr. <?php print $entity_id; ?></h1>
 <?php switch ($type): ?>
 <?php case 'specific': ?>
 <p>Amendement op het stuk "<?php print $document_title; ?>", hoofdstuk <?php print $chapter; ?>, pagina <?php print $page; ?>, regel <?php print $line; ?>.</p>
@@ -22,4 +22,13 @@
   <strong>Toelichting:</strong><br/>
   <?php print $supplement; ?>
 </p>
-
+<?php if ($edit_access || $admin_access) : ?>
+  <ul>
+  <?php if ($edit_access) : ?>
+    <li><?php print l('bewerk amendement', 'ammo/amendment/edit/' . $entity_id, array('query' => drupal_get_destination()))?></li>
+  <?php endif; ?>
+  <?php if ($admin_access) : ?>
+    <li><?php print l('bewerk advies', 'ammo/amendment/advice/' . $entity_id, array('query' => drupal_get_destination()))?></li>
+  <?php endif; ?>
+  </ul>
+<?php endif; ?>

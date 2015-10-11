@@ -529,10 +529,41 @@ function ammo_select_meeting_form($type, &$form, &$form_state) {
 }
 
 function ammo_view_entity_form($type, $entity_id) {
-  $markup = theme($type, array('entity_id' => $entity_id, 'entity_type' => $type));
-  $form['view'] = array(
-    '#type' => 'item',
-    '#markup' => $markup,
-  );
-  return $form;
+  $entity = entity_load_single($type, $entity_id);
+  // check if exists.
+  if ($entity) {
+    $markup = theme($type, array('entity_id' => $entity_id));
+    $form['view'] = array(
+      '#type' => 'item',
+      '#markup' => $markup,
+    );
+    return $form;
+  }
+  drupal_set_message('Data kon niet worden opgehaald.', 'error');
+  return array();
+}
+
+function ammo_edit_access($branch_id) {
+  $afdelingen = ammo_afdelingen_access();
+  return (array_key_exists($branch_id, $afdelingen) || ammo_admin_access()); 
+}
+
+
+function ammo_ajax_redirect($destination = NULL) {
+  if (!empty($destination)) {
+    ctools_include('ajax');
+    ctools_add_js('ajax-responder');
+    $commands[] = ctools_ajax_command_redirect($destination);
+    print ajax_render($commands);
+    exit;
+  }
+}
+
+function ammo_set_destination(&$form_state) {
+  $destination = drupal_get_destination();
+  if ($destination['destination'] !== $_GET['q']) {
+    if (!isset($form_state['storage']['destination'])) {
+      $form_state['storage']['destination'] = $destination['destination'];
+    }
+  }
 }
