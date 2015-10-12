@@ -224,7 +224,7 @@ function ammo_get_related_contacts($entity_id, $entity_type, $relation_type) {
     }
     civicrm_initialize();
     $result = db_query("SELECT id, display_name FROM {civicrm_contact} WHERE id IN (:ids)", array(':ids' => array_keys($contact_entity_data)));
-    if ($result) {
+    if (isset($result)) {
       while ($row = $result->fetchAssoc()) {
         $contacts[$row['id']] = array(
           'contact_id' => $row['id'],
@@ -475,12 +475,12 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
     '#type' => 'submit',
     '#value' => 'Voeg toe',
     '#name' => 'add_owner',
-    '#validate' => array('ammo_amendment_form_validate'),
-    '#submit' => array('ammo_amendment_form_submit'),
+    '#validate' => array('ammo_'.$type.'_form_validate'),
+    '#submit' => array('ammo_'.$type.'_form_submit'),
     '#ajax' => array
     (
       'wrapper' => 'ajax_form_multistep_form',
-      'callback' => 'ammo_amendment_form_ajax_callback',
+      'callback' => 'ammo_'.$type.'_form_ajax_callback',
     ),
   );
 }
@@ -548,7 +548,6 @@ function ammo_edit_access($branch_id) {
   return (array_key_exists($branch_id, $afdelingen) || ammo_admin_access()); 
 }
 
-
 function ammo_ajax_redirect($destination = NULL) {
   if (!empty($destination)) {
     ctools_include('ajax');
@@ -561,9 +560,14 @@ function ammo_ajax_redirect($destination = NULL) {
 
 function ammo_set_destination(&$form_state) {
   $destination = drupal_get_destination();
-  if ($destination['destination'] !== $_GET['q']) {
-    if (!isset($form_state['storage']['destination'])) {
-      $form_state['storage']['destination'] = $destination['destination'];
-    }
+  if (!isset($form_state['storage']['destination'])) {
+    $form_state['storage']['destination'] = $destination;
+  }
+}
+
+function ammo_get_destination() {
+  $destination = drupal_get_destination();
+  if ($destination['destination'] !== 'system/ajax') {
+    return $destination;
   }
 }

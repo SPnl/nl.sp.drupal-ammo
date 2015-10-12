@@ -18,15 +18,17 @@ function ammo_menu() {
   $items = array();
 
   $items['ammo'] = array(
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_overview_amendments_form'),
     'type' => MENU_NORMAL_ITEM,
     'access callback' => 'user_is_logged_in',
+    'page callback' => 'ammo_intropage',
   );
 
-  $items['ammo/ammendments'] = array(
+  $items['ammo/amendments'] = array(
     'title' => 'Overzicht amendementen',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_overview_amendments_form', 2),
+    'file' => 'amendments.form.inc',
+    'type' => MENU_LOCAL_TASK,
     'access callback' => 'user_is_logged_in',
     'weight' => 0,
   );
@@ -34,28 +36,29 @@ function ammo_menu() {
   $items['ammo/motions'] = array(
     'title' => 'Overzicht moties',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_overview_motions_form'),
+    'page arguments' => array('ammo_overview_motions_form', 2),
+    'file' => 'motions.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'user_is_logged_in',
     'weight' => 1,
   );
 
   $items['ammo/amendment'] = array(
-    'title' => 'Amendement',
+    'title' => 'Amendement indienen / bewerken',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ammo_amendment_form', 2, 3),
     'file' => 'amendment.form.inc',
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
     'access callback' => 'ammo_add_access',
     'weight' => 2,
   );
 
   $items['ammo/motion'] = array(
-    'title' => 'Motie',
+    'title' => 'Motie indienen / bewerken',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ammo_motion_form', 2, 3),
     'file' => 'motion.form.inc',
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
     'access callback' => 'ammo_add_access',
     'weight' => 3,
   );
@@ -78,6 +81,16 @@ function ammo_menu() {
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'ammo_superadmin_access',
     'weight' => 5,
+  );
+
+  $items['ammo/support/%/%'] = array(
+    'title' => 'Steun',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_support_form', 2, 3),
+    'file' => 'support.form.inc',
+    'type' => MENU_CALLBACK,
+    'access callback' => 'user_is_logged_in',
+    'weight' => 6,
   );
 
   $items['ammo/autocomplete_members/%/%'] = array(
@@ -165,6 +178,7 @@ function template_preprocess_amendment(&$variables) {
     $vars = array(
       'document_id' => $entity->document_id,
       'branch_id' => $entity->branch_id,
+      'branch_display_name' => $entity->branch_display_name,
       'backed' => $entity->backed,
       'type' => $entity->type,
       'general' => $entity->general,
@@ -204,6 +218,7 @@ function template_preprocess_motion(&$variables) {
       'id' => $entity->id,
       'document_id' => $entity->document_id,
       'branch_id' => $entity->branch_id,
+      'branch_display_name' => $entity->branch_display_name,
       'backed' => $entity->backed,
       'consideration_opening' => $entity->consideration_opening,
       'consideration_body' => $entity->consideration_body,
@@ -275,62 +290,6 @@ function template_preprocess_overview_motions(&$variables) {
     );
     $variables = $variables + $data;
   }
-}
-
-function ammo_overview_amendments_form() {
-  $form['#prefix'] = '<div id="ajax_form">';
-  $form['#suffix'] = '</div>';
-  ammo_select_meeting_form('amendment', $form, $form_state);
-  $form['submit'] = array
-    (
-      '#type' => 'submit',
-      '#value' => 'kies',
-      '#name' => 'action_button',
-      '#id' => 'action_button',
-      '#ajax' => array
-      (
-        'wrapper' => 'ajax_form',
-        'callback' => 'ammo_overview_amendments_form_ajax_callback',
-      ),
-    );
-  $form['overview'] = array(
-    '#type' => 'item',
-  );
-  return $form;
-}
-
-function ammo_overview_motions_form() {
-  $form['#prefix'] = '<div id="ajax_form">';
-  $form['#suffix'] = '</div>';
-  ammo_select_meeting_form('amendment', $form, $form_state);
-  $form['submit'] = array
-    (
-      '#type' => 'submit',
-      '#value' => 'kies',
-      '#name' => 'action_button',
-      '#id' => 'action_button',
-      '#ajax' => array
-      (
-        'wrapper' => 'ajax_form',
-        'callback' => 'ammo_overview_motions_form_ajax_callback',
-      ),
-    );
-  $form['overview'] = array(
-    '#type' => 'item',
-  );
-  return $form;
-}
-
-function ammo_overview_amendments_form_ajax_callback($form, &$form_state) {
-  $values = $form_state['values'];
-  $form['overview']['#markup'] = theme('overview_amendments', array('meeting_id' => $values['meeting']));
-  return $form;
-}
-
-function ammo_overview_motions_form_ajax_callback($form, &$form_state) {
-  $values = $form_state['values'];
-  $form['overview']['#markup'] = theme('overview_motions', array('meeting_id' => $values['meeting']));
-  return $form;
 }
 
 /**
@@ -428,4 +387,20 @@ function ammo_entity_info() {
   );
 
   return $info;
+}
+
+function ammo_intropage() {
+  //$amendment_link = l('Amendement indienen', 'ammo/amendment', array('query' => array('destination' => 'ammo')));
+  //$motion_link = l('Motie indienen', 'ammo/motion', array('query' => array('destination' => 'ammo')));
+  $amendment_link = l('Amendement indienen', 'ammo/amendment');
+  $motion_link = l('Motie indienen', 'ammo/motion');
+  $content = <<<END
+<div class="ammo-content">
+  <ul>
+    <li>{$amendment_link}</li>
+    <li>{$motion_link}</li>
+  </ul>
+</div>
+END;
+  return $content;
 }

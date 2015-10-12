@@ -209,7 +209,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   // Create submit button.
   if($form_state['step'] !== $form_state['storage']['last_step'])
   {
-    $button_text = 'Volgend';
+    $button_text = 'Volgende';
   }
   else {
     $button_text = 'Indienen';
@@ -358,7 +358,7 @@ function ammo_motion_form_submit($form, &$form_state)
     // Set next page, or finish form.
     if ($storage['last_step'] == $step) {
       // Redirect user if destination is set.
-      ammo_ajax_redirect($form_state['storage']['destination']);
+      ammo_ajax_redirect($form_state['storage']['destination']['destination']);
       // Otherwise reset form.
       $form_state['step'] = 1;
       $form_state['storage'] = array();

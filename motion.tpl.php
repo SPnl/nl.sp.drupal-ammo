@@ -10,14 +10,20 @@
   <strong>Toelichting:</strong><br/>
   <?php print $supplement; ?>
 </p>
-<?php if ($edit_access || $admin_access) : ?>
-  <ul>
-  <?php if ($edit_access) : ?>
-    <li><?php print l('bewerk motie', 'ammo/motion/edit/' . $entity_id, array('query' => drupal_get_destination()))?></li>
+<?php if ($edit_access || $admin_access || !$backed) : ?>
+  <?php if (arg(1) !== 'support') : ?>
+    <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
+    <ul>
+    <?php if ($edit_access) : ?>
+      <li><?php print l('bewerk motie', 'ammo/motion/edit/' . $entity_id, array('query' => $dest))?></li>
+    <?php endif; ?>
+    <?php if ($admin_access) : ?>
+      <li><?php print l('bewerk advies', 'ammo/motion/advice/' . $entity_id, array('query' => $dest))?></li>
+    <?php endif; ?>
+    <?php if (!$backed) : ?>
+      <li><?php print l('steun motie', 'ammo/support/motion/' . $entity_id, array('query' => $dest))?></li>
+    <?php endif; ?>
+    </ul>
   <?php endif; ?>
-  <?php if ($admin_access) : ?>
-    <li><?php print l('bewerk advies', 'ammo/motion/advice/' . $entity_id, array('query' => drupal_get_destination()))?></li>
-  <?php endif; ?>
-  </ul>
 <?php endif; ?>
 

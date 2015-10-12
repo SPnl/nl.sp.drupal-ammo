@@ -141,7 +141,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     $form['specific']['page'] = array(
       '#type' => 'textfield',
       '#title' => 'Pagina nr.',
-      '#default_value' => ammo_default($form_state, 'paragraph'),
+      '#default_value' => ammo_default($form_state, 'page'),
     );
     $form['specific']['line'] = array(
       '#type' => 'textfield',
@@ -344,7 +344,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   // Create submit button.
   if($form_state['step'] !== $form_state['storage']['last_step'])
   {
-    $button_text = 'Volgend';
+    $button_text = 'Volgende';
   }
   else {
     $button_text = 'Indienen';
@@ -501,7 +501,7 @@ function ammo_amendment_form_submit($form, &$form_state)
     // Set next page, or finish form.
     if ($storage['last_step'] == $step) {
       // Redirect user if destination is set.
-      ammo_ajax_redirect($form_state['storage']['destination']);
+      ammo_ajax_redirect($form_state['storage']['destination']['destination']);
       // Reset form.
       $form_state['step'] = 1;
       $form_state['storage'] = array();
