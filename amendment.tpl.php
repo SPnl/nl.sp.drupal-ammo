@@ -1,8 +1,17 @@
-<h3>Amendement nr. <?php print $entity_id; ?></h3>
+<h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print $entity_id; ?></h3>
+
+<div class="ammo-hidden">
+<?php if (!$backed) : ?>
+  <?php foreach ($owners as $owner) : $list[] = $owner['display_name']; endforeach; ?>
+  <?php $last = array_pop($list); ?>
+  <?php if (count($list) === 0) : $owners_list = $last; else : $owners_list = implode(', ', $list) . ' en ' . $last; endif; ?>
+  <p>Ingediend door <?php print $owners_list; ?> van <?php print $branch_display_name; ?>.</p>
+<?php else : ?>
+  <p>Ingediend door <?php print $branch_display_name; ?>.</p>
+<?php endif; ?>
 <?php switch ($type): ?>
 <?php case 'specific': ?>
-<p>Amendement op het stuk "<?php print $document_title; ?>", hoofdstuk <?php print $chapter; ?>, pagina <?php print $page; ?>, regel <?php print $line; ?>.</p>
-<p>Gesteund door <?php print substr($branch_display_name, 3); ?></p>
+<p>Regel <?php print $line; ?></p>
 <?php switch ($action): ?>
 <?php case 'add': ?>
 <p><strong>Toe te voegen tekst:</strong><br/><?php print $new_text; ?></p>
@@ -23,21 +32,38 @@
   <strong>Toelichting:</strong><br/>
   <?php print $supplement; ?>
 </p>
+<?php if (!empty($advice)) : ?>
+<?php $options = ammo_amendment_advice(); ?>
+  <p>
+    <strong>Advies:</strong> <?php print strtolower($options[$advice]); ?>
+    <?php if (!empty($advice_supplement)) : ?>
+      <br/><?php print $advice_supplement; ?>
+    <?php endif; ?>
+  </p>
+<?php endif; ?>
+</div>
+
 <?php if ($backed) : ?>
 <?php endif; ?>
 <?php if ($edit_access || $admin_access || !$backed) : ?>
   <?php if (arg(1) !== 'support') : ?>
     <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
-    <ul>
-    <?php if ($edit_access) : ?>
-      <li><?php print l('bewerk amendement', 'ammo/amendment/edit/' . $entity_id, array('query' => $dest))?></li>
-    <?php endif; ?>
-    <?php if ($admin_access) : ?>
-      <li><?php print l('bewerk advies', 'ammo/amendment/advice/' . $entity_id, array('query' => $dest))?></li>
-    <?php endif; ?>
-    <?php if (!$backed) : ?>
-      <li><?php print l('steun amendement', 'ammo/support/amendment/' . $entity_id, array('query' => $dest))?></li>
-    <?php endif; ?>
+    <ul class="ammo-list">
+      <?php //<li><a href="#" class="ammo-toggle">bekijk</a></li> ?>
+      <li><a href="#inhoud">^</a></li>
+      <?php if ($edit_access) : ?>
+        <li><?php print l('bewerk', 'ammo/amendment/edit/' . $entity_id, array('query' => $dest))?></li>
+      <?php endif; ?>
+      <?php if ($admin_access) : ?>
+        <li><?php print l('bewerk advies', 'ammo/amendment/advice/' . $entity_id, array('query' => $dest))?></li>
+      <?php endif; ?>
+      <?php if (!$backed) : ?>
+        <?php if ($backed_by_user) : ?>
+          <li><?php print l('trek steun in', 'ammo/support/withdraw/amendment/' . $entity_id, array('query' => $dest))?></li>
+        <?php else  : ?>
+          <li><?php print l('steun', 'ammo/support/add/amendment/' . $entity_id, array('query' => $dest))?></li>
+        <?php endif; ?>
+      <?php endif; ?>
     </ul>
   <?php endif; ?>
 <?php endif; ?>

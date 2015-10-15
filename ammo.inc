@@ -192,6 +192,15 @@ function ammo_autocomplete_members($afdeling_id, $string) {
   exit;
 }
 
+function ammo_contact_get_display_name($contact_id) {
+  civicrm_initialize();
+  $result = db_query("SELECT display_name FROM {civicrm_contact} WHERE id = :id", array(':id' => $contact_id));
+  if (isset($result)) {
+    $row = $result->fetchAssoc(); 
+    return $row['display_name'];
+  }
+}
+
 /*
  * Gets owners or backers for amendments or motions.
  *
@@ -235,6 +244,24 @@ function ammo_get_related_contacts($entity_id, $entity_type, $relation_type) {
     }
   }
   return $contacts;
+}
+
+function ammo_is_related($entity_id, $entity_type, $relation_type) {
+  global $user;
+  $relation_entity_type = $entity_type . 's_' . $relation_type . 's';
+  // Get related contacts.
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', $relation_entity_type)
+    ->propertyCondition($entity_type . '_id', $entity_id)
+    ->propertyCondition('contact_id', $user->name);
+
+  $result = $query->execute();
+
+  if (!empty($result)) {
+    $tmp = array_pop(array_pop($result)); 
+    return $tmp->id;
+  }
+  return 0;
 }
 
 /*
@@ -549,13 +576,11 @@ function ammo_edit_access($branch_id) {
 }
 
 function ammo_ajax_redirect($destination = NULL) {
-  if (!empty($destination)) {
-    ctools_include('ajax');
-    ctools_add_js('ajax-responder');
-    $commands[] = ctools_ajax_command_redirect($destination);
-    print ajax_render($commands);
-    exit;
-  }
+  ctools_include('ajax');
+  ctools_add_js('ajax-responder');
+  $commands[] = ctools_ajax_command_redirect($destination);
+  print ajax_render($commands);
+  exit;
 }
 
 function ammo_set_destination(&$form_state) {

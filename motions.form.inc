@@ -12,6 +12,10 @@ function ammo_overview_motions_form($form, &$form_state, $motion_id = NULL) {
     return $form;
   }
 
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'ammo') . '/ammo.js',
+  );
+
   $form['#prefix'] = '<div id="ajax_form">';
   $form['#suffix'] = '</div>';
   ammo_select_meeting_form('motion', $form, $form_state);

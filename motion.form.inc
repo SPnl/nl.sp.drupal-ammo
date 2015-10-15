@@ -81,6 +81,8 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       '#type' => 'textfield',
       '#title' => 'Overweging openingszin',
       '#default_value' => ammo_default($form_state, 'consideration_opening'),
+      '#size' => 50,
+      '#maxlength' => 80,
     );
 
     $form['consideration_text'] = array(
@@ -93,6 +95,8 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       '#type' => 'textfield',
       '#title' => 'Vervolg openingszin',
       '#default_value' => ammo_default($form_state, 'follow_up_opening'),
+      '#size' => 50,
+      '#maxlength' => 80,
     );
 
     $form['follow_up_text'] = array(
@@ -135,6 +139,8 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       '#type' => 'textfield',
       '#title' => 'Overweging openingszin in advies',
       '#default_value' => ammo_default($form_state, 'advice_consideration_opening'),
+      '#size' => 50,
+      '#maxlength' => 80,
     );
 
     $form['texts']['original_consideration_text'] = array(
@@ -155,6 +161,8 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       '#type' => 'textfield',
       '#title' => 'Vervolg openingszin',
       '#default_value' => ammo_default($form_state, 'advice_follow_up_opening'),
+      '#size' => 50,
+      '#maxlength' => 80,
     );
 
     $form['texts']['original_consideration_text'] = array(
@@ -245,7 +253,7 @@ function ammo_motion_form_validate($form, &$form_state)
   // First we set up a switch for each of our three steps
   switch($step)
   {
-  case "4":
+  case 4:
     switch ($trigger) {
     case 'action_button':
       if (!$backed) {
@@ -272,6 +280,21 @@ function ammo_motion_form_validate($form, &$form_state)
       }
       break;
     }
+    break;
+  case 5:
+    if (empty($values['consideration_opening'])) {
+      form_set_error('consideration_opening', 'Vul de overweging openingszin in.');
+    }
+    if (empty($values['consideration_text'])) {
+      form_set_error('consideration_text', 'Vul de overweging inhoud in.');
+    }
+    if (empty($values['follow_up_opening'])) {
+      form_set_error('follow_up_opening', 'Vul de vervolg openingszin in.');
+    }
+    if (empty($values['follow_up_text'])) {
+      form_set_error('follow_up_text', 'Vul de vervolg inhoud in.');
+    }
+    break;
   }
 }
 
@@ -373,10 +396,12 @@ function ammo_motion_form_submit($form, &$form_state)
     switch ($step) {
     case 4:
       $motion = entity_load_single('motion', $storage['motion']);
+      $display_name = ammo_contact_get_display_name($values['owner']);
       // Sla nieuwe owner op.
       $owner = ammo_save_entity('motions_owners', array(
         'motion_id' => $motion->id,
         'contact_id' => $values['owner'],
+        'contact_display_name' => $display_name,
       ));
       if ($owner) {
         drupal_set_message('Contact is toegevoegd.');

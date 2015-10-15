@@ -378,8 +378,7 @@ function ammo_amendment_form_validate($form, &$form_state)
   $backed = $values['backed'];
 
   // First we set up a switch for each of our three steps
-  switch($step)
-  {
+  switch($step) {
   case "5":
     switch ($trigger) {
     case 'action_button':
@@ -407,6 +406,40 @@ function ammo_amendment_form_validate($form, &$form_state)
       }
       break;
     }
+    break;
+  case 6:
+    if ($values['type'] == 'specific') {
+      if (!preg_match('/^[1-9][0-9]*$/', $values['chapter'])) {
+        form_set_error('chapter', 'Hoofdstuk nr. moet een getal zijn.');
+      }
+      if (!preg_match('/^[1-9][0-9]*$/', $values['page'])) {
+        form_set_error('page', 'Pagina nr. moet een getal zijn.');
+      }
+      if (!preg_match('/^[1-9][0-9]*$/', $values['line'])) {
+        form_set_error('chapter', 'Regelnummer moet een getal zijn.');
+      }
+      if (empty($values['action'])) {
+        form_set_error('action', 'Kies het soort amendement.');
+      }
+      if ($values['action'] == 'add' && empty($values['new_text'])) {
+        form_set_error('new_text', 'Vul de nieuwe tekst in.');
+      }
+      if ($values['action'] == 'delete' && empty($values['current_text'])) {
+        form_set_error('current_text', 'Vul de huidige tekst die verwijderd moet worden in.');
+      }
+      if ($values['action'] == 'replace' && (empty($values['current_text']))) {
+        form_set_error('current_text', 'Vul de huidige tekst die gewijzigd moet worden in.');
+      }
+      if ($values['action'] == 'replace' && (empty($values['new_text']))) {
+        form_set_error('new_text', 'Vul de nieuwe tekst die de oude moet vervangen in.');
+      }
+    }
+    if ($values['type'] == 'general') {
+      if (empty($values['general'])) {
+        form_set_error('general', 'Vul de amendement tekst in.');
+      }
+    }
+    break;
   }
 }
 
@@ -518,9 +551,11 @@ function ammo_amendment_form_submit($form, &$form_state)
     case 5:
       $amendment = entity_load_single('amendment', $storage['amendment']);
       // Sla nieuwe owner op.
+      $display_name = ammo_contact_get_display_name($values['owner']);
       $owner = ammo_save_entity('amendments_owners', array(
         'amendment_id' => $amendment->id,
         'contact_id' => $values['owner'],
+        'contact_display_name' => $display_name,
       ));
       if ($owner) {
         drupal_set_message('Contact is toegevoegd.');

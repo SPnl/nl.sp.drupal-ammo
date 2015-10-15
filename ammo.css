@@ -13,3 +13,42 @@ div.ammo-content {
   max-width: 960px;
   margin: 0px auto;
 }
+
+.page-ammo .primary-content ul {
+  list-style: none;
+  padding-left: 1em;
+}
+
+.page-ammo .primary-content ul.first {
+  padding-left: 0;
+}
+
+.page-ammo .primary-content ul.ammo-list {
+  padding-left: 0;
+}
+
+ul.ammo-list li {
+  display: inline-block;
+  margin: 0 .5em 0 0;
+}
+
+.page-ammo ul.ammo-list li a {
+  text-decoration: none;
+  font-size: .8em;
+  background-color: #EC1B23;
+  border: none;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  -webkit-appearance: none;
+  color: #fff;
+  cursor: pointer;
+  font-family: "HelveticaInseratLTPro", "Helvetica Neue", Helvetica, "Roboto Sans", "Segoe UI", Arial, "Lucida Grande", sans-serif;
+  text-transform: uppercase;
+  display: inline-block;
+  padding: 2px 6px;
+}
+
+ul.ammo-list li a:hover {
+  background-color: #000;
+}
+
