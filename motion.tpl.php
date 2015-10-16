@@ -1,12 +1,11 @@
 <h3 id="motion<?php print $entity_id; ?>">Motie nr. <?php print $entity_id; ?></h3>
 <?php if (!$backed) : ?>
-  <?php foreach ($owners as $owner) : $list[] = $owner['display_name']; endforeach; ?>
+  <?php foreach ($owners_member as $owner) : $list[] = $owner['contact_display_name']; endforeach; ?>
   <?php $last = array_pop($list); ?>
   <?php if (count($list) === 0) : $owners_list = $last; else : $owners_list = implode(', ', $list) . ' en ' . $last; endif; ?>
-  <p>Ingediend door <?php print $owners_list; ?> van <?php print $branch_display_name; ?>.</p>
-    <p>Ondersteund door <?php print count($backers) . ' '; ?><?php print (count($backers)) == 1 ? 'lid' : 'leden'; ?>.</p>
+  <p>Ingediend door <?php print $owners_list; ?> van <?php print $first_owner['contact_display_name']; ?>.</p>
 <?php else : ?>
-  <p>Ingediend door <?php print $branch_display_name; ?>.</p>
+  <p>Ingediend door <?php print $first_owner['contact_display_name']; ?>.</p>
 <?php endif; ?>
 <p>
   <strong><?php print $consideration_opening; ?></strong><br/>
@@ -33,7 +32,9 @@
         <?php if ($backed_by_user) : ?>
           <li><?php print l('trek steun in', 'ammo/support/withdraw/motion/' . $entity_id, array('query' => $dest))?></li>
         <?php else  : ?>
-          <li><?php print l('steun', 'ammo/support/add/motion/' . $entity_id, array('query' => $dest))?></li>
+          <?php if (!$admin_access) : ?>
+            <li><?php print l('steun', 'ammo/support/add/motion/' . $entity_id, array('query' => $dest))?></li>
+          <?php endif; ?>
         <?php endif; ?>
       <?php endif; ?>
     </ul>

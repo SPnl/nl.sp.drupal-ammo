@@ -25,13 +25,20 @@ function ammo_meeting_form($form, &$form_state) {
   );
 
   $form['date'] = array(
-    '#title' => 'Datum bijeenkomst',
+    '#title' => 'Datum evenement',
     '#type' => 'date_popup',
     '#date_format' => 'd-m-Y',
   );
 
   $form['submission_closing_date'] = array(
     '#title' => 'Laatste inleverdatum',
+    '#description' => 'Na deze datum kunnen er geen nieuwe amendementen en moties meer worden ingeleverd, en kunnen bestaande amendementen en moties niet meer worden gewijzigd.',
+    '#type' => 'date_popup',
+    '#date_format' => 'd-m-Y',
+  );
+
+  $form['withdrawal_closing_date'] = array(
+    '#title' => 'Uiterste datum intrekken amendement of motie',
     '#type' => 'date_popup',
     '#date_format' => 'd-m-Y',
   );
@@ -102,6 +109,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
   $title = $values['title'];
   $description = $values['description'];
   $date = $values['date'];
+  $withdrawal_closing_date = $values['withdrawal_closing_date'];
   $submission_closing_date = $values['submission_closing_date'];
 
   // Check if delete meeting button was clicked.
@@ -131,6 +139,8 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     $form['description']['#value'] = $meeting->description;
     $date = new DateTime($meeting->date);
     $form['date']['date']['#value'] = $date->format('d-m-Y');;
+    $date = new DateTime($meeting->withdrawal_closing_date);
+    $form['withdrawal_closing_date']['date']['#value'] = $date->format('d-m-Y');;
     $date = new DateTime($meeting->submission_closing_date);
     $form['submission_closing_date']['date']['#value'] = $date->format('d-m-Y');;
     return $form;
@@ -153,6 +163,10 @@ function ammo_meeting_form_ajax($form, &$form_state) {
       $form['date']['#prefix'] = ammo_error('Kies een laatste inleverdatum.');
       $error = TRUE;
     }
+    if (empty($values['withdrawal_closing_date'])) {
+      $form['date']['#prefix'] = ammo_error('Kies een laatste intrekdatum.');
+      $error = TRUE;
+    }
     if (empty($form_state['meeting_id'])) {
       // New meeting.
       $unique_title = ammo_entity_check_title('meeting', $title);
@@ -172,6 +186,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
         'description' => $description,
         'date' => $date,
         'submission_closing_date' => $submission_closing_date,
+        'withdrawal_closing_date' => $withdrawal_closing_date,
       ), $meeting_id);    
     if ($saved) {
       drupal_set_message('Bijeenkomst is opgeslagen.');

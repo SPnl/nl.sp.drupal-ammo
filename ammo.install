@@ -19,7 +19,12 @@ function ammo_schema() {
         'mysql_type' => 'datetime',
       ),
       'submission_closing_date' => array(
-        'description' => 'The last date amendments and motions can be submitted/changed.',
+        'description' => 'The date amendments and motions can no longer be submitted/changed.',
+        'type' => 'datetime',
+        'mysql_type' => 'datetime',
+      ),
+      'withdrawal_closing_date' => array(
+        'description' => 'The date amendments and motions can no longer be withdrawn.',
         'type' => 'datetime',
         'mysql_type' => 'datetime',
       ),
@@ -80,16 +85,6 @@ function ammo_schema() {
         'description' => 'Id of the document that is amended.',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'branch_id' => array(
-        'description' => 'CiviCRM contact id of the local branch that owns the amendment.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'branch_display_name' => array(
-        'description' => 'Name of local branch.',
-        'type' => 'varchar',
-        'length' => '255',
       ),
       'backed' => array(
         'description' => 'Is the amendment backed by the local branch.',
@@ -184,18 +179,8 @@ function ammo_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'branch_id' => array(
-        'description' => 'CiviCRM contact id of the local branch that placed the amendment.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'branch_display_name' => array(
-        'description' => 'Name of local branch.',
-        'type' => 'varchar',
-        'length' => '255',
-      ),
       'backed' => array(
-        'description' => 'Is the amendment backed by the local branch.',
+        'description' => 'Is the motion backed by the local branch.',
         'type' => int,
         'size' => 'tiny',
       ),
@@ -259,8 +244,8 @@ function ammo_schema() {
     ),
   );
 
-  $schema['ammo_motions_owners'] = array(
-    'description' => 'Motions are placed by a branch and owned by branch members.',
+  $schema['ammo_contact_relations'] = array(
+    'description' => 'Motions or amendments can be backed or owned by members and branches.',
     'fields' => array(
       'id' => array(
         'description' => 'Primary key',
@@ -268,13 +253,28 @@ function ammo_schema() {
         'size' => 'big',
         'not null' => TRUE,
       ),
-      'motion_id' => array(
+      'target_type' => array(
+        'description' => 'Target (amendment, motion).',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'target_id' => array(
         'type' => 'int',
         'not null' => TRUE,
+      ),
+      'relation_type' => array(
+        'description' => 'Type of relation (owner, backer).',
+        'type' => 'varchar',
+        'length' => '255',
       ),
       'contact_id' => array(
         'type' => 'int',
         'not null' => TRUE,
+      ),
+      'contact_type' => array(
+        'description' => 'Type of contact (member, branch).',
+        'type' => 'varchar',
+        'length' => '255',
       ),
       'contact_display_name' => array(
         'description' => 'Name of contact.',
@@ -286,100 +286,7 @@ function ammo_schema() {
       'id',
     ),
     'unique keys' => array(
-      'motion_contact' => array('motion_id', 'contact_id'),
-    ),
-  );
-
-  $schema['ammo_motions_backers'] = array(
-    'description' => 'Motions are placed by a branch and can be backed by members if the motion is not backed by the branch.',
-    'fields' => array(
-      'id' => array(
-        'description' => 'Primary key',
-        'type' => 'serial',
-        'size' => 'big',
-        'not null' => TRUE,
-      ),
-      'motion_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'contact_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'contact_display_name' => array(
-        'description' => 'Name of contact.',
-        'type' => 'varchar',
-        'length' => '255',
-      ),
-    ),
-    'primary key' => array(
-      'id',
-    ),
-    'unique keys' => array(
-      'motion_contact' => array('motion_id', 'contact_id'),
-    ),
-  );
-
-  $schema['ammo_amendments_owners'] = array(
-    'description' => 'Amendments are placed by a branch and owned by branch members.',
-    'fields' => array(
-      'id' => array(
-        'description' => 'Primary key',
-        'type' => 'serial',
-        'size' => 'big',
-        'not null' => TRUE,
-      ),
-      'amendment_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'contact_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'contact_display_name' => array(
-        'description' => 'Name of contact.',
-        'type' => 'varchar',
-        'length' => '255',
-      ),
-    ),
-    'primary key' => array(
-      'id',
-    ),
-    'unique keys' => array(
-      'amendment_contact' => array('amendment_id', 'contact_id'),
-    ),
-  );
-
-  $schema['ammo_amendments_backers'] = array(
-    'description' => 'Amendments are placed by a branch and can be backed by members if the amendment is not backed by the branch.',
-    'fields' => array(
-      'id' => array(
-        'description' => 'Primary key',
-        'type' => 'serial',
-        'size' => 'big',
-        'not null' => TRUE,
-      ),
-      'amendment_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'contact_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'contact_display_name' => array(
-        'description' => 'Name of contact.',
-        'type' => 'varchar',
-        'length' => '255',
-      ),
-    ),
-    'primary key' => array(
-      'id',
-    ),
-    'unique keys' => array(
-      'amendment_contact' => array('amendment_id', 'contact_id'),
+      'contact_relation' => array('target_type', 'target_id', 'contact_id'),
     ),
   );
 

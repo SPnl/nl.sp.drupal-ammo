@@ -384,7 +384,7 @@ function ammo_amendment_form_validate($form, &$form_state)
     case 'action_button':
       if (!$backed) {
         $amendment = entity_load_single('amendment', $storage['amendment']);
-        $owners =  ammo_get_related_contacts($amendment->id, 'amendment', 'owner');
+        $owners =  ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
         // Get amendment owners.
         if(empty($owners))
         {
@@ -395,12 +395,12 @@ function ammo_amendment_form_validate($form, &$form_state)
     case 'add_owner':
       $amendment = entity_load_single('amendment', $storage['amendment']);
       // Check if already owner.
-      $owners =  ammo_get_related_contacts($amendment->id, 'amendment', 'owner');
+      $owners =  ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
       if (array_key_exists($values['owner'], $owners)) {
         form_set_error('add_owner', 'Contact was reeds toegevoegd.');
       }
       // Check if owner is member.
-      $members = ammo_get_afdeling_members($storage['branch_id']);
+      $members = ammo_get_afdeling_members($storage['first_owner_id']);
       if (!array_key_exists($values['owner'], $members)) {
         form_set_error('add_owner', 'Geen lid.');
       }
@@ -471,8 +471,8 @@ function ammo_amendment_form_submit($form, &$form_state)
       $form_state['storage']['document'] = $values['document'];
       break;
     case 3:
-      $form_state['storage']['branch_id'] = $values['branch_id'];
-      $form_state['storage']['branch_display_name'] = $form['branch_id']['#options'][$values['branch_id']];
+      $form_state['storage']['first_owner_id'] = $values['first_owner_id'];
+      $form_state['storage']['first_owner_display_name'] = $form['first_owner_id']['#options'][$values['first_owner_id']];
       break;
     case 4:
       if (empty($values['amendment'])) {
@@ -480,12 +480,23 @@ function ammo_amendment_form_submit($form, &$form_state)
         $form_state['storage']['state'] = 'concept';
         $mapping = array(
           'document_id' => 'document',
-          'branch_id' => 'branch_id',
-          'branch_display_name' => 'branch_display_name',
           'state' => 'state',
         );
         $new_amendment = ammo_store('amendment', NULL, $mapping, $form_state);
         $form_state['storage']['amendment'] = $new_amendment->id;
+        // And set owner.
+        $mapping = array(
+          'target_type' => 'amendment',
+          'target_id' => $new_amendment->id,
+          'relation_type' => 'owner',
+          'contact_id' => $storage['first_owner_id'],
+          'contact_type' => 'branch',
+          'contact_display_name' => $storage['first_owner_display_name'],
+        );
+        $entity = ammo_save_entity('contact_relation', $mapping);
+        if (empty($entity)) {
+          drupal_set_message('Eigenaar is niet opgeslagen.' , 'error');
+        }
       }
       else {
         // Get and store values from existing amendment in form.
@@ -504,7 +515,8 @@ function ammo_amendment_form_submit($form, &$form_state)
         $form_state['values']['state'] = 'submitted';
       }
       $mapping = array(
-        'type' => 'amendment_type',
+        'type' => 'type',
+        'backed' => 'backed',
         'chapter' => 'chapter',
         'type' => 'type',
         'general' => 'general',
@@ -552,9 +564,12 @@ function ammo_amendment_form_submit($form, &$form_state)
       $amendment = entity_load_single('amendment', $storage['amendment']);
       // Sla nieuwe owner op.
       $display_name = ammo_contact_get_display_name($values['owner']);
-      $owner = ammo_save_entity('amendments_owners', array(
-        'amendment_id' => $amendment->id,
+      $owner = ammo_save_entity('contact_relation', array(
+        'target_id' => $amendment->id,
+        'target_type' => 'amendment',
+        'relation_type' => 'owner',
         'contact_id' => $values['owner'],
+        'contact_type' => 'member',
         'contact_display_name' => $display_name,
       ));
       if ($owner) {
@@ -569,9 +584,9 @@ function ammo_amendment_form_submit($form, &$form_state)
   }
 
   // Check if delete button was pressed.
-  $pattern = '/^del-([^-]+)-(\d+)$/';
+  $pattern = '/^del-(\d+)$/';
   if (preg_match($pattern, $trigger, $matches)) {
-    $result = entity_delete($matches[1], $matches[2]);
+    $result = entity_delete('contact_relation', $matches[1]);
     if (FALSE === $result) {
       drupal_set_message('Verwijderen contact is mislukt.', 'error');
     }

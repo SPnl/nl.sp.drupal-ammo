@@ -181,14 +181,14 @@ function template_preprocess_amendment(&$variables) {
     $entity = entity_load_single('amendment', $variables['entity_id']);
     $document = entity_load_single('document', $entity->document_id);
     $meeting = entity_load_single('meeting', $document->meeting_id);
-    $owners = ammo_get_related_contacts($entity->id, 'amendment', 'owner'); 
-    $backers = ammo_get_related_contacts($entity->id, 'amendment', 'backer'); 
+    $owners_member = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'member'); 
+    $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch'); 
+    $first_owner = array_values($owners_branch)[0];
+    $backers = ammo_get_related_contacts($entity->id, 'amendment', 'backer', 'member'); 
     $backed_by_user = ammo_is_related($entity->id, 'amendment', 'backer');
     $vars = array(
-      'document_id' => $entity->document_id,
-      'branch_id' => $entity->branch_id,
-      'branch_display_name' => substr($entity->branch_display_name, 3),
       'backed' => $entity->backed,
+      'document_id' => $entity->document_id,
       'type' => $entity->type,
       'general' => $entity->general,
       'chapter' => $entity->chapter,
@@ -210,14 +210,16 @@ function template_preprocess_amendment(&$variables) {
       'meeting_id' => $meeting->id,
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
-      'edit_access' => ammo_edit_access($entity->branch_id),
+      'edit_access' => ammo_edit_access($first_owner->contact_id),
       'admin_access' => ammo_admin_access(),
-      'owners' => $owners,
+      'owners_member' => $owners_member,
+      'owners_branch' => $owners_branch,
+      'first_owner' => $first_owner,
       'backers' => $backers,
       'backed_by_user' => $backed_by_user,
     );
     foreach($vars as $key => &$value) {
-      if (in_array($key, array('owners', 'backers'))) continue;
+      if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
       $value = check_plain($value);
     }
     $variables = $variables + $vars;
@@ -228,13 +230,13 @@ function template_preprocess_motion(&$variables) {
   if (isset($variables['entity_id'])) {
     $entity = entity_load_single('motion', $variables['entity_id']);
     $meeting = entity_load_single('meeting', $entity->meeting_id);
-    $owners = ammo_get_related_contacts($entity->id, 'motion', 'owner');
+    $owners_member = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'member'); 
+    $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch'); 
+    $first_owner = array_values($owners_branch)[0];
     $backers = ammo_get_related_contacts($entity->id, 'motion', 'backer'); 
     $backed_by_user = ammo_is_related($entity->id, 'motion', 'backer');
     $vars = array(
       'meeting_id' => $entity->meeting_id,
-      'branch_id' => $entity->branch_id,
-      'branch_display_name' => substr($entity->branch_display_name, 3),
       'backed' => $entity->backed,
       'consideration_opening' => $entity->consideration_opening,
       'consideration_body' => $entity->consideration_body,
@@ -250,14 +252,16 @@ function template_preprocess_motion(&$variables) {
       'state' => $entity->state,
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
-      'edit_access' => ammo_edit_access($entity->branch_id),
+      'edit_access' => ammo_edit_access($first_owner->contact_id),
       'admin_access' => ammo_admin_access(),
-      'owners' => $owners,
+      'owners_member' => $owners_member,
+      'owners_branch' => $owners_branch,
+      'first_owner' => $first_owner,
       'backers' => $backers,
       'backed_by_user' => $backed_by_user,
     );
     foreach($vars as $key => &$value) {
-      if (in_array($key, array('owners', 'backers'))) continue;
+      if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
       $value = check_plain($value);
     }
     $variables = $variables + $vars;
@@ -284,15 +288,17 @@ function template_preprocess_overview_amendments(&$variables) {
         'description' => check_plain($document->description),
         'meeting_id' => check_plain($document->meeting_id),
       );
-      $amendments_results = db_query("SELECT id, branch_id, branch_display_name, type, chapter, page FROM {ammo_amendments} WHERE document_id = :document_id ORDER BY type, chapter, page, line, id", array(":document_id" => $document->id));
+      $amendments_results = db_query("SELECT id, type, chapter, page FROM {ammo_amendments} WHERE document_id = :document_id ORDER BY type, chapter, page, line, id", array(":document_id" => $document->id));
       foreach ($amendments_results as $amendment) {
+        // Get owners.
+        $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
+        $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
+        $first_owner = array_values($owners_branch)[0];
         switch ($amendment->type) {
         case 'general':
           // Store amendment data.
           $data['meetings'][$meeting->id]['documents'][$document->id]['type'][$amendment->type]['amendments'][$amendment->id] = array(
             'id' => $amendment->id,
-            'branch_id' => check_plain($amendment->branch_id),
-            'branch_display_name' => check_plain(substr($amendment->branch_display_name, 3)),
           );
           break;
         case 'specific':
@@ -303,10 +309,11 @@ function template_preprocess_overview_amendments(&$variables) {
           // Store amendment data.
           $data['meetings'][$meeting->id]['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = array(
             'id' => $amendment->id,
-            'branch_id' => check_plain($amendment->branch_id),
-            'branch_display_name' => check_plain(substr($amendment->branch_display_name, 3)),
             'chapter' => check_plain($amendment->chapter),
             'page' => check_plain($amendment->page),
+            'owners_member' => $owners_member,
+            'owners_branch' => $owners_branch,
+            'first_owner' => $first_owner,
           );
           break;
         }
@@ -327,15 +334,17 @@ function template_preprocess_overview_motions(&$variables) {
       'date' => $meeting->date,
       'submission_closing_date' => $meeting->submission_closing_date,
     );
-    $motions_results = db_query("SELECT id, branch_id, branch_display_name FROM {ammo_motions} WHERE meeting_id = :meeting_id ORDER BY branch_display_name", array(":meeting_id" => $meeting->id));
+    $motions_results = db_query("SELECT id FROM {ammo_motions} WHERE meeting_id = :meeting_id", array(":meeting_id" => $meeting->id));
     foreach ($motions_results as $motion) {
-      $data['meetings'][$meeting->id]['branches'][$motion->branch_id]['id'] = $motion->branch_id;
-      $data['meetings'][$meeting->id]['branches'][$motion->branch_id]['branch_id'] = $motion->branch_id;
-      $data['meetings'][$meeting->id]['branches'][$motion->branch_id]['branch_display_name'] = check_plain(substr($motion->branch_display_name, 3));
-      $data['meetings'][$meeting->id]['branches'][$motion->branch_id]['motions'][$motion->id] = array(
+      $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
+      $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
+      $first_owner = array_values($owners_branch)[0];
+      $data['meetings'][$meeting->id]['branches'][$first_owner['contact_id']] = $first_owner;
+      $data['meetings'][$meeting->id]['branches'][$first_owner['contact_id']]['motions'][$motion->id] = array(
         'id' => $motion->id,
-        'branch_id' => check_plain($motion->branch_id),
-        'branch_display_name' => check_plain(substr($motion->branch_display_name, 3)),
+        'owners_member' => $owners_member,
+        'owners_branch' => $owners_branch,
+        'first_owner' => $first_owner,
       );
     }
     $variables = $variables + $data;
@@ -392,44 +401,11 @@ function ammo_entity_info() {
     'fieldable' => FALSE,
   );
 
-  $info['amendments_backers'] = array(
-    'label' => t('Amendments backers relation'),
+  $info['contact_relation'] = array(
+    'label' => t('Contact (member or branch) relation to amendment or motion as either owner or backer'),
     'entity class' => 'Entity',
     'controller class' => 'EntityAPIController',
-    'base table' => 'ammo_amendments_backers',
-    'entity keys' => array(
-      'id' => 'id',
-    ),
-    'fieldable' => FALSE,
-  );
-
-  $info['amendments_owners'] = array(
-    'label' => t('Amendments owners relation'),
-    'entity class' => 'Entity',
-    'controller class' => 'EntityAPIController',
-    'base table' => 'ammo_amendments_owners',
-    'entity keys' => array(
-      'id' => 'id',
-    ),
-    'fieldable' => FALSE,
-  );
-
-  $info['motions_backers'] = array(
-    'label' => t('Motions backers relation'),
-    'entity class' => 'Entity',
-    'controller class' => 'EntityAPIController',
-    'base table' => 'ammo_motions_backers',
-    'entity keys' => array(
-      'id' => 'id',
-    ),
-    'fieldable' => FALSE,
-  );
-
-  $info['motions_owners'] = array(
-    'label' => t('Motions owners relation'),
-    'entity class' => 'Entity',
-    'controller class' => 'EntityAPIController',
-    'base table' => 'ammo_motions_owners',
+    'base table' => 'ammo_contact_relations',
     'entity keys' => array(
       'id' => 'id',
     ),

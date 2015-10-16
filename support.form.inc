@@ -90,9 +90,12 @@ function ammo_support_form_submit($form, &$form_state) {
     $entity = entity_load_single($type, $entity_id);
     $display_name = ammo_contact_get_display_name($user->name);
     // Sla nieuwe owner op.
-    $owner = ammo_save_entity($type . 's_backers', array(
-      $type . '_id' => $entity_id,
+    $owner = ammo_save_entity('contact_relation', array(
+      'target_type' => $type,
+      'target_id' => $entity_id,
+      'relation_type' => 'backer',
       'contact_id' => $user->name,
+      'contact_type' => 'member',
       'contact_display_name' => $display_name,
     ));
     if ($owner) {
@@ -104,7 +107,7 @@ function ammo_support_form_submit($form, &$form_state) {
   }
   elseif ($action === 'withdraw') {
     $remove_id = ammo_is_related($entity_id, $type, 'backer');
-    $result = entity_delete($type . 's_backers', $remove_id);
+    $result = entity_delete('contact_relation', $remove_id);
     if ($result !== FALSE) {
       drupal_set_message('Uw steun is ingetrokken.');
     }
