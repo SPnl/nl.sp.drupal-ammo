@@ -112,6 +112,13 @@ function ammo_get_afdelingen_helper($contact_id = NULL) {
     $result = civicrm_api('Relationship', 'get', $params);
     if (isset($result['values'])) {
       foreach ($result['values'] as $value) { 
+        // Check if end_data of relation is not passed.
+        if (!empty($value['end_date'])) {
+          if(new DateTime() > new DateTime($value['end_date'])){
+            // Relation not valid anymore.
+            continue;
+          }
+        }
         $afdeling_id = $value['contact_id_b'];
         // Get afdeling data.
         $params = array(
@@ -122,7 +129,7 @@ function ammo_get_afdelingen_helper($contact_id = NULL) {
         );
         $afdelingresult = civicrm_api('Contact', 'get', $params);
         if (isset($afdelingresult['values'])) {
-          $afdelingen_data[$afdelingresult['values'][0]['id']] = $afdelingresult['values'][0]['display_name'];
+          $afdelingen_data[$afdelingresult['values'][0]['id']] = substr($afdelingresult['values'][0]['display_name'], 12);
         }
       }
     }
@@ -223,6 +230,8 @@ function ammo_get_related_contacts($target_id, $target_type, $relation_type, $co
     $query->propertyCondition('contact_type', $contact_type);
   }
 
+  $query->propertyOrderBy('id', 'ASC');
+
   $result = $query->execute();
 
   if (isset($result['contact_relation'])) {
@@ -235,7 +244,9 @@ function ammo_get_related_contacts($target_id, $target_type, $relation_type, $co
         'id' => $item->id,
         'contact_id' => $item->contact_id,
         'contact_type' => $item->contact_type,
-        'contact_display_name' => ($item->contact_type === 'branch') ? substr($item->contact_display_name, 3) : $item->contact_display_name,
+        'contact_display_name' => $item->contact_display_name,
+        'branch_id' => $item->branch_id,
+        'branch_display_name' => $item->branch_display_name,
       );
     }
   }
@@ -248,8 +259,9 @@ function ammo_get_related_contacts($target_id, $target_type, $relation_type, $co
  * @target_id: the amendment or motion id.
  * @target_type: either amendment or motion.
  * @relation_type: either backer or owner.
+ * @contact_type: either member or branch.
  */
-function ammo_is_related($target_id, $target_type, $relation_type, $contact_id = NULL) {
+function ammo_is_related($target_id, $target_type, $relation_type, $contact_type, $contact_id = NULL) {
   if (empty($contact_id)) {
     global $user;
     $contact_id = $user->name;
@@ -260,7 +272,8 @@ function ammo_is_related($target_id, $target_type, $relation_type, $contact_id =
     ->propertyCondition('target_id', $target_id)
     ->propertyCondition('target_type', $target_type)
     ->propertyCondition('relation_type', $relation_type)
-    ->propertyCondition('contact_id', $contact_id);
+    ->propertyCondition('contact_id', $contact_id)
+    ->propertyCondition('contact_type', $contact_type);
 
   $result = $query->execute();
 
@@ -273,10 +286,10 @@ function ammo_is_related($target_id, $target_type, $relation_type, $contact_id =
 
 /*
  * @type: amendment or motion.
- * @first_owner_id: the id of the local branch.
+ * @branch_id: the id of the local branch.
  * @item_id: either meeting_id or document_id.
  */
-function ammo_get_amendments_or_motions($type, $first_owner_id, $item_id) {
+function ammo_get_amendments_or_motions($type, $branch_id, $item_id) {
   $data = array();
   $items = array();
   $property = ($type == 'amendment') ? 'document_id' : 'meeting_id';
@@ -286,8 +299,7 @@ function ammo_get_amendments_or_motions($type, $first_owner_id, $item_id) {
   $query
     ->fields('t', array('id'))
     ->condition('r.relation_type', 'owner','=')
-    ->condition('r.contact_type', 'branch','=')
-    ->condition('r.contact_id', $first_owner_id,'=')
+    ->condition('r.branch_id', $branch_id,'=')
     ->condition('r.target_type', $type,'=')
     ->condition('t.' . $property, $item_id,'=');
   $result= $query->execute();
@@ -308,6 +320,8 @@ function ammo_default($form_state, $field) {
   elseif(isset($form_state['storage'][$field]))
   {
     $default_value = $form_state['storage'][$field];
+  }
+  else {
   }
   return $default_value;
 }
@@ -356,7 +370,6 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
     $form_state['storage']['amendment'] = $entity_id;
     $mapping = array(
       'document_id' => 'document',
-      'backed' => 'backed',
       'type' => 'type',
       'chapter' => 'chapter',
       'page' => 'page',
@@ -396,7 +409,6 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
     $form_state['storage']['motion'] = $entity_id;
     $mapping = array(
       'meeting_id' => 'document',
-      'backed' => 'backed',
       'supplement' => 'supplement',
       'advice' => 'advice',
       'advice_supplement' => 'advice_supplement',
@@ -442,18 +454,21 @@ function ammo_afdelingen_access() {
 }
 
 function ammo_preset_form($type, $entity_id, &$form_state) {
-  $entity = entity_load_single($type, $entity_id);
   // check if exists.
+  $entity = entity_load_single($type, $entity_id);
   if ($entity) {
     // Check access. 
     $afdelingen = ammo_afdelingen_access();
     // Get first owner.
-    $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch'); 
-    $first_owner = array_values($owners_branch)[0];
-    if (array_key_exists($first_owner['contact_id'], $afdelingen)) {
+    $owners = ammo_get_related_contacts($entity->id, $type, 'owner', 'branch'); 
+    if (empty($owners)) {
+      $owners = ammo_get_related_contacts($entity->id, $type, 'owner', 'member'); 
+    }
+    $first_owner = array_shift($owners);
+    if (array_key_exists($first_owner['branch_id'], $afdelingen)) {
       // Set form step and get data.
-      $form_state['storage']['first_owner_id'] = $first_owner['contact_id'];
-      $form_state['storage']['first_owner_display_name'] = $first_owner['contact_display_name'];
+      $form_state['storage']['branch_id'] = $first_owner['branch_id'];
+      $form_state['storage']['branch_display_name'] = $first_owner['branch_display_name'];
       $form_state['storage'][$type] = $path_id;
       ammo_populate_form($type, $entity_id, $form_state); 
       return TRUE;
@@ -470,10 +485,16 @@ function ammo_preset_form($type, $entity_id, &$form_state) {
 
 function ammo_select_owner_form($type, &$form, &$form_state) {
   // Backed by local branch?
+  if (ammo_is_related($form_state['storage'][$type], $type, 'owner', 'branch', $form_state['storage']['branch_id'])) {
+    $default = TRUE;
+  }
+  else {
+    $default = FALSE;
+  }
   $form['backed'] = array(
     '#type' => 'checkbox',
     '#title' => 'Ingediend door afdeling',
-    '#default_value' => ammo_default($form_state, 'backed'),
+    '#default_value' => $default,
     '#name' => 'backed',
   );
   $form['owners'] = array(
@@ -508,7 +529,7 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
   $form['owners']['owner'] = array(
     '#type' => 'textfield',
     '#title' => 'naam / lidnummer',
-    '#autocomplete_path' => 'ammo/autocomplete_members/' . $form_state['storage']['first_owner_id'],
+    '#autocomplete_path' => 'ammo/autocomplete_members/' . $form_state['storage']['branch_id'],
   );
   $form['owners']['add_owner'] = array(
     '#type' => 'submit',
@@ -526,7 +547,7 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
 
 function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
   $title = ($type == 'amendment') ? 'Amendement' : 'Motie';
-  $entities = ammo_get_amendments_or_motions($type, $form_state['storage']['first_owner_id'], $entity_id);
+  $entities = ammo_get_amendments_or_motions($type, $form_state['storage']['branch_id'], $entity_id);
   $form[$type] = array(
     '#type' => 'select',
     '#title' => $title,
@@ -537,20 +558,20 @@ function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
   );
 }
 
-function ammo_select_afdeling_form($type, &$form, &$form_state) {
+function ammo_select_afdeling_form(&$form, &$form_state) {
   $afdelingen = ammo_afdelingen_access();
-  $form['first_owner_id'] = array(
+  $form['branch_id'] = array(
     '#type' => 'select',
     '#title' => 'Afdeling',
     '#options' => $afdelingen,
     '#empty_option' => 'kies:',
-    '#default_value' => ammo_default($form_state, 'first_owner_id'),
+    '#default_value' => ammo_default($form_state, 'branch_id'),
     '#required' => true,
     '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
   );
 }
 
-function ammo_select_meeting_form($type, &$form, &$form_state) {
+function ammo_select_meeting_form(&$form, &$form_state) {
   $meetings = entity_load('meeting');
   $options = array();
   foreach ($meetings as $meeting) {
@@ -582,9 +603,11 @@ function ammo_view_entity_form($type, $entity_id) {
   return array();
 }
 
-function ammo_edit_access($first_owner_id) {
+function ammo_edit_access($branch_id) {
   $afdelingen = ammo_afdelingen_access();
-  return (array_key_exists($first_owner_id, $afdelingen) || ammo_admin_access()); 
+  if (is_array($afdelingen)) {
+    return (array_key_exists($branch_id, $afdelingen) || ammo_admin_access()); 
+  }
 }
 
 function ammo_ajax_redirect($destination = NULL) {
@@ -607,4 +630,22 @@ function ammo_get_destination() {
   if ($destination['destination'] !== 'system/ajax') {
     return $destination;
   }
+}
+
+function ammo_save_owner($target_type, $target_id, $contact_id, $contact_type, $contact_display_name, $branch_id, $branch_display_name) {
+  $mapping = array(
+    'target_type' => $target_type,
+    'target_id' => $target_id,
+    'relation_type' => 'owner',
+    'contact_id' => $contact_id,
+    'contact_type' => $contact_type,
+    'contact_display_name' => $contact_display_name,
+    'branch_id' => $branch_id,
+    'branch_display_name' => $branch_display_name,
+  );
+  $entity = ammo_save_entity('contact_relation', $mapping);
+  if (empty($entity)) {
+    drupal_set_message('Eigenaar is niet opgeslagen.' , 'error');
+  }
+  return $entity;
 }

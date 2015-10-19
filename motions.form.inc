@@ -18,7 +18,7 @@ function ammo_overview_motions_form($form, &$form_state, $motion_id = NULL) {
 
   $form['#prefix'] = '<div id="ajax_form">';
   $form['#suffix'] = '</div>';
-  ammo_select_meeting_form('motion', $form, $form_state);
+  ammo_select_meeting_form($form, $form_state);
   $form['submit'] = array
     (
       '#type' => 'submit',

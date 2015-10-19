@@ -86,11 +86,6 @@ function ammo_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'backed' => array(
-        'description' => 'Is the amendment backed by the local branch.',
-        'type' => int,
-        'size' => 'tiny',
-      ),
       'state' => array(
         'description' => 'State of the amendment.',
         'type' => 'varchar',
@@ -178,11 +173,6 @@ function ammo_schema() {
         'description' => 'Id of the meeting where the motion is placed.',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'backed' => array(
-        'description' => 'Is the motion backed by the local branch.',
-        'type' => int,
-        'size' => 'tiny',
       ),
       'state' => array(
         'description' => 'State of the motion.',
@@ -278,6 +268,16 @@ function ammo_schema() {
       ),
       'contact_display_name' => array(
         'description' => 'Name of contact.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'branch_id' => array(
+        'description' => 'Id of the local branch.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'branch_display_name' => array(
+        'description' => 'Name of branch.',
         'type' => 'varchar',
         'length' => '255',
       ),

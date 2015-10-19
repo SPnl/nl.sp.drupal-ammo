@@ -26,6 +26,26 @@ function ammo_menu() {
   $items['ammo/ammo'] = array(
     'title' => 'Start',
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -3,
+  );
+
+  $items['ammo/amendment'] = array(
+    'title' => 'Amendement indienen',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_amendment_form', 2, 3),
+    'file' => 'amendment.form.inc',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'ammo_add_access',
+    'weight' => -2,
+  );
+
+  $items['ammo/motion'] = array(
+    'title' => 'Motie indienen',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_motion_form', 2, 3),
+    'file' => 'motion.form.inc',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'ammo_add_access',
     'weight' => -1,
   );
 
@@ -49,26 +69,6 @@ function ammo_menu() {
     'weight' => 1,
   );
 
-  $items['ammo/amendment'] = array(
-    'title' => 'Amendement indienen / bewerken',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_amendment_form', 2, 3),
-    'file' => 'amendment.form.inc',
-    'type' => MENU_CALLBACK,
-    'access callback' => 'ammo_add_access',
-    'weight' => 2,
-  );
-
-  $items['ammo/motion'] = array(
-    'title' => 'Motie indienen / bewerken',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_motion_form', 2, 3),
-    'file' => 'motion.form.inc',
-    'type' => MENU_CALLBACK,
-    'access callback' => 'ammo_add_access',
-    'weight' => 3,
-  );
-
   $items['ammo/meeting'] = array(
     'title' => 'Bijeenkomst',
     'page callback' => 'drupal_get_form',
@@ -89,10 +89,10 @@ function ammo_menu() {
     'weight' => 5,
   );
 
-  $items['ammo/support/%/%/%'] = array(
+  $items['ammo/support/%/%/%/%'] = array(
     'title' => 'Steun',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_support_form', 2, 3, 4),
+    'page arguments' => array('ammo_support_form', 2, 3, 4, 5),
     'file' => 'support.form.inc',
     'type' => MENU_CALLBACK,
     'access callback' => 'user_is_logged_in',
@@ -177,17 +177,30 @@ function ammo_theme() {
 }
 
 function template_preprocess_amendment(&$variables) {
+  global $user;
   if (isset($variables['entity_id'])) {
     $entity = entity_load_single('amendment', $variables['entity_id']);
     $document = entity_load_single('document', $entity->document_id);
     $meeting = entity_load_single('meeting', $document->meeting_id);
     $owners_member = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch'); 
-    $first_owner = array_values($owners_branch)[0];
+    $first_owner = empty($owners_branch) ? reset($owners_member) : reset($owners_branch);
     $backers = ammo_get_related_contacts($entity->id, 'amendment', 'backer', 'member'); 
-    $backed_by_user = ammo_is_related($entity->id, 'amendment', 'backer');
+    $backed_by_user = ammo_is_related($entity->id, 'amendment', 'backer', 'member');
+    $branches = ammo_get_afdelingen($user->name);
+    if (!empty($branches)) {
+      $supported_branches = FALSE;
+      $unsupported_branches = FALSE;
+      foreach ($branches as $contact_id => $contact_display_name) {
+        if (array_key_exists($contact_id, $owners_branch)) {
+          $supported_branches = TRUE;
+        }
+        else {
+          $unsupported_branches = TRUE;
+        }
+      }
+    }
     $vars = array(
-      'backed' => $entity->backed,
       'document_id' => $entity->document_id,
       'type' => $entity->type,
       'general' => $entity->general,
@@ -210,13 +223,15 @@ function template_preprocess_amendment(&$variables) {
       'meeting_id' => $meeting->id,
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
-      'edit_access' => ammo_edit_access($first_owner->contact_id),
+      'edit_access' => ammo_edit_access($first_owner['branch_id']),
       'admin_access' => ammo_admin_access(),
       'owners_member' => $owners_member,
       'owners_branch' => $owners_branch,
       'first_owner' => $first_owner,
       'backers' => $backers,
       'backed_by_user' => $backed_by_user,
+      'supported_branches' => $supported_branches,
+      'unsupported_branches' => $unsupported_branches,
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
@@ -227,17 +242,32 @@ function template_preprocess_amendment(&$variables) {
 }
 
 function template_preprocess_motion(&$variables) {
+  global $user;
   if (isset($variables['entity_id'])) {
     $entity = entity_load_single('motion', $variables['entity_id']);
     $meeting = entity_load_single('meeting', $entity->meeting_id);
     $owners_member = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch'); 
-    $first_owner = array_values($owners_branch)[0];
+    $first_owner = empty($owners_branch) ? reset($owners_member) : reset($owners_branch);
     $backers = ammo_get_related_contacts($entity->id, 'motion', 'backer'); 
-    $backed_by_user = ammo_is_related($entity->id, 'motion', 'backer');
+    $backed_by_user = ammo_is_related($entity->id, 'motion', 'backer', 'member');
+    $branches = ammo_get_afdelingen($user->name);
+    $supported_branches = FALSE;
+    $unsupported_branches = FALSE;
+    if (!empty($branches)) {
+      $supported_branches = FALSE;
+      $unsupported_branches = FALSE;
+      foreach ($branches as $contact_id => $contact_display_name) {
+        if (array_key_exists($contact_id, $owners_branch)) {
+          $supported_branches = TRUE;
+        }
+        else {
+          $unsupported_branches = TRUE;
+        }
+      }
+    }
     $vars = array(
       'meeting_id' => $entity->meeting_id,
-      'backed' => $entity->backed,
       'consideration_opening' => $entity->consideration_opening,
       'consideration_body' => $entity->consideration_body,
       'follow_up_opening' => $entity->follow_up_opening,
@@ -252,13 +282,15 @@ function template_preprocess_motion(&$variables) {
       'state' => $entity->state,
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
-      'edit_access' => ammo_edit_access($first_owner->contact_id),
+      'edit_access' => ammo_edit_access($first_owner['branch_id']),
       'admin_access' => ammo_admin_access(),
       'owners_member' => $owners_member,
       'owners_branch' => $owners_branch,
       'first_owner' => $first_owner,
       'backers' => $backers,
       'backed_by_user' => $backed_by_user,
+      'supported_branches' => $supported_branches,
+      'unsupported_branches' => $unsupported_branches,
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
@@ -293,12 +325,16 @@ function template_preprocess_overview_amendments(&$variables) {
         // Get owners.
         $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
         $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
-        $first_owner = array_values($owners_branch)[0];
+        if (empty($owners_member) && empty($owners_branch)) continue;
+        $first_owner = empty($owners_branch) ? reset($owners_member) : reset($owners_branch);
         switch ($amendment->type) {
         case 'general':
           // Store amendment data.
           $data['meetings'][$meeting->id]['documents'][$document->id]['type'][$amendment->type]['amendments'][$amendment->id] = array(
             'id' => $amendment->id,
+            'owners_member' => $owners_member,
+            'owners_branch' => $owners_branch,
+            'first_owner' => $first_owner,
           );
           break;
         case 'specific':
@@ -338,9 +374,10 @@ function template_preprocess_overview_motions(&$variables) {
     foreach ($motions_results as $motion) {
       $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
       $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
-      $first_owner = array_values($owners_branch)[0];
-      $data['meetings'][$meeting->id]['branches'][$first_owner['contact_id']] = $first_owner;
-      $data['meetings'][$meeting->id]['branches'][$first_owner['contact_id']]['motions'][$motion->id] = array(
+      if (empty($owners_member) && empty($owners_branch)) continue;
+      $first_owner = empty($owners_branch) ? reset($owners_member) : reset($owners_branch);
+      $data['meetings'][$meeting->id]['branches'][$first_owner['branch_id']]['info'] = $first_owner;
+      $data['meetings'][$meeting->id]['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
         'id' => $motion->id,
         'owners_member' => $owners_member,
         'owners_branch' => $owners_branch,

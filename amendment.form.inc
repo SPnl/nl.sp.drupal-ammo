@@ -53,6 +53,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     }
   }
 
+  dpm($form_state['storage']);
   // If $form_state['step'] is not set, we set it to the first step.
   $form_state['step'] = isset($form_state['step']) ? $form_state['step'] : $form_state['storage']['first_step'];
 
@@ -70,7 +71,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   {
 
   case 1:
-    ammo_select_meeting_form('amendment', $form, $form_state);
+    ammo_select_meeting_form($form, $form_state);
     break;
 
   case 2:
@@ -93,7 +94,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     break;
 
   case 3:
-    ammo_select_afdeling_form('amendment', $form, $form_state);
+    ammo_select_afdeling_form($form, $form_state);
     break;
 
   case 4:
@@ -257,6 +258,20 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
           ),
         ),
       );
+      $form['texts']['original_new_text'] = array(
+        '#type' => 'item',
+        '#markup' => '<p><strong>Nieuwe tekst orgineel</strong><br/>' . check_plain($form_state['storage']['new_text']) . '</p>',
+        '#states' => array(
+          'visible' => array(
+            array(
+              ':input[name="advice_action"]' => array('value' => 'add'),
+            ),
+            array(
+              ':input[name="advice_action"]' => array('value' => 'replace'),
+            ),
+          ),
+        ),
+      );
       $form['texts']['advice_current_text'] = array(
         '#type' => 'textarea',
         '#title' => 'Te vervangen/schrappen tekst in advies',
@@ -265,20 +280,6 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
           'visible' => array(
             array(
               ':input[name="advice_action"]' => array('value' => 'delete'),
-            ),
-            array(
-              ':input[name="advice_action"]' => array('value' => 'replace'),
-            ),
-          ),
-        ),
-      );
-      $form['texts']['original_new_text'] = array(
-        '#type' => 'item',
-        '#markup' => '<p><strong>Nieuwe tekst orgineel</strong><br/>' . check_plain($form_state['storage']['current_text']) . '</p>',
-        '#states' => array(
-          'visible' => array(
-            array(
-              ':input[name="advice_action"]' => array('value' => 'add'),
             ),
             array(
               ':input[name="advice_action"]' => array('value' => 'replace'),
@@ -400,7 +401,7 @@ function ammo_amendment_form_validate($form, &$form_state)
         form_set_error('add_owner', 'Contact was reeds toegevoegd.');
       }
       // Check if owner is member.
-      $members = ammo_get_afdeling_members($storage['first_owner_id']);
+      $members = ammo_get_afdeling_members($storage['branch_id']);
       if (!array_key_exists($values['owner'], $members)) {
         form_set_error('add_owner', 'Geen lid.');
       }
@@ -471,8 +472,8 @@ function ammo_amendment_form_submit($form, &$form_state)
       $form_state['storage']['document'] = $values['document'];
       break;
     case 3:
-      $form_state['storage']['first_owner_id'] = $values['first_owner_id'];
-      $form_state['storage']['first_owner_display_name'] = $form['first_owner_id']['#options'][$values['first_owner_id']];
+      $form_state['storage']['branch_id'] = $values['branch_id'];
+      $form_state['storage']['branch_display_name'] = $form['branch_id']['#options'][$values['branch_id']];
       break;
     case 4:
       if (empty($values['amendment'])) {
@@ -484,19 +485,6 @@ function ammo_amendment_form_submit($form, &$form_state)
         );
         $new_amendment = ammo_store('amendment', NULL, $mapping, $form_state);
         $form_state['storage']['amendment'] = $new_amendment->id;
-        // And set owner.
-        $mapping = array(
-          'target_type' => 'amendment',
-          'target_id' => $new_amendment->id,
-          'relation_type' => 'owner',
-          'contact_id' => $storage['first_owner_id'],
-          'contact_type' => 'branch',
-          'contact_display_name' => $storage['first_owner_display_name'],
-        );
-        $entity = ammo_save_entity('contact_relation', $mapping);
-        if (empty($entity)) {
-          drupal_set_message('Eigenaar is niet opgeslagen.' , 'error');
-        }
       }
       else {
         // Get and store values from existing amendment in form.
@@ -504,10 +492,28 @@ function ammo_amendment_form_submit($form, &$form_state)
       }
       break;
     case 5:
-      $mapping = array(
-        'backed' => 'backed',
-      );
-      ammo_store('amendment', $storage['amendment'], $mapping, $form_state);
+      if ($values['backed']) {
+        // Check if already set owner.
+        if (!ammo_is_related($storage['amendment'], 'amendment', 'owner', 'branch', $storage['branch_id'])) {
+          // Set owner.
+          $entity = ammo_save_owner('amendment', $storage['amendment'], $storage['branch_id'], 'branch', $storage['branch_display_name'], $storage['branch_id'], $storage['branch_display_name']);
+          if (!empty($entity)) {
+            // Remove member owners if they exist.
+            /*
+            $member_owners =  ammo_get_related_contacts($storage['amendment'], 'amendment', 'owner', 'member');
+            foreach ($member_owners as $key => $owner) {
+              $result = entity_delete('contact_relation', $owner['id']);
+              if (FALSE === $result) {
+                drupal_set_message('Verwijderen contact is mislukt.', 'error');
+              }
+              else {
+                drupal_set_message('Contact is verwijderd');
+              }
+            }
+             */
+          }
+        }
+      }
       break;
     case 6:
       if ($storage['state'] === 'concept') {
@@ -516,7 +522,6 @@ function ammo_amendment_form_submit($form, &$form_state)
       }
       $mapping = array(
         'type' => 'type',
-        'backed' => 'backed',
         'chapter' => 'chapter',
         'type' => 'type',
         'general' => 'general',
@@ -564,16 +569,20 @@ function ammo_amendment_form_submit($form, &$form_state)
       $amendment = entity_load_single('amendment', $storage['amendment']);
       // Sla nieuwe owner op.
       $display_name = ammo_contact_get_display_name($values['owner']);
-      $owner = ammo_save_entity('contact_relation', array(
-        'target_id' => $amendment->id,
-        'target_type' => 'amendment',
-        'relation_type' => 'owner',
-        'contact_id' => $values['owner'],
-        'contact_type' => 'member',
-        'contact_display_name' => $display_name,
-      ));
+      $owner = ammo_save_owner('amendment', $amendment->id, $values['owner'], 'member', $display_name, $storage['branch_id'], $storage['branch_display_name']);
       if ($owner) {
         drupal_set_message('Contact is toegevoegd.');
+        // Verwijder afdelingseigenaar.
+        $contact_relation_id = ammo_is_related($storage['amendment'], 'amendment', 'owner', 'branch', $storage['branch_id']); 
+        if ($contact_relation_id) {
+          $result = entity_delete('contact_relation', $contact_relation_id);
+          if (FALSE === $result) {
+            drupal_set_message('Verwijderen contact is mislukt.', 'error');
+          }
+          else {
+            drupal_set_message('Contact is verwijderd');
+          }
+        }
       }
       else {
         drupal_set_message('Er is een fout opgetreden.' , 'error');

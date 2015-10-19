@@ -1,3 +1,4 @@
+<?php dpm($variables); ?>
 <?php if (!empty($meetings)) : ?>
   <h1 id="inhoud">Inhoud</h1>
   <?php if (!empty($meetings[1]['branches'])) : ?>
@@ -5,7 +6,7 @@
     <ul>
       <?php foreach ($meetings[1]['branches'] as $branch) : ?>
         <li>
-          <a href="#branch<?php print $branch['contact_id']; ?>"><?php print $branch['contact_display_name']; ?></a>
+          <a href="#branch<?php print $branch['contact_id']; ?>"><?php print $branch['info']['branch_display_name']; ?></a>
           <ul>
             <?php foreach ($branch['motions'] as $motion) : ?>
               <li>
@@ -20,7 +21,7 @@
     <ul>
       <?php foreach ($meetings[1]['branches'] as $branch) : ?>
         <li>
-          <h2 id="branch<?php print $branch['contact_id']; ?>"><?php print $branch['contact_display_name']; ?></h2>
+          <h2 id="branch<?php print $branch['contact_id']; ?>"><?php print $branch['info']['branch_display_name']; ?></h2>
           <ul>
             <?php foreach ($branch['motions'] as $motion) : ?>
               <li>
