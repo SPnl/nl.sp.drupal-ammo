@@ -16,7 +16,7 @@ function ammo_error($message) {
   return '<section class="messages"><div class="messages error">'.$message.'</div></section>';
 }
 
-function ammo_amendment_states() {
+function ammo_states() {
   return array(
     'concept' => 'Concept',
     'submitted' => 'Ingediend',
@@ -24,19 +24,6 @@ function ammo_amendment_states() {
     'accepted_amended' => 'Aangepast overgenomen',
     'accepted_intention' => 'Strekking overgenomen',
     'rejected' => 'Afgewezen',
-    'deleted' => 'Verwijderd',
-  );
-}
-
-function ammo_motion_states() {
-  return array(
-    'concept' => 'Concept',
-    'submitted' => 'Ingediend',
-    'accepted' => 'Overgenomen',
-    'accepted_amended' => 'Aangepast overgenomen',
-    'accepted_intention' => 'Strekking overgenomen',
-    'rejected' => 'Afgewezen',
-    'deleted' => 'Verwijderd',
   );
 }
 
@@ -217,14 +204,17 @@ function ammo_contact_get_display_name($contact_id) {
  * @contact_type: either member or branch.
  *
  */
-function ammo_get_related_contacts($target_id, $target_type, $relation_type, $contact_type = NULL) {
+function ammo_get_related_contacts($target_id, $target_type, $relation_type = NULL, $contact_type = NULL) {
   $contacts = array();
   // Get related contacts.
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'contact_relation')
     ->propertyCondition('target_id', $target_id)
-    ->propertyCondition('target_type', $target_type)
-    ->propertyCondition('relation_type', $relation_type);
+    ->propertyCondition('target_type', $target_type);
+  // Filter on relation_type if set.
+  if (!empty($relation_type)) {
+    $query->propertyCondition('relation_type', $relation_type);
+  }
   // Filter on contact_type if set.
   if (!empty($contact_type)) {
     $query->propertyCondition('contact_type', $contact_type);
@@ -243,6 +233,7 @@ function ammo_get_related_contacts($target_id, $target_type, $relation_type, $co
       $contacts[$item->contact_id] = array(
         'id' => $item->id,
         'contact_id' => $item->contact_id,
+        'contact_email' => $item->contact_email,
         'contact_type' => $item->contact_type,
         'contact_display_name' => $item->contact_display_name,
         'branch_id' => $item->branch_id,
@@ -298,6 +289,7 @@ function ammo_get_amendments_or_motions($type, $branch_id, $item_id) {
   $query->join('ammo_contact_relations', 'r', 't.id = r.target_id');
   $query
     ->fields('t', array('id'))
+    ->condition('t.state', 'concept', '!=')
     ->condition('r.relation_type', 'owner','=')
     ->condition('r.branch_id', $branch_id,'=')
     ->condition('r.target_type', $type,'=')
@@ -340,21 +332,54 @@ function ammo_save_entity($type, $values, $entity_id = NULL) {
   return ($result !== FALSE) ? $entity : FALSE;
 }
 
-function ammo_store($entity_type, $entity_id, $mapping, &$form_state) {
+function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
+  $original_entity = entity_load_single($entity_type, $entity_id);
+  $differences = array();
   foreach($mapping as $database_field => $form_field) {
-    // Store values.
     if (isset($form_state['values'][$form_field])) {
+      // Store values.
       $form_state['storage'][$form_field] = $form_state['values'][$form_field];
     }
-    $fields[$database_field] = $form_state['storage'][$form_field];
+    if (!empty($original_entity)) {
+      // Check if there are changes.
+      if ($original_entity->$database_field != $form_state['storage'][$form_field]) {
+        // Store all changed fields to save in database.
+        $fields[$database_field] = $form_state['storage'][$form_field];
+        // Store only differences in current form step to mail to owners and backers.
+        if ($form_state['step'] == $form_state['storage']['changes_step']) {
+          if (!empty($form_state['values'][$form_field])) {
+            $fieldname = ammo_filter_fields($form_field);
+            if ($fieldname !== FALSE) {
+              // Store diffline.
+              $differences[$fieldname] = ammo_diffline($original_entity->$database_field, $form_state['values'][$form_field]);
+            }
+          }
+        }
+      }
+    }
+    // If new entity.
+    else {
+      // Store all fields.
+      $fields[$database_field] = $form_state['storage'][$form_field];
+    }
   }
-  // Save amendment.
-  $entity = ammo_save_entity($entity_type, $fields, $entity_id);    
-  if (empty($entity)) {
-    drupal_set_message('Waarden zijn niet opgeslagen.' , 'error');
-  }
-  else {
-    drupal_set_message('Waarden zijn opgeslagen.');
+  if (!empty($differences) || empty($original_entity)) {
+    global $language;
+    // Save entity.
+    $entity = ammo_save_entity($entity_type, $fields, $entity_id);
+    if (empty($entity)) {
+      drupal_set_message('Waarden zijn niet opgeslagen.' , 'error');
+    }
+    else {
+      drupal_set_message('Waarden zijn opgeslagen.');
+    }
+    // Send mails if ammo values where changed.
+    if (!empty($differences)) {
+      if ($form_state['step'] == $form_state['storage']['changes_step']) {
+        drupal_set_message('Er wordt een e-mail met de wijzigingen verzonden.');
+        ammo_changes_update_mail($entity_type, $entity_id, $differences, $form_state['storage']['meeting_id']);
+      }
+    }
   }
   return $entity;
 }
@@ -632,12 +657,15 @@ function ammo_get_destination() {
   }
 }
 
-function ammo_save_owner($target_type, $target_id, $contact_id, $contact_type, $contact_display_name, $branch_id, $branch_display_name) {
+function ammo_save_relation($relation_type, $target_type, $target_id, $contact_id, $contact_type, $contact_display_name, $branch_id = NULL, $branch_display_name = NULL) {
+  // Get contact email.
+  $contact_email = ammo_get_contact_email($contact_id);
   $mapping = array(
     'target_type' => $target_type,
     'target_id' => $target_id,
-    'relation_type' => 'owner',
+    'relation_type' => $relation_type,
     'contact_id' => $contact_id,
+    'contact_email' => $contact_email,
     'contact_type' => $contact_type,
     'contact_display_name' => $contact_display_name,
     'branch_id' => $branch_id,
@@ -645,7 +673,166 @@ function ammo_save_owner($target_type, $target_id, $contact_id, $contact_type, $
   );
   $entity = ammo_save_entity('contact_relation', $mapping);
   if (empty($entity)) {
-    drupal_set_message('Eigenaar is niet opgeslagen.' , 'error');
+    drupal_set_message('Relatie is niet opgeslagen.' , 'error');
   }
   return $entity;
+}
+
+function ammo_diff($from, $to)
+{
+  $diffValues = array();
+  $diffMask = array();
+
+  $dm = array();
+  $n1 = count($from);
+  $n2 = count($to);
+
+  for ($j = -1; $j < $n2; $j++) $dm[-1][$j] = 0;
+  for ($i = -1; $i < $n1; $i++) $dm[$i][-1] = 0;
+  for ($i = 0; $i < $n1; $i++)
+  {
+    for ($j = 0; $j < $n2; $j++)
+    {
+      if ($from[$i] == $to[$j])
+      {
+        $ad = $dm[$i - 1][$j - 1];
+        $dm[$i][$j] = $ad + 1;
+      }
+      else
+      {
+        $a1 = $dm[$i - 1][$j];
+        $a2 = $dm[$i][$j - 1];
+        $dm[$i][$j] = max($a1, $a2);
+      }
+    }
+  }
+
+  $i = $n1 - 1;
+  $j = $n2 - 1;
+  while (($i > -1) || ($j > -1))
+  {
+    if ($j > -1)
+    {
+      if ($dm[$i][$j - 1] == $dm[$i][$j])
+      {
+        $diffValues[] = $to[$j];
+        $diffMask[] = 1;
+        $j--;  
+        continue;              
+      }
+    }
+    if ($i > -1)
+    {
+      if ($dm[$i - 1][$j] == $dm[$i][$j])
+      {
+        $diffValues[] = $from[$i];
+        $diffMask[] = -1;
+        $i--;
+        continue;              
+      }
+    }
+      {
+        $diffValues[] = $from[$i];
+        $diffMask[] = 0;
+        $i--;
+        $j--;
+      }
+  }    
+
+  $diffValues = array_reverse($diffValues);
+  $diffMask = array_reverse($diffMask);
+
+  return array('values' => $diffValues, 'mask' => $diffMask);
+}
+
+function ammo_diffline($line1, $line2)
+{
+  $diff = ammo_diff(str_split($line1), str_split($line2));
+  $diffval = $diff['values'];
+  $diffmask = $diff['mask'];
+
+  $n = count($diffval);
+  $pmc = 0;
+  $result = '';
+  for ($i = 0; $i < $n; $i++)
+  {
+    $mc = $diffmask[$i];
+    if ($mc != $pmc)
+    {
+      switch ($pmc)
+      {
+      case -1: $result .= '</del>'; break;
+      case 1: $result .= '</ins>'; break;
+      }
+      switch ($mc)
+      {
+      case -1: $result .= '<del>'; break;
+      case 1: $result .= '<ins>'; break;
+      }
+    }
+    $result .= $diffval[$i];
+
+    $pmc = $mc;
+  }
+  switch ($pmc)
+  {
+  case -1: $result .= '</del>'; break;
+  case 1: $result .= '</ins>'; break;
+  }
+
+  return $result;
+}
+
+function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeting_id) {
+  $entity = entity_load_single($entity_type, $entity_id);
+  $site_email = variable_get('site_mail', 'webmaster@sp.nl');
+  // Get recipients.
+  $relations = ammo_get_related_contacts($entity_id, $entity_type); 
+  $params = array(
+    'format'          => SWIFTMAILER_FORMAT_HTML,
+    'reply_to' => $site_email,
+    'values' => array(
+      'differences' => $differences,
+      'meeting_id' => $meeting_id,
+      'entity' => array(
+        'entity_type' => $entity_type,
+        'entity_id' => $entity_id,
+        'markup' => theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
+      ),
+    ),
+  );
+  drupal_mail('ammo', 'change_message', 'tdgraaff@sp.nl', $language, $params, $site_email, TRUE);
+  foreach ($relations as $relation) {
+    if (!empty($relation['contact_email'])) {
+      //drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $site_email, TRUE);
+    }
+  }
+}
+
+function ammo_get_contact_email($contact_id) {
+  civicrm_initialize();
+  $params = array(
+    'version' => 3,
+    'sequential' => 1,
+    'id' => $contact_id,
+    'return' => 'email',
+  );
+  $result = civicrm_api('Contact', 'get', $params);
+  if (isset($result['values'])) {
+    $value = array_shift($result['values']);
+    return $value['email'];
+  }
+}
+
+function ammo_filter_fields($source) {
+  $translation = array(
+    'consideration_opening' => 'Openingsregel overweging',
+    'consideration_text' => 'Inhoud overweging',
+    'follow_up_opening' => 'Openingsregel vervolg',
+    'follow_up_text' => 'Inhoud vervolg',
+    'supplement' => 'Toelichting',
+    'current_text' => 'Huidige tekst',
+    'new_text' => 'Nieuwe tekst',
+  );
+  return (isset($translation[$source])) ? $translation[$source] : FALSE; 
 }

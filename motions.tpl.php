@@ -1,4 +1,3 @@
-<?php dpm($variables); ?>
 <?php if (!empty($meetings)) : ?>
   <h1 id="inhoud">Inhoud</h1>
   <?php if (!empty($meetings[1]['branches'])) : ?>

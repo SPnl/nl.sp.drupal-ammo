@@ -43,6 +43,9 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     $form_state['storage']['first_step'] = 1;
   }
 
+  // Set data input step for changes check.
+  $form_state['storage']['changes_step'] = 6;
+
   // Set laste page depending on permissions.
   if (empty($form_state['storage']['last_step'])) {
     if (ammo_admin_access()) {
@@ -53,7 +56,6 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     }
   }
 
-  dpm($form_state['storage']);
   // If $form_state['step'] is not set, we set it to the first step.
   $form_state['step'] = isset($form_state['step']) ? $form_state['step'] : $form_state['storage']['first_step'];
 
@@ -312,7 +314,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     $form['state'] = array(
       '#type' => 'select',
       '#title' => 'Status',
-      '#options' => ammo_amendment_states(),
+      '#options' => ammo_states(),
       '#empty_option' => 'kies:',
       '#default_value' => ammo_default($form_state, 'state'),
     );
@@ -483,7 +485,7 @@ function ammo_amendment_form_submit($form, &$form_state)
           'document_id' => 'document',
           'state' => 'state',
         );
-        $new_amendment = ammo_store('amendment', NULL, $mapping, $form_state);
+        $new_amendment = ammo_store('amendment', NULL, $mapping, $form, $form_state);
         $form_state['storage']['amendment'] = $new_amendment->id;
       }
       else {
@@ -496,22 +498,7 @@ function ammo_amendment_form_submit($form, &$form_state)
         // Check if already set owner.
         if (!ammo_is_related($storage['amendment'], 'amendment', 'owner', 'branch', $storage['branch_id'])) {
           // Set owner.
-          $entity = ammo_save_owner('amendment', $storage['amendment'], $storage['branch_id'], 'branch', $storage['branch_display_name'], $storage['branch_id'], $storage['branch_display_name']);
-          if (!empty($entity)) {
-            // Remove member owners if they exist.
-            /*
-            $member_owners =  ammo_get_related_contacts($storage['amendment'], 'amendment', 'owner', 'member');
-            foreach ($member_owners as $key => $owner) {
-              $result = entity_delete('contact_relation', $owner['id']);
-              if (FALSE === $result) {
-                drupal_set_message('Verwijderen contact is mislukt.', 'error');
-              }
-              else {
-                drupal_set_message('Contact is verwijderd');
-              }
-            }
-             */
-          }
+          $entity = ammo_save_relation('owner', 'amendment', $storage['amendment'], $storage['branch_id'], 'branch', $storage['branch_display_name'], $storage['branch_id'], $storage['branch_display_name']);
         }
       }
       break;
@@ -533,7 +520,7 @@ function ammo_amendment_form_submit($form, &$form_state)
         'supplement' => 'supplement',
         'state' => 'state',
       );
-      ammo_store('amendment', $storage['amendment'], $mapping, $form_state);
+      ammo_store('amendment', $storage['amendment'], $mapping, $form, $form_state);
       break;
     case 7:
       $mapping = array(
@@ -545,7 +532,7 @@ function ammo_amendment_form_submit($form, &$form_state)
         'advice_new_text' => 'advice_new_text',
         'state' => 'state',
       );
-      ammo_store('amendment', $storage['amendment'], $mapping, $form_state);
+      ammo_store('amendment', $storage['amendment'], $mapping, $form, $form_state);
       break;
     }
     // Set next page, or finish form.
@@ -569,7 +556,7 @@ function ammo_amendment_form_submit($form, &$form_state)
       $amendment = entity_load_single('amendment', $storage['amendment']);
       // Sla nieuwe owner op.
       $display_name = ammo_contact_get_display_name($values['owner']);
-      $owner = ammo_save_owner('amendment', $amendment->id, $values['owner'], 'member', $display_name, $storage['branch_id'], $storage['branch_display_name']);
+      $owner = ammo_save_relation('owner', 'amendment', $amendment->id, $values['owner'], 'member', $display_name, $storage['branch_id'], $storage['branch_display_name']);
       if ($owner) {
         drupal_set_message('Contact is toegevoegd.');
         // Verwijder afdelingseigenaar.

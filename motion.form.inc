@@ -34,6 +34,9 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     $form_state['storage']['first_step'] = 1;
   }
 
+  // Set data input step for changes check.
+  $form_state['storage']['changes_step'] = 5;
+
   // Set laste page depending on permissions.
   if (empty($form_state['storage']['last_step'])) {
     if (ammo_admin_access()) {
@@ -182,7 +185,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     $form['state'] = array(
       '#type' => 'select',
       '#title' => 'Status',
-      '#options' => ammo_motion_states(),
+      '#options' => ammo_states(),
       '#empty_option' => 'kies:',
       '#default_value' => ammo_default($form_state, 'state'),
     );
@@ -331,7 +334,7 @@ function ammo_motion_form_submit($form, &$form_state)
           'meeting_id' => 'meeting',
           'state' => 'state',
         );
-        $new_motion = ammo_store('motion', NULL, $mapping, $form_state);
+        $new_motion = ammo_store('motion', NULL, $mapping, $form, $form_state);
         $form_state['storage']['motion'] = $new_motion->id;
       }
       else {
@@ -344,22 +347,7 @@ function ammo_motion_form_submit($form, &$form_state)
         // Check if already set owner.
         if (!ammo_is_related($storage['motion'], 'motion', 'owner', 'branch', $storage['branch_id'])) {
           // Set owner.
-          $entity = ammo_save_owner('motion', $storage['motion'], $storage['branch_id'], 'branch', $storage['branch_display_name'], $storage['branch_id'], $storage['branch_display_name']);
-          if (!empty($entity)) {
-            // Remove member owners if they exist.
-            /*
-            $member_owners =  ammo_get_related_contacts($storage['motion'], 'motion', 'owner', 'member');
-            foreach ($member_owners as $key => $owner) {
-              $result = entity_delete('contact_relation', $owner['id']);
-              if (FALSE === $result) {
-                drupal_set_message('Verwijderen contact is mislukt.', 'error');
-              }
-              else {
-                drupal_set_message('Contact is verwijderd');
-              }
-            }
-             */
-          }
+          $entity = ammo_save_relation('owner', 'motion', $storage['motion'], $storage['branch_id'], 'branch', $storage['branch_display_name'], $storage['branch_id'], $storage['branch_display_name']);
         }
       }
       break;
@@ -376,7 +364,7 @@ function ammo_motion_form_submit($form, &$form_state)
         'supplement' => 'supplement',
         'state' => 'state',
       );
-      ammo_store('motion', $storage['motion'], $mapping, $form_state);
+      ammo_store('motion', $storage['motion'], $mapping, $form, $form_state);
       break;
     case 6:
       $mapping = array(
@@ -388,7 +376,7 @@ function ammo_motion_form_submit($form, &$form_state)
         'advice_follow_up_body' => 'advice_follow_up_text',
         'state' => 'state',
       );
-      ammo_store('motion', $storage['motion'], $mapping, $form_state);
+      ammo_store('motion', $storage['motion'], $mapping, $form, $form_state);
       break;
     }
     // Set next page, or finish form.
@@ -411,7 +399,7 @@ function ammo_motion_form_submit($form, &$form_state)
       $motion = entity_load_single('motion', $storage['motion']);
       $display_name = ammo_contact_get_display_name($values['owner']);
       // Sla nieuwe owner op.
-      $owner = ammo_save_owner('motion', $motion->id, $values['owner'], 'member', $display_name, $storage['branch_id'], $storage['branch_display_name']);
+      $owner = ammo_save_relation('owner', 'motion', $motion->id, $values['owner'], 'member', $display_name, $storage['branch_id'], $storage['branch_display_name']);
       if ($owner) {
         drupal_set_message('Contact is toegevoegd.');
         // Verwijder afdelingseigenaar.

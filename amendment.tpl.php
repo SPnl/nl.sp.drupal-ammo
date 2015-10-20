@@ -1,4 +1,3 @@
-<?php dpm($variables); ?>
 <h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print $entity_id; ?></h3>
 
 <div class="ammo-hidden">
@@ -49,7 +48,7 @@
 <?php endif; ?>
 </div>
 
-<?php if (arg(1) !== 'support') : ?>
+<?php if ($no_links !== TRUE) : ?>
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
   <ul class="ammo-list">
     <li><a href="#inhoud">^</a></li>

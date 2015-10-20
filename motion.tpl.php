@@ -22,7 +22,7 @@
   <strong>Toelichting:</strong><br/>
   <?php print $supplement; ?>
 </p>
-<?php if (arg(1) !== 'support') : ?>
+<?php if ($no_links !== TRUE) : ?>
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
   <ul class="ammo-list">
     <li><a href="#inhoud">^</a></li>

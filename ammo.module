@@ -465,3 +465,26 @@ function ammo_intropage() {
 END;
   return $content;
 }
+
+function ammo_mail($key, &$message, $params) {
+  global $base_url;
+  $values = $params['values'];
+
+  // Set reply-to header.
+  $message['headers']['Reply-To'] = $params['reply_to'];
+
+  // Create messages.
+  switch($key) {
+  case 'change_message':
+    // Create messeage
+    $message['subject'] = 'Wijziging';
+    $message['body'][] = $values['entity']['markup'];
+    $message['body'][] = '<h3>Wijzigingen</h3>';
+    foreach ($values['differences'] as $key => $difference) {
+      $message['body'][] = '<p>' . $key . ': ' . $difference . '</p>';
+    }
+    $path = $base_url . '/ammo/' . $values['entity']['entity_type'] . 's/' . $values['meeting_id'] . '#' . $values['entity']['entity_type'] . $values['entity']['entity_id'];
+    $message['body'][] = '<p><a href="' . $path . '">Bekijk online</a></p>';
+    break;
+  }
+}

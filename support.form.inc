@@ -13,7 +13,7 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
   }
   $form['item'] = array(
     '#type' => 'item',
-    '#markup' => theme($target_type, array('entity_id' => $entity_id)),
+    '#markup' => theme($target_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
   );
 
   switch ($contact_type) {
@@ -181,18 +181,9 @@ function ammo_support_form_submit($form, &$form_state) {
     case 'add':
       $entity = entity_load_single($target_type, $entity_id);
       $display_name = ammo_contact_get_display_name($user->name);
-      // Sla nieuwe owner op.
-      $owner = ammo_save_entity('contact_relation', array(
-        'target_type' => $target_type,
-        'target_id' => $entity_id,
-        'relation_type' => 'backer',
-        'contact_id' => $user->name,
-        'contact_type' => $contact_type,
-        'contact_display_name' => $display_name,
-        'branch_id' => '-',
-        'branch_display_name' => '-',
-      ));
-      if ($owner) {
+      // Sla nieuwe backer op.
+      $backer = ammo_save_relation('backer', $target_type, $entity_id, $user->name, $contact_type, $display_name); 
+      if ($backer) {
         drupal_set_message('Uw steun is opgeslagen.');
       }
       else {
@@ -220,27 +211,8 @@ function ammo_support_form_submit($form, &$form_state) {
           $display_name = ammo_contact_get_display_name($value);
           $display_name = substr($display_name, 12);
           // Sla nieuwe owner op.
-          $owner = ammo_save_entity('contact_relation', array(
-            'target_type' => $target_type,
-            'target_id' => $entity_id,
-            'relation_type' => 'owner',
-            'contact_id' => $value,
-            'contact_type' => $contact_type,
-            'contact_display_name' => $display_name,
-            'branch_id' => $value,
-            'branch_display_name' => $display_name,
-          ));
+          $owner = ammo_save_relation('owner', $target_type, $entity_id, $user->name, $contact_type, $display_name); 
           if ($owner) {
-            // Remove member owners if they exist.
-            /*
-            $member_owners =  ammo_get_related_contacts($entity_id, $target_type, 'owner', 'member');
-            foreach ($member_owners as $key => $owner) {
-              $result = entity_delete('contact_relation', $owner['id']);
-              if (FALSE === $result) {
-                drupal_set_message('Verwijderen contact is mislukt.', 'error');
-              }
-            }
-             */
             drupal_set_message('Uw afdeling is (mede) indiener.');
           }
           else {
