@@ -1,16 +1,21 @@
 <h3 id="motion<?php print $entity_id; ?>">Motie nr. <?php print $entity_id; ?></h3>
-<?php if ($first_owner['contact_type'] == 'member') : ?>
-  <?php foreach ($owners_member as $owner) : $list[] = $owner['contact_display_name']; endforeach; ?>
+<?php if (!empty($owners_branch)) : ?>
+  <?php foreach ($owners_branch as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
   <?php $last = array_pop($list); ?>
   <?php if (count($list) === 0) : $owners_list = $last; else : $owners_list = implode(', ', $list) . ' en ' . $last; endif; ?>
-  <p>Ingediend door <?php print $owners_list; ?> van afdeling <?php print $first_owner['branch_display_name']; ?>.</p>
+<?php endif; ?>
+<?php if (!empty($owners_member)) : ?>
+  <?php foreach ($owners_member as $owner_member) : $list[] = $owner_member['contact_display_name']; endforeach; ?>
+  <?php $last = array_pop($list); ?>
+  <?php if (count($list) === 0) : $members_list = $last; else : $members_list = implode(', ', $list) . ' en ' . $last; endif; ?>
+  <p>Ingediend door <?php print $members_list; ?> van afdeling <?php print $owner_member['branch_display_name']; ?>.</p>
   <?php $number = count($backers); ?>
+  <?php if (!empty($owners_branch)) : ?>
+    <p>Mede ingediend door afdeling <?php print $owners_list; ?>.</p>
+  <?php endif; ?>
   <p>Ondersteunt door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?>.</p>
-<?php else : ?>
-  <?php foreach ($owners_branch as $owner) : $list[] = $owner['contact_display_name']; endforeach; ?>
-  <?php $last = array_pop($list); ?>
-  <?php if (count($list) === 0) : $owners_list = $last; else : $owners_list = implode(', ', $list) . ' en ' . $last; endif; ?>
-  <p>Ingediend door <?php print $owners_list; ?>.</p>
+<?php else: ?>
+  <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
 <?php endif; ?>
 <p>
   <strong><?php print $consideration_opening; ?></strong><br/>

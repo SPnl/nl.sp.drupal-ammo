@@ -188,7 +188,6 @@ function template_preprocess_amendment(&$variables) {
     $meeting = entity_load_single('meeting', $document->meeting_id);
     $owners_member = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch'); 
-    $first_owner = empty($owners_branch) ? reset($owners_member) : reset($owners_branch);
     $backers = ammo_get_related_contacts($entity->id, 'amendment', 'backer', 'member'); 
     $backed_by_user = ammo_is_related($entity->id, 'amendment', 'backer', 'member');
     $branches = ammo_get_afdelingen($user->name);
@@ -231,7 +230,6 @@ function template_preprocess_amendment(&$variables) {
       'admin_access' => ammo_admin_access(),
       'owners_member' => $owners_member,
       'owners_branch' => $owners_branch,
-      'first_owner' => $first_owner,
       'backers' => $backers,
       'backed_by_user' => $backed_by_user,
       'supported_branches' => $supported_branches,
@@ -252,7 +250,6 @@ function template_preprocess_motion(&$variables) {
     $meeting = entity_load_single('meeting', $entity->meeting_id);
     $owners_member = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch'); 
-    $first_owner = empty($owners_branch) ? reset($owners_member) : reset($owners_branch);
     $backers = ammo_get_related_contacts($entity->id, 'motion', 'backer'); 
     $backed_by_user = ammo_is_related($entity->id, 'motion', 'backer', 'member');
     $branches = ammo_get_afdelingen($user->name);
@@ -290,7 +287,6 @@ function template_preprocess_motion(&$variables) {
       'admin_access' => ammo_admin_access(),
       'owners_member' => $owners_member,
       'owners_branch' => $owners_branch,
-      'first_owner' => $first_owner,
       'backers' => $backers,
       'backed_by_user' => $backed_by_user,
       'supported_branches' => $supported_branches,
@@ -330,7 +326,6 @@ function template_preprocess_overview_amendments(&$variables) {
         $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
         $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
         if (empty($owners_member) && empty($owners_branch)) continue;
-        $first_owner = empty($owners_branch) ? reset($owners_member) : reset($owners_branch);
         switch ($amendment->type) {
         case 'general':
           // Store amendment data.
@@ -338,7 +333,6 @@ function template_preprocess_overview_amendments(&$variables) {
             'id' => $amendment->id,
             'owners_member' => $owners_member,
             'owners_branch' => $owners_branch,
-            'first_owner' => $first_owner,
           );
           break;
         case 'specific':
@@ -353,7 +347,6 @@ function template_preprocess_overview_amendments(&$variables) {
             'page' => check_plain($amendment->page),
             'owners_member' => $owners_member,
             'owners_branch' => $owners_branch,
-            'first_owner' => $first_owner,
           );
           break;
         }
@@ -379,13 +372,11 @@ function template_preprocess_overview_motions(&$variables) {
       $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
       $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
       if (empty($owners_member) && empty($owners_branch)) continue;
-      $first_owner = empty($owners_branch) ? reset($owners_member) : reset($owners_branch);
       $data['meetings'][$meeting->id]['branches'][$first_owner['branch_id']]['info'] = $first_owner;
       $data['meetings'][$meeting->id]['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
         'id' => $motion->id,
         'owners_member' => $owners_member,
         'owners_branch' => $owners_branch,
-        'first_owner' => $first_owner,
       );
     }
     $variables = $variables + $data;
