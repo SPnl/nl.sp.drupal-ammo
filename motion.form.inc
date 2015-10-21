@@ -116,6 +116,11 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     break;
 
   case 6:
+    $form['item'] = array(
+      '#type' => 'item',
+      '#markup' => theme('motion', array('entity_id' => $form_state['storage']['motion'], 'no_links' => TRUE)),
+    );
+
     $form['advice'] = array(
       '#type' => 'select',
       '#title' => 'Advies',

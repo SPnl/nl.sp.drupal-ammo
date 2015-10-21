@@ -1,4 +1,3 @@
-<?php dpm($variables); ?>
 <h3 id="motion<?php print $entity_id; ?>">Motie nr. <?php print $entity_id; ?></h3>
 <?php if (!empty($owners_branch)) : ?>
   <?php foreach ($owners_branch as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>

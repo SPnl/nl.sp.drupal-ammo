@@ -197,6 +197,11 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     break;
 
   case 7:
+    $form['item'] = array(
+      '#type' => 'item',
+      '#markup' => theme('amendment', array('entity_id' => $form_state['storage']['amendment'], 'no_links' => TRUE)),
+    );
+
     $form['advice'] = array(
       '#type' => 'select',
       '#title' => 'Advies',
