@@ -510,7 +510,10 @@ function ammo_preset_form($type, $entity_id, &$form_state) {
 
 function ammo_select_owner_form($type, &$form, &$form_state) {
   // Backed by local branch?
-  if (ammo_is_related($form_state['storage'][$type], $type, 'owner', 'branch', $form_state['storage']['branch_id'])) {
+  if (
+    ammo_is_related($form_state['storage'][$type], $type, 'owner', 'branch', $form_state['storage']['branch_id']) ||
+    !empty($form_state['storage']['new'])
+  ) {
     $default = TRUE;
   }
   else {
@@ -573,11 +576,12 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
 function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
   $title = ($type == 'amendment') ? 'Amendement' : 'Motie';
   $entities = ammo_get_amendments_or_motions($type, $form_state['storage']['branch_id'], $entity_id);
+  if (!empty($entities)) $title .= ' indienen of bewerken';
   $form[$type] = array(
     '#type' => 'select',
     '#title' => $title,
     '#options' => $entities,
-    '#empty_option' => 'nieuw',
+    '#empty_option' => 'indienen',
     '#default_value' => ammo_default($form_state, $type),
     '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
   );

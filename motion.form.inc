@@ -198,7 +198,10 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       '#type' => 'container',
     );
   // If we are on first step, we do not want a back button
-  if($form_state['step'] > $form_state['storage']['first_step'])
+  if(
+    $form_state['step'] > $form_state['storage']['first_step'] &&
+    $form_state['step'] > 4
+  )
   {
     $form['buttons']['back'] = array
       (
@@ -336,6 +339,7 @@ function ammo_motion_form_submit($form, &$form_state)
         );
         $new_motion = ammo_store('motion', NULL, $mapping, $form, $form_state);
         $form_state['storage']['motion'] = $new_motion->id;
+        $form_state['storage']['new'] = TRUE;
       }
       else {
         // Get and store values from existing motion in form.
@@ -350,6 +354,7 @@ function ammo_motion_form_submit($form, &$form_state)
           $entity = ammo_save_relation('owner', 'motion', $storage['motion'], $storage['branch_id'], 'branch', $storage['branch_display_name'], $storage['branch_id'], $storage['branch_display_name']);
         }
       }
+      $form_state['storage']['new'] = FALSE;
       break;
     case 5:
       if ($storage['state'] === 'concept') {
@@ -396,6 +401,7 @@ function ammo_motion_form_submit($form, &$form_state)
   case 'add_owner':
     switch ($step) {
     case 4:
+      $form_state['storage']['new'] = FALSE;
       $motion = entity_load_single('motion', $storage['motion']);
       $display_name = ammo_contact_get_display_name($values['owner']);
       // Sla nieuwe owner op.
