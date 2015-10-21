@@ -172,6 +172,10 @@ function ammo_theme() {
       'variables' => array(),
       'template' => 'motion',
     ),
+    'intropage' => array(
+      'variables' => array(),
+      'template' => 'intropage',
+    ),
   );
   return $theme;
 }
@@ -453,17 +457,16 @@ function ammo_entity_info() {
 }
 
 function ammo_intropage() {
-  $amendment_link = l('Amendement indienen', 'ammo/amendment', array('query' => array('destination' => 'ammo')));
-  $motion_link = l('Motie indienen', 'ammo/motion', array('query' => array('destination' => 'ammo')));
-  $content = <<<END
-<div class="ammo-content">
-  <ul>
-    <li>{$amendment_link}</li>
-    <li>{$motion_link}</li>
-  </ul>
-</div>
-END;
-  return $content;
+  $amendments_link = l('Amendement indienen', 'ammo/amendment', array('query' => array('destination' => 'ammo')));
+  $motions_link = l('Motie indienen', 'ammo/motion', array('query' => array('destination' => 'ammo')));
+
+  return theme('intropage', array(
+    'amendments_link' => $amendments_link,
+    'motions_link' => $motions_link,
+    'add_access' => ammo_add_access(),
+    'admin_access' => ammo_admin_access(),
+    'superadmin_access' => ammo_superadmin_access(),
+  ));
 }
 
 function ammo_mail($key, &$message, $params) {
