@@ -1,3 +1,4 @@
+<?php dpm($variables); ?>
 <h3 id="motion<?php print $entity_id; ?>">Motie nr. <?php print $entity_id; ?></h3>
 <?php if (!empty($owners_branch)) : ?>
   <?php foreach ($owners_branch as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
@@ -38,7 +39,7 @@
       <li><?php print l('bewerk advies', 'ammo/motion/advice/' . $entity_id, array('query' => $dest))?></li>
     <?php endif; ?>
     <?php if (!$admin_access) : ?>
-      <?php if (empty($owners_branch)) : ?>
+      <?php if (!empty($owners_member)) : ?>
         <?php if ($backed_by_user) : ?>
           <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/motion/' . $entity_id, array('query' => $dest))?></li>
         <?php else  : ?>

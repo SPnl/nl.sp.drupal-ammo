@@ -211,7 +211,7 @@ function ammo_support_form_submit($form, &$form_state) {
           $display_name = ammo_contact_get_display_name($value);
           $display_name = substr($display_name, 12);
           // Sla nieuwe owner op.
-          $owner = ammo_save_relation('owner', $target_type, $entity_id, $value, $contact_type, $display_name); 
+          $owner = ammo_save_relation('owner', $target_type, $entity_id, $value, $contact_type, $display_name, $value, $display_name); 
           if ($owner) {
             drupal_set_message('Uw afdeling is (mede) indiener.');
           }

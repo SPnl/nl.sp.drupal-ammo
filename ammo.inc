@@ -485,11 +485,7 @@ function ammo_preset_form($type, $entity_id, &$form_state) {
     // Check access. 
     $afdelingen = ammo_afdelingen_access();
     // Get first owner.
-    $owners = ammo_get_related_contacts($entity->id, $type, 'owner', 'branch'); 
-    if (empty($owners)) {
-      $owners = ammo_get_related_contacts($entity->id, $type, 'owner', 'member'); 
-    }
-    $first_owner = array_shift($owners);
+    $first_owner = ammo_get_first_owner($type, $entity->id);
     if (array_key_exists($first_owner['branch_id'], $afdelingen)) {
       // Set form step and get data.
       $form_state['storage']['branch_id'] = $first_owner['branch_id'];
@@ -839,4 +835,16 @@ function ammo_filter_fields($source) {
     'new_text' => 'Nieuwe tekst',
   );
   return (isset($translation[$source])) ? $translation[$source] : FALSE; 
+}
+
+function ammo_get_first_owner($entity_type, $entity_id) {
+  $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch'); 
+  if (empty($owners)) {
+    $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'member'); 
+  }
+  $first_owner = array_shift($owners);
+  if (!empty($first_owner)) {
+    return $first_owner;
+  }
+  return FALSE;
 }

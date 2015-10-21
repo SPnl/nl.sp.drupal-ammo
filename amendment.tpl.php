@@ -64,7 +64,7 @@
       <li><?php print l('bewerk advies', 'ammo/amendment/advice/' . $entity_id, array('query' => $dest))?></li>
     <?php endif; ?>
     <?php if (!$admin_access) : ?>
-      <?php if (empty($owners_branch)) : ?>
+      <?php if (!empty($owners_member)) : ?>
         <?php if ($backed_by_user) : ?>
           <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/amendment/' . $entity_id, array('query' => $dest))?></li>
         <?php else  : ?>

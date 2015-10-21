@@ -290,7 +290,7 @@ function ammo_schema() {
       'id',
     ),
     'unique keys' => array(
-      'contact_relation' => array('target_type', 'target_id', 'contact_id'),
+      'contact_relation' => array('target_type', 'target_id', 'relation_type', 'contact_id'),
     ),
   );
 
