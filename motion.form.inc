@@ -80,31 +80,35 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     break;
 
   case 5:
+    $ammo_default = ammo_default($form_state, 'consideration_opening');
+    $default = (empty($ammo_default)) ? 'Overwegende dat' : $ammo_default;
     $form['consideration_opening'] = array(
       '#type' => 'textfield',
-      '#title' => 'Overweging openingszin',
-      '#default_value' => ammo_default($form_state, 'consideration_opening'),
+      '#title' => '',
+      '#default_value' => $default,
       '#size' => 50,
       '#maxlength' => 80,
     );
 
     $form['consideration_text'] = array(
       '#type' => 'textarea',
-      '#title' => 'Overweging inhoud',
+      '#title' => '',
       '#default_value' => ammo_default($form_state, 'consideration_text'),
     );
 
+    $ammo_default = ammo_default($form_state, 'follow_up_opening');
+    $default = (empty($ammo_default)) ? 'Verzoekt het congres het bestuur' : $ammo_default;
     $form['follow_up_opening'] = array(
       '#type' => 'textfield',
-      '#title' => 'Vervolg openingszin',
-      '#default_value' => ammo_default($form_state, 'follow_up_opening'),
+      '#title' => '',
+      '#default_value' => $default,
       '#size' => 50,
       '#maxlength' => 80,
     );
 
     $form['follow_up_text'] = array(
       '#type' => 'textarea',
-      '#title' => 'Vervolg inhoud',
+      '#title' => '',
       '#default_value' => ammo_default($form_state, 'follow_up_text'),
     );
 

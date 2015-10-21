@@ -838,9 +838,9 @@ function ammo_filter_fields($source) {
 }
 
 function ammo_get_first_owner($entity_type, $entity_id) {
-  $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch'); 
+  $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'member'); 
   if (empty($owners)) {
-    $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'member'); 
+    $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch'); 
   }
   $first_owner = array_shift($owners);
   if (!empty($first_owner)) {

@@ -258,7 +258,7 @@ function template_preprocess_motion(&$variables) {
     $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch'); 
     $backers = ammo_get_related_contacts($entity->id, 'motion', 'backer'); 
     $backed_by_user = ammo_is_related($entity->id, 'motion', 'backer', 'member');
-    $first_owner = ammo_get_first_owner('amendment', $entity->id);
+    $first_owner = ammo_get_first_owner('motion', $entity->id);
     $branches = ammo_get_afdelingen($user->name);
     $supported_branches = FALSE;
     $unsupported_branches = FALSE;
@@ -379,6 +379,7 @@ function template_preprocess_overview_motions(&$variables) {
     foreach ($motions_results as $motion) {
       $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
       $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
+      $first_owner = ammo_get_first_owner('motion', $motion->id);
       if (empty($owners_member) && empty($owners_branch)) continue;
       $data['meetings'][$meeting->id]['branches'][$first_owner['branch_id']]['info'] = $first_owner;
       $data['meetings'][$meeting->id]['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
