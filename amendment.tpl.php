@@ -1,6 +1,5 @@
 <h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print $entity_id; ?></h3>
-
-<div class="ammo-hidden">
+<?php //print '<p>' . $meeting_title . ' van de SP, in vergadering bijeen op ' . $meeting_date . '.</p>'; ?>
 <?php if (!empty($owners_branch)) : ?>
   <?php foreach ($owners_branch as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
   <?php $last = array_pop($list); ?>
@@ -51,7 +50,6 @@
     <?php endif; ?>
   </p>
 <?php endif; ?>
-</div>
 
 <?php if ($no_links !== TRUE) : ?>
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>

@@ -186,6 +186,8 @@ function template_preprocess_amendment(&$variables) {
     $entity = entity_load_single('amendment', $variables['entity_id']);
     $document = entity_load_single('document', $entity->document_id);
     $meeting = entity_load_single('meeting', $document->meeting_id);
+    $meeting_date = new DateTime($meeting->date);
+    $meeting_date_formatted = $meeting_date->format('d F Y');
     $owners_member = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch'); 
     $backers = ammo_get_related_contacts($entity->id, 'amendment', 'backer', 'member'); 
@@ -227,6 +229,7 @@ function template_preprocess_amendment(&$variables) {
       'meeting_id' => $meeting->id,
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
+      'meeting_date' => $meeting_date_formatted,
       'edit_access' => ammo_edit_access($first_owner['branch_id']),
       'admin_access' => ammo_admin_access(),
       'owners_member' => $owners_member,
@@ -249,6 +252,8 @@ function template_preprocess_motion(&$variables) {
   if (isset($variables['entity_id'])) {
     $entity = entity_load_single('motion', $variables['entity_id']);
     $meeting = entity_load_single('meeting', $entity->meeting_id);
+    $meeting_date = new DateTime($meeting->date);
+    $meeting_date_formatted = $meeting_date->format('d F Y');
     $owners_member = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch'); 
     $backers = ammo_get_related_contacts($entity->id, 'motion', 'backer'); 
@@ -285,6 +290,7 @@ function template_preprocess_motion(&$variables) {
       'state' => $entity->state,
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
+      'meeting_date' => $meeting_date_formatted,
       'edit_access' => ammo_edit_access($first_owner['branch_id']),
       'admin_access' => ammo_admin_access(),
       'owners_member' => $owners_member,

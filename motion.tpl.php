@@ -1,4 +1,5 @@
 <h3 id="motion<?php print $entity_id; ?>">Motie nr. <?php print $entity_id; ?></h3>
+<?php //print '<p>' . $meeting_title . ' van de SP, in vergadering bijeen op ' . $meeting_date . '.</p>'; ?>
 <?php if (!empty($owners_branch)) : ?>
   <?php foreach ($owners_branch as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
   <?php $last = array_pop($list); ?>
