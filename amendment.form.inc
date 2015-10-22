@@ -7,12 +7,23 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   // Store destination before ajax call.
   ammo_set_destination($form_state);
 
-  // Check if motion is set in path and preset form if so.
+  // Check if amendment is set in path and preset form if so.
   if (!empty($path_id) && !empty($form_action) && empty($form_state['storage']['first_step'])) {
     switch ($form_action) {
     case 'edit':
       if (ammo_preset_form('amendment', $path_id, $form_state)) {
-        $form_state['storage']['first_step'] = 5;
+        $meeting_id = ammo_get_meeting_id('amendment', $form_state['storage']['amendment']);
+        // Check access right.
+        if (
+          $meeting_id &&
+          isset($form_state['storage']['branch_id']) &&
+          ammo_edit_access($meeting_id, $form_state['storage']['branch_id'])
+        ) {
+          $form_state['storage']['first_step'] = 5;
+        }
+        else {
+          return;
+        }
       }
       else {
         return;
@@ -21,7 +32,13 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     case 'advice':
       if (ammo_admin_access()) {
         if (ammo_preset_form('amendment', $path_id, $form_state)) {
-          $form_state['storage']['first_step'] = 7;
+          $meeting_id = ammo_get_meeting_id('amendment', $form_state['storage']['amendment']);
+          if (ammo_support_access($meeting_id) || ammo_superadmin_access()) {
+            $form_state['storage']['first_step'] = 7;
+          }
+          else {
+            return;
+          }
         }
         else {
           return;

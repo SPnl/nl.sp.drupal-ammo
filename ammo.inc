@@ -433,7 +433,7 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
     $motion = entity_load_single('motion', $entity_id);
     $form_state['storage']['motion'] = $entity_id;
     $mapping = array(
-      'meeting_id' => 'document',
+      'meeting_id' => 'meeting',
       'supplement' => 'supplement',
       'advice' => 'advice',
       'advice_supplement' => 'advice_supplement',
@@ -569,6 +569,10 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
   );
 }
 
+/*
+ * @type: amendment or motion.
+ * @entity_id: document or meeting.
+ */
 function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
   $title = ($type == 'amendment') ? 'Amendement' : 'Motie';
   $entities = ammo_get_amendments_or_motions($type, $form_state['storage']['branch_id'], $entity_id);
@@ -600,7 +604,9 @@ function ammo_select_meeting_form(&$form, &$form_state) {
   $meetings = entity_load('meeting');
   $options = array();
   foreach ($meetings as $meeting) {
-    $options[$meeting->id] = $meeting->title;
+    if (in_array(arg(1), array('amendments', 'motions')) || ammo_edit_access($meeting->id)) {
+      $options[$meeting->id] = $meeting->title;
+    }
   }
   $form['meeting'] = array(
     '#type' => 'select',
@@ -628,11 +634,64 @@ function ammo_view_entity_form($type, $entity_id) {
   return array();
 }
 
-function ammo_edit_access($branch_id) {
-  $afdelingen = ammo_afdelingen_access();
-  if (is_array($afdelingen)) {
-    return (array_key_exists($branch_id, $afdelingen) || ammo_admin_access()); 
+/*
+ * @branch_id: contact id local branch
+ * @entity_id: id of amendment document, or motion meeting
+ */
+function ammo_support_access($meeting_id) {
+  // Check if meeting submit date has passed.
+  if (!ammo_passed_date($meeting_id, 'event')) {
+    return TRUE;
   }
+  return FALSE;
+}
+
+/*
+ * @branch_id: contact id local branch
+ * @entity_id: id of amendment document, or motion meeting
+ */
+function ammo_edit_access($meeting_id, $branch_id = NULL) {
+  if (ammo_access($meeting_id, 'submit', $branch_id) || ammo_superadmin_access()) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/*
+ * @branch_id: contact id local branch
+ * @entity_id: id of amendment document, or motion meeting
+ */
+function ammo_withdraw_access($meeting_id, $branch_id = NULL) {
+  return ammo_access($meeting_id, 'withdraw', $branch_id);
+}
+
+/*
+ * If branch id is set checks wether user owns branch and wether the
+ * date has not yet passed. If branch is not set only the latter is
+ * checked.
+ *
+ * @branch_id: contact id local branch.
+ * @meeting_id: id of meeting.
+ * @date_type: submit, withdraw or meeting date.
+ */
+function ammo_access($meeting_id, $date_type, $branch_id = NULL) {
+  // Check if meeting submit date has passed.
+  if (!ammo_passed_date($meeting_id, $date_type)) {
+    if (!empty($branch_id)) {
+      // Check if branch is set.
+      $afdelingen = ammo_afdelingen_access();
+      // Check if owns afdeling.
+      if (is_array($afdelingen)) {
+        if (array_key_exists($branch_id, $afdelingen)) {
+          return TRUE;
+        }
+      }
+    }
+    else {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 function ammo_ajax_redirect($destination = NULL) {
@@ -845,6 +904,45 @@ function ammo_get_first_owner($entity_type, $entity_id) {
   $first_owner = array_shift($owners);
   if (!empty($first_owner)) {
     return $first_owner;
+  }
+  return FALSE;
+}
+
+function ammo_passed_date($meeting_id, $date_type) {
+  switch ($date_type) {
+  case 'event':
+    $field = 'date';
+    break;
+  case 'submit':
+    $field = 'submission_closing_date';
+    break;
+  case 'withdraw':
+    $field = 'withdrawal_closing_date';
+    break;
+  }
+  $meeting = entity_load_single('meeting', $meeting_id);
+  if (!empty($meeting->$field)) {
+    $now = new DateTime();
+    $last_date = new DateTime($meeting->$field);
+    if ($now < $last_date) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+/*
+ * @entity_type: amendment or motion.
+ * @entity_id: amendment or motion id.
+ */
+function ammo_get_meeting_id($entity_type, $entity_id) {
+  // Get meeting_id to check dates.
+  $entity = entity_load_single($entity_type, $entity_id);
+  if ($entity_type == 'amendment' && !empty($entity->document_id)) {
+    $entity = entity_load_single('document', $entity->document_id);
+  }
+  if (!empty($entity->meeting_id)) {
+    return $entity->meeting_id;
   }
   return FALSE;
 }

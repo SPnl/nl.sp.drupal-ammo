@@ -35,23 +35,27 @@
     <?php if ($edit_access) : ?>
       <li><?php print l('bewerk motie', 'ammo/motion/edit/' . $entity_id, array('query' => $dest))?></li>
     <?php endif; ?>
-    <?php if ($admin_access) : ?>
+    <?php if (($admin_access && $support_access) || $superadmin_access) : ?>
       <li><?php print l('bewerk advies', 'ammo/motion/advice/' . $entity_id, array('query' => $dest))?></li>
     <?php endif; ?>
     <?php if (!$admin_access) : ?>
-      <?php if (!empty($owners_member)) : ?>
-        <?php if ($backed_by_user) : ?>
-          <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/motion/' . $entity_id, array('query' => $dest))?></li>
-        <?php else  : ?>
-          <li><?php print l('steun als lid', 'ammo/support/add/member/motion/' . $entity_id, array('query' => $dest))?></li>
+      <?php if ($support_access) : ?>
+        <?php if (!empty($owners_member)) : ?>
+          <?php if ($backed_by_user) : ?>
+            <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/motion/' . $entity_id, array('query' => $dest))?></li>
+          <?php else  : ?>
+            <li><?php print l('steun als lid', 'ammo/support/add/member/motion/' . $entity_id, array('query' => $dest))?></li>
+          <?php endif; ?>
         <?php endif; ?>
       <?php endif; ?>
     <?php endif; ?>
-    <?php if ($unsupported_branches) : ?>
-      <li><?php print l('mede indienen als afdeling', 'ammo/support/add/branch/motion/' . $entity_id, array('query' => $dest))?></li>
-    <?php endif; ?>
-    <?php if ($supported_branches) : ?>
-      <li><?php print l('intrekken als afdeling', 'ammo/support/withdraw/branch/motion/' . $entity_id, array('query' => $dest))?></li>
+    <?php if ($withdraw_access) : ?>
+      <?php if ($unsupported_branches) : ?>
+        <li><?php print l('mede indienen als afdeling', 'ammo/support/add/branch/motion/' . $entity_id, array('query' => $dest))?></li>
+      <?php endif; ?>
+      <?php if ($supported_branches) : ?>
+        <li><?php print l('intrekken als afdeling', 'ammo/support/withdraw/branch/motion/' . $entity_id, array('query' => $dest))?></li>
+      <?php endif; ?>
     <?php endif; ?>
   </ul>
 <?php endif; ?>

@@ -12,14 +12,39 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     switch ($form_action) {
     case 'edit':
       if (ammo_preset_form('motion', $path_id, $form_state)) {
-        $form_state['storage']['first_step'] = 4;
+        dpm($form_state['storage']);
+        // Check access right.
+        if (
+          isset($form_state['storage']['meeting']) &&
+          isset($form_state['storage']['branch_id']) &&
+          ammo_edit_access($form_state['storage']['motion'], $form_state['storage']['branch_id'])
+        ) {
+          $form_state['storage']['first_step'] = 4;
+        }
+        else {
+          return;
+        }
+      }
+      else {
+        return;
       }
       break;
     case 'advice':
       if (ammo_admin_access()) {
         if (ammo_preset_form('motion', $path_id, $form_state)) {
-          $form_state['storage']['first_step'] = 6;
+          if (ammo_support_access($form_state['storage']['meeting']) || ammo_superadmin_access()) {
+            $form_state['storage']['first_step'] = 6;
+          }
+          else {
+            return;
+          }
         }
+        else {
+          return;
+        }
+      }
+      else {
+        return;
       }
       break;
     case 'view':

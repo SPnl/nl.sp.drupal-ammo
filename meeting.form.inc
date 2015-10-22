@@ -31,16 +31,16 @@ function ammo_meeting_form($form, &$form_state) {
   );
 
   $form['submission_closing_date'] = array(
-    '#title' => 'Laatste inleverdatum',
+    '#title' => 'Uiterste inlever/wijzigingsdatum',
     '#description' => 'Na deze datum kunnen er geen nieuwe amendementen en moties meer worden ingeleverd, en kunnen bestaande amendementen en moties niet meer worden gewijzigd.',
     '#type' => 'date_popup',
-    '#date_format' => 'd-m-Y',
+    '#date_format' => 'd-m-Y H:i',
   );
 
   $form['withdrawal_closing_date'] = array(
-    '#title' => 'Uiterste datum intrekken amendement of motie',
+    '#title' => 'Uiterste intrekdatum',
     '#type' => 'date_popup',
-    '#date_format' => 'd-m-Y',
+    '#date_format' => 'd-m-Y H:i',
   );
 
   $form['submit'] = array(
