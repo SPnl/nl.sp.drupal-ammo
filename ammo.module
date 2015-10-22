@@ -232,7 +232,7 @@ function template_preprocess_amendment(&$variables) {
       'meeting_date' => $meeting_date_formatted,
       'support_access' => ammo_support_access($meeting->id),
       'edit_access' => ammo_edit_access($meeting->id, $first_owner['branch_id']),
-      'withdraw_access' => ammo_withdraw_access($meeting->id, $first_owner['branch_id']),
+      'withdraw_access' => ammo_withdraw_access($meeting->id),
       'admin_access' => ammo_admin_access(),
       'superadmin_access' => ammo_superadmin_access(),
       'owners_member' => $owners_member,
@@ -296,7 +296,7 @@ function template_preprocess_motion(&$variables) {
       'meeting_date' => $meeting_date_formatted,
       'support_access' => ammo_support_access($meeting->id),
       'edit_access' => ammo_edit_access($meeting->id, $first_owner['branch_id']),
-      'withdraw_access' => ammo_withdraw_access($meeting->id, $first_owner['branch_id']),
+      'withdraw_access' => ammo_withdraw_access($meeting->id),
       'admin_access' => ammo_admin_access(),
       'superadmin_access' => ammo_superadmin_access(),
       'owners_member' => $owners_member,
@@ -486,7 +486,8 @@ function ammo_mail($key, &$message, $params) {
   switch($key) {
   case 'change_message':
     // Create messeage
-    $message['subject'] = 'Wijziging';
+    $type = ($values['entity']['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
+    $message['subject'] = $type . ' nr. ' . $values['entity']['entity_id'] . '.';
     $message['body'][] = $values['entity']['markup'];
     $message['body'][] = '<h3>Wijzigingen</h3>';
     foreach ($values['differences'] as $key => $difference) {
@@ -494,6 +495,19 @@ function ammo_mail($key, &$message, $params) {
     }
     $path = $base_url . '/ammo/' . $values['entity']['entity_type'] . 's/' . $values['meeting_id'] . '#' . $values['entity']['entity_type'] . $values['entity']['entity_id'];
     $message['body'][] = '<p><a href="' . $path . '">Bekijk online</a></p>';
+    break;
+  case 'withdraw_ownership':
+    // Create messeage
+    if ($values['rest']) {
+      $text = 'niet langer mede ingediend door';
+    }
+    else {
+      $text = 'ingetrokken door';
+    }
+    $type = ($values['entity']['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
+    $message['subject'] = $type . ' nr. ' . $values['entity']['entity_id'] . ' ' . $text . ' afdeling ' . $values['branch_display_name'];
+    $message['body'][] = '<h3>' . ucfirst($text) . ' ' . $values['branch_display_name'] . '</h3>';
+    $message['body'][] = $values['entity']['markup'];
     break;
   }
 }

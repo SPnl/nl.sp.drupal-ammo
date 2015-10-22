@@ -16,7 +16,9 @@
   <?php endif; ?>
   <p>Ondersteunt door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?>.</p>
 <?php else: ?>
-  <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
+  <?php if (!empty($owners_branch)) : ?>
+    <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
+  <?php endif; ?>
 <?php endif; ?>
 <?php switch ($type): ?>
 <?php case 'specific': ?>

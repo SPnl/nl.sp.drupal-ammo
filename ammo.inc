@@ -881,6 +881,35 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
   }
 }
 
+function ammo_withdraw_mail($entity_type, $entity_id, $owner) {
+  $entity = entity_load_single($entity_type, $entity_id);
+  $site_email = variable_get('site_mail', 'webmaster@sp.nl');
+  // Get recipients.
+  $relations = ammo_get_related_contacts($entity_id, $entity_type); 
+  $rest_owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch');
+  $rest = (empty($rest_owners)) ? FALSE : TRUE;
+  $params = array(
+    'format'          => SWIFTMAILER_FORMAT_HTML,
+    'reply_to' => $site_email,
+    'values' => array(
+      'meeting_id' => $meeting_id,
+      'entity' => array(
+        'entity_type' => $entity_type,
+        'entity_id' => $entity_id,
+        'markup' => theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
+      ),
+      'rest' => $rest,
+      'branch_display_name' => $owner->branch_display_name,
+    ),
+  );
+  drupal_mail('ammo', 'withdraw_ownership', 'tdgraaff@sp.nl', $language, $params, $site_email, TRUE);
+  foreach ($relations as $relation) {
+    if (!empty($relation['contact_email'])) {
+      //drupal_mail('ammo', 'withdraw_message', $relation['contact_email'], $language, $params, $site_email, TRUE);
+    }
+  }
+}
+
 function ammo_get_contact_email($contact_id) {
   civicrm_initialize();
   $params = array(
