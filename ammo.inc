@@ -504,6 +504,16 @@ function ammo_preset_form($type, $entity_id, &$form_state) {
   return FALSE;
 }
 
+function ammo_checked_form(&$form, &$form_state, $type) {
+  $text = ($type == 'amendment') ? 'vergelijkbaar amendement' : 'vergelijkbare motie';
+  $form['backed'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Ik heb ' . l('gecontroleerd', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']) . ' of er niet reeds een ' . $text . ' is.',
+    '#default_value' => FALSE,
+    '#required' => TRUE,
+  );
+}
+
 function ammo_select_owner_form($type, &$form, &$form_state) {
   // Backed by local branch?
   if (

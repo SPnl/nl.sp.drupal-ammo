@@ -12,14 +12,13 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     switch ($form_action) {
     case 'edit':
       if (ammo_preset_form('motion', $path_id, $form_state)) {
-        dpm($form_state['storage']);
         // Check access right.
         if (
           isset($form_state['storage']['meeting']) &&
           isset($form_state['storage']['branch_id']) &&
           ammo_edit_access($form_state['storage']['motion'], $form_state['storage']['branch_id'])
         ) {
-          $form_state['storage']['first_step'] = 4;
+          $form_state['storage']['first_step'] = 5;
         }
         else {
           return;
@@ -33,7 +32,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       if (ammo_admin_access()) {
         if (ammo_preset_form('motion', $path_id, $form_state)) {
           if (ammo_support_access($form_state['storage']['meeting']) || ammo_superadmin_access()) {
-            $form_state['storage']['first_step'] = 6;
+            $form_state['storage']['first_step'] = 7;
           }
           else {
             return;
@@ -60,15 +59,15 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   }
 
   // Set data input step for changes check.
-  $form_state['storage']['changes_step'] = 5;
+  $form_state['storage']['changes_step'] = 6;
 
   // Set laste page depending on permissions.
   if (empty($form_state['storage']['last_step'])) {
     if (ammo_admin_access()) {
-      $form_state['storage']['last_step'] = 6;
+      $form_state['storage']['last_step'] = 7;
     }
     else {
-      $form_state['storage']['last_step'] = 5;
+      $form_state['storage']['last_step'] = 6;
     }
   }
 
@@ -93,18 +92,22 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     break;
 
   case 2:
-    ammo_select_afdeling_form($form, $form_state);
+    ammo_checked_form($form, $form_state);
     break;
 
   case 3:
-    ammo_select_ammo_form('motion', $form, $form_state, $form_state['storage']['meeting']);
+    ammo_select_afdeling_form($form, $form_state);
     break;
 
   case 4:
-    ammo_select_owner_form('motion', $form, $form_state);
+    ammo_select_ammo_form('motion', $form, $form_state, $form_state['storage']['meeting']);
     break;
 
   case 5:
+    ammo_select_owner_form('motion', $form, $form_state);
+    break;
+
+  case 6:
     $ammo_default = ammo_default($form_state, 'consideration_opening');
     $default = (empty($ammo_default)) ? 'Overwegende dat' : $ammo_default;
     $form['consideration_opening'] = array(
@@ -144,7 +147,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     );
     break;
 
-  case 6:
+  case 7:
     $form['item'] = array(
       '#type' => 'item',
       '#markup' => theme('motion', array('entity_id' => $form_state['storage']['motion'], 'no_links' => TRUE)),
@@ -234,7 +237,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   // If we are on first step, we do not want a back button
   if(
     $form_state['step'] > $form_state['storage']['first_step'] &&
-    $form_state['step'] > 4
+    $form_state['step'] > 5
   )
   {
     $form['buttons']['back'] = array
@@ -290,7 +293,7 @@ function ammo_motion_form_validate($form, &$form_state)
 
   // First we set up a switch for each of our three steps
   switch($step) {
-  case 4:
+  case 5:
     switch ($trigger) {
     case 'action_button':
       if (!$backed) {
@@ -318,7 +321,7 @@ function ammo_motion_form_validate($form, &$form_state)
       break;
     }
     break;
-  case 5:
+  case 6:
     if (empty($values['consideration_opening'])) {
       form_set_error('consideration_opening', 'Vul de overweging openingszin in.');
     }
@@ -359,11 +362,11 @@ function ammo_motion_form_submit($form, &$form_state)
     case 1:
       $form_state['storage']['meeting'] = $values['meeting'];
       break;
-    case 2:
+    case 3:
       $form_state['storage']['branch_id'] = $values['branch_id'];
       $form_state['storage']['branch_display_name'] = $form['branch_id']['#options'][$values['branch_id']];
       break;
-    case 3:
+    case 4:
       if (empty($values['motion'])) {
         // Save new motion.
         $form_state['storage']['state'] = 'concept';
@@ -380,7 +383,7 @@ function ammo_motion_form_submit($form, &$form_state)
         ammo_populate_form('motion', $values['motion'], $form_state);
       }
       break;
-    case 4:
+    case 5:
       if ($values['backed']) {
         // Check if already set owner.
         if (!ammo_is_related($storage['motion'], 'motion', 'owner', 'branch', $storage['branch_id'])) {
@@ -390,7 +393,7 @@ function ammo_motion_form_submit($form, &$form_state)
       }
       $form_state['storage']['new'] = FALSE;
       break;
-    case 5:
+    case 6:
       if ($storage['state'] === 'concept') {
         $form_state['storage']['state'] = 'submitted';
         $form_state['values']['state'] = 'submitted';
@@ -405,7 +408,7 @@ function ammo_motion_form_submit($form, &$form_state)
       );
       ammo_store('motion', $storage['motion'], $mapping, $form, $form_state);
       break;
-    case 6:
+    case 7:
       $mapping = array(
         'advice' => 'advice',
         'advice_supplement' => 'advice_supplement',
@@ -434,7 +437,7 @@ function ammo_motion_form_submit($form, &$form_state)
     break;
   case 'add_owner':
     switch ($step) {
-    case 4:
+    case 5:
       $form_state['storage']['new'] = FALSE;
       $motion = entity_load_single('motion', $storage['motion']);
       $display_name = ammo_contact_get_display_name($values['owner']);
