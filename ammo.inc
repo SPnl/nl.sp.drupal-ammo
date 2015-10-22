@@ -515,6 +515,8 @@ function ammo_checked_form(&$form, &$form_state, $type) {
 }
 
 function ammo_select_owner_form($type, &$form, &$form_state) {
+  // Get meeting.
+  $meeting = entity_load_single('meeting', $form_state['storage']['meeting']);
   // Backed by local branch?
   if (
     ammo_is_related($form_state['storage'][$type], $type, 'owner', 'branch', $form_state['storage']['branch_id']) ||
@@ -530,6 +532,7 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
     '#title' => 'Ingediend door afdeling',
     '#default_value' => $default,
     '#name' => 'backed',
+    '#disabled' => $meeting->no_member_owners,
   );
   $form['owners'] = array(
     '#type' => 'fieldset',

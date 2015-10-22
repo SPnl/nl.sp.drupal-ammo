@@ -43,6 +43,11 @@ function ammo_meeting_form($form, &$form_state) {
     '#date_format' => 'd-m-Y H:i',
   );
 
+  $form['no_member_owners'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Geen individuele indieners.',
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => 'submit',
@@ -111,6 +116,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
   $date = $values['date'];
   $withdrawal_closing_date = $values['withdrawal_closing_date'];
   $submission_closing_date = $values['submission_closing_date'];
+  $no_member_owners = $values['no_member_owners'];
 
   // Check if delete meeting button was clicked.
   $pattern = '/^del_(\d+)$/';
@@ -140,9 +146,12 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     $date = new DateTime($meeting->date);
     $form['date']['date']['#value'] = $date->format('d-m-Y');;
     $date = new DateTime($meeting->withdrawal_closing_date);
-    $form['withdrawal_closing_date']['date']['#value'] = $date->format('d-m-Y');;
+    $form['withdrawal_closing_date']['date']['#value'] = $date->format('d-m-Y');
+    $form['withdrawal_closing_date']['time']['#value'] = $date->format('H:i');
     $date = new DateTime($meeting->submission_closing_date);
-    $form['submission_closing_date']['date']['#value'] = $date->format('d-m-Y');;
+    $form['submission_closing_date']['date']['#value'] = $date->format('d-m-Y');
+    $form['submission_closing_date']['time']['#value'] = $date->format('H:i');
+    $form['no_member_owners']['#checked'] = $meeting->no_member_owners;
     return $form;
   }
 
@@ -187,6 +196,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
         'date' => $date,
         'submission_closing_date' => $submission_closing_date,
         'withdrawal_closing_date' => $withdrawal_closing_date,
+        'no_member_owners' => $no_member_owners,
       ), $meeting_id);    
     if ($saved) {
       drupal_set_message('Bijeenkomst is opgeslagen.');

@@ -37,6 +37,10 @@ function ammo_schema() {
         'description' => 'Event description.',
         'type' => 'text',
       ),
+      'no_member_owners' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+      ),
     ),
     'primary key' => array(
       'id',
