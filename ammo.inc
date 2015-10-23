@@ -370,16 +370,16 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
       $fields[$database_field] = $form_state['storage'][$form_field];
     }
   }
+  // Save entity.
+  $entity = ammo_save_entity($entity_type, $fields, $entity_id);
+  if (empty($entity)) {
+    drupal_set_message('Waarden zijn niet opgeslagen.' , 'error');
+  }
+  else {
+    drupal_set_message('Waarden zijn opgeslagen.');
+  }
   if (!empty($differences) || empty($original_entity)) {
     global $language;
-    // Save entity.
-    $entity = ammo_save_entity($entity_type, $fields, $entity_id);
-    if (empty($entity)) {
-      drupal_set_message('Waarden zijn niet opgeslagen.' , 'error');
-    }
-    else {
-      drupal_set_message('Waarden zijn opgeslagen.');
-    }
     // Send mails if ammo values where changed.
     if (!empty($differences)) {
       if ($form_state['step'] == $form_state['storage']['changes_step']) {
