@@ -16,7 +16,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
         if (
           isset($form_state['storage']['meeting']) &&
           isset($form_state['storage']['branch_id']) &&
-          ammo_edit_access($form_state['storage']['motion'], $form_state['storage']['branch_id'])
+          ammo_edit_access($form_state['storage']['meeting'], $form_state['storage']['branch_id'])
         ) {
           $form_state['storage']['first_step'] = 5;
         }

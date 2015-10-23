@@ -280,7 +280,7 @@ function ammo_is_related($target_id, $target_type, $relation_type, $contact_type
  * @branch_id: the id of the local branch.
  * @item_id: either meeting_id or document_id.
  */
-function ammo_get_amendments_or_motions($type, $branch_id, $item_id) {
+function ammo_get_branch_amendments_or_motions($type, $branch_id, $item_id) {
   $data = array();
   $items = array();
   $property = ($type == 'amendment') ? 'document_id' : 'meeting_id';
@@ -289,15 +289,22 @@ function ammo_get_amendments_or_motions($type, $branch_id, $item_id) {
   $query->join('ammo_contact_relations', 'r', 't.id = r.target_id');
   $query
     ->fields('t', array('id'))
+    ->fields('r', array('id', 'branch_id'))
     ->condition('t.state', 'concept', '!=')
     ->condition('r.relation_type', 'owner','=')
-    ->condition('r.branch_id', $branch_id,'=')
+    ->condition('r.contact_type', 'branch','=')
     ->condition('r.target_type', $type,'=')
     ->condition('t.' . $property, $item_id,'=');
   $result= $query->execute();
   if ($result) {
     while ($row = $result->fetchObject()) {
-      $data[$row->id] = $row->id;
+      $data_raw[$row->id][$row->r_id] = $row->branch_id;
+    }
+    foreach ($data_raw as $entity_id => $owners) {
+      $first_owner = array_shift($owners);
+      if ($first_owner == $branch_id) {
+        $data[$entity_id] = $entity_id;
+      }
     }
   }
   return $data;
@@ -492,6 +499,10 @@ function ammo_preset_form($type, $entity_id, &$form_state) {
       $form_state['storage']['branch_display_name'] = $first_owner['branch_display_name'];
       $form_state['storage'][$type] = $path_id;
       ammo_populate_form($type, $entity_id, $form_state); 
+      if ($type == 'amendment') {
+        $meeting_id = ammo_get_meeting_id('amendment', $form_state['storage']['amendment']);
+        $form_state['storage']['meeting'] = $meeting_id;
+      }
       return TRUE;
     }
     else {
@@ -508,7 +519,7 @@ function ammo_checked_form(&$form, &$form_state, $type) {
   $text = ($type == 'amendment') ? 'vergelijkbaar amendement' : 'vergelijkbare motie';
   $form['backed'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Ik heb ' . l('gecontroleerd', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']) . ' of er niet reeds een ' . $text . ' is.',
+    '#title' => 'Ik heb ' . l('gecontroleerd', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']) . ' of er niet reeds een ' . $text . ' is die onze afdeling kan mede indienen.',
     '#default_value' => FALSE,
     '#required' => TRUE,
   );
@@ -588,7 +599,7 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
  */
 function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
   $title = ($type == 'amendment') ? 'Amendement' : 'Motie';
-  $entities = ammo_get_amendments_or_motions($type, $form_state['storage']['branch_id'], $entity_id);
+  $entities = ammo_get_branch_amendments_or_motions($type, $form_state['storage']['branch_id'], $entity_id);
   if (!empty($entities)) $title .= ' indienen of bewerken';
   $form[$type] = array(
     '#type' => 'select',
@@ -664,7 +675,8 @@ function ammo_support_access($meeting_id) {
  * @entity_id: id of amendment document, or motion meeting
  */
 function ammo_edit_access($meeting_id, $branch_id = NULL) {
-  if (ammo_access($meeting_id, 'submit', $branch_id) || ammo_superadmin_access()) {
+  $result = ammo_access($meeting_id, 'submit', $branch_id);
+  if ($result || ammo_superadmin_access()) {
     return TRUE;
   }
   return FALSE;
@@ -857,12 +869,12 @@ function ammo_diffline($line1, $line2)
 
 function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeting_id) {
   $entity = entity_load_single($entity_type, $entity_id);
-  $site_email = variable_get('site_mail', 'webmaster@sp.nl');
+  $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
   $relations = ammo_get_related_contacts($entity_id, $entity_type); 
   $params = array(
     'format'          => SWIFTMAILER_FORMAT_HTML,
-    'reply_to' => $site_email,
+    'reply_to' => $sender_email,
     'values' => array(
       'differences' => $differences,
       'meeting_id' => $meeting_id,
@@ -873,24 +885,24 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
       ),
     ),
   );
-  drupal_mail('ammo', 'change_message', 'tdgraaff@sp.nl', $language, $params, $site_email, TRUE);
+  drupal_mail('ammo', 'change_message', 'tdgraaff@sp.nl', $language, $params, $sender_email, TRUE);
   foreach ($relations as $relation) {
     if (!empty($relation['contact_email'])) {
-      //drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $site_email, TRUE);
+      //drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
     }
   }
 }
 
-function ammo_withdraw_mail($entity_type, $entity_id, $owner) {
+function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
   $entity = entity_load_single($entity_type, $entity_id);
-  $site_email = variable_get('site_mail', 'webmaster@sp.nl');
+  $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
   $relations = ammo_get_related_contacts($entity_id, $entity_type); 
   $rest_owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch');
   $rest = (empty($rest_owners)) ? FALSE : TRUE;
   $params = array(
     'format'          => SWIFTMAILER_FORMAT_HTML,
-    'reply_to' => $site_email,
+    'reply_to' => $sender_email,
     'values' => array(
       'meeting_id' => $meeting_id,
       'entity' => array(
@@ -902,10 +914,13 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner) {
       'branch_display_name' => $owner->branch_display_name,
     ),
   );
-  drupal_mail('ammo', 'withdraw_ownership', 'tdgraaff@sp.nl', $language, $params, $site_email, TRUE);
+  drupal_mail('ammo', 'withdraw_ownership', 'tdgraaff@sp.nl', $language, $params, $sender_email, TRUE);
+  if (!empty($owner->contact_email)) {
+    //drupal_mail('ammo', 'withdraw_ownership', $owner->contact_email, $language, $params, $sender_email, TRUE);
+  }
   foreach ($relations as $relation) {
     if (!empty($relation['contact_email'])) {
-      //drupal_mail('ammo', 'withdraw_message', $relation['contact_email'], $language, $params, $site_email, TRUE);
+      //drupal_mail('ammo', 'withdraw_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
     }
   }
 }
@@ -987,4 +1002,10 @@ function ammo_get_meeting_id($entity_type, $entity_id) {
     return $entity->meeting_id;
   }
   return FALSE;
+}
+
+function ammo_mailadress($meeting_id) {
+  $meeting = entity_load_single('meeting', $meeting_id);
+  $sender_mail = (!empty($meeting->email)) ? $meeting->email : variable_get('site_mail', 'webmaster@sp.nl');
+  return $sender_mail;
 }

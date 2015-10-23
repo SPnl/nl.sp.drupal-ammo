@@ -1,3 +1,4 @@
+<?php //dpm($variables); ?>
 <h3 id="motion<?php print $entity_id; ?>">Motie nr. <?php print $entity_id; ?></h3>
 <?php //print '<p>' . $meeting_title . ' van de SP, in vergadering bijeen op ' . $meeting_date . '.</p>'; ?>
 <?php if (!empty($owners_branch)) : ?>
@@ -26,10 +27,12 @@
   <strong><?php print $follow_up_opening; ?></strong><br/>
   <?php print $follow_up_body; ?>
 </p>
-<p>
-  <strong>Toelichting:</strong><br/>
-  <?php print $supplement; ?>
-</p>
+<?php if (!empty($supplement)) : ?>
+  <p>
+    <strong>Toelichting:</strong><br/>
+    <?php print $supplement; ?>
+  </p>
+<?php endif; ?>
 <?php if ($no_links !== TRUE) : ?>
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
   <ul class="ammo-list">

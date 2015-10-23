@@ -24,6 +24,11 @@ function ammo_meeting_form($form, &$form_state) {
     '#title' => 'Beschrijving',
   );
 
+  $form['email'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Contact e-mailadres',
+  );
+
   $form['date'] = array(
     '#title' => 'Datum evenement',
     '#type' => 'date_popup',
@@ -117,6 +122,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
   $withdrawal_closing_date = $values['withdrawal_closing_date'];
   $submission_closing_date = $values['submission_closing_date'];
   $no_member_owners = $values['no_member_owners'];
+  $email = $values['email'];
 
   // Check if delete meeting button was clicked.
   $pattern = '/^del_(\d+)$/';
@@ -143,6 +149,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     $form['form_title']['#markup'] = 'Bewerk bijeenkomst';
     $form['title']['#value'] = $meeting->title;
     $form['description']['#value'] = $meeting->description;
+    $form['email']['#value'] = $meeting->email;
     $date = new DateTime($meeting->date);
     $form['date']['date']['#value'] = $date->format('d-m-Y');;
     $date = new DateTime($meeting->withdrawal_closing_date);
@@ -176,6 +183,10 @@ function ammo_meeting_form_ajax($form, &$form_state) {
       $form['date']['#prefix'] = ammo_error('Kies een laatste intrekdatum.');
       $error = TRUE;
     }
+    if (empty($values['email']) || !valid_email_address($values['email'])) {
+      $form['email']['#prefix'] = ammo_error('Vul een geldig e-mailadres in.');
+      $error = TRUE;
+    }
     if (empty($form_state['meeting_id'])) {
       // New meeting.
       $unique_title = ammo_entity_check_title('meeting', $title);
@@ -196,6 +207,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
         'date' => $date,
         'submission_closing_date' => $submission_closing_date,
         'withdrawal_closing_date' => $withdrawal_closing_date,
+        'email' => $email,
         'no_member_owners' => $no_member_owners,
       ), $meeting_id);    
     if ($saved) {

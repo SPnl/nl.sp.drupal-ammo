@@ -37,6 +37,11 @@ function ammo_schema() {
         'description' => 'Event description.',
         'type' => 'text',
       ),
+      'email' => array(
+        'description' => 'Contact e-mailadres.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
       'no_member_owners' => array(
         'type' => 'int',
         'size' => 'tiny',

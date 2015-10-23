@@ -174,12 +174,12 @@ function ammo_support_form_submit($form, &$form_state) {
   $contact_type = arg(3);
   $target_type = arg(4);
   $entity_id = arg(5);
+  $entity = entity_load_single($target_type, $entity_id);
 
   switch ($contact_type) {
   case 'member':
     switch ($action) {
     case 'add':
-      $entity = entity_load_single($target_type, $entity_id);
       $display_name = ammo_contact_get_display_name($user->name);
       // Sla nieuwe backer op.
       $backer = ammo_save_relation('backer', $target_type, $entity_id, $user->name, $contact_type, $display_name); 
@@ -207,7 +207,6 @@ function ammo_support_form_submit($form, &$form_state) {
     case 'add':
       foreach ($values['branch_id'] as $key => $value) {
         if ($key == $value) {
-          $entity = entity_load_single($target_type, $entity_id);
           $display_name = ammo_contact_get_display_name($value);
           $display_name = substr($display_name, 12);
           // Sla nieuwe owner op.
@@ -222,6 +221,7 @@ function ammo_support_form_submit($form, &$form_state) {
       }
       break;
     case 'withdraw':
+      $meeting_id = ammo_get_meeting_id($target_type, $entity_id); 
       foreach ($values['branch_id'] as $key => $value) {
         if ($key == $value) {
           $remove_id = ammo_is_related($entity_id, $target_type, 'owner', $contact_type, $value);
@@ -229,7 +229,7 @@ function ammo_support_form_submit($form, &$form_state) {
           $result = entity_delete('contact_relation', $remove_id);
           if ($result !== FALSE) {
             drupal_set_message('U bent niet langer (mede) indiener.');
-            ammo_withdraw_mail($target_type, $entity_id, $owner);
+            ammo_withdraw_mail($target_type, $entity_id, $owner, $meeting_id);
           }
           else {
             drupal_set_message('Er is een fout opgetreden.' , 'error');

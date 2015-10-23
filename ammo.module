@@ -318,7 +318,7 @@ function template_preprocess_overview_amendments(&$variables) {
   if (isset($variables['meeting_id'])) {
     $meeting = entity_load_single('meeting', $variables['meeting_id']);
     // Store meeting data.
-    $data['meeting'][$meeting->id] = array(
+    $data['meeting'] = array(
       'id' => $meeting->id,
       'title' => check_plain($meeting->title),
       'description' => check_plain($meeting->description),
@@ -328,7 +328,7 @@ function template_preprocess_overview_amendments(&$variables) {
     $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title", array(":meeting_id" => $variables['meeting_id']));
     foreach ($documents_results as $document) {
       // Store document data.
-      $data['meetings'][$meeting->id]['documents'][$document->id] = array(
+      $data['meeting']['documents'][$document->id] = array(
         'id' => $document->id,
         'title' => check_plain($document->title),
         'description' => check_plain($document->description),
@@ -343,7 +343,7 @@ function template_preprocess_overview_amendments(&$variables) {
         switch ($amendment->type) {
         case 'general':
           // Store amendment data.
-          $data['meetings'][$meeting->id]['documents'][$document->id]['type'][$amendment->type]['amendments'][$amendment->id] = array(
+          $data['meeting']['documents'][$document->id]['type'][$amendment->type]['amendments'][$amendment->id] = array(
             'id' => $amendment->id,
             'owners_member' => $owners_member,
             'owners_branch' => $owners_branch,
@@ -351,11 +351,11 @@ function template_preprocess_overview_amendments(&$variables) {
           break;
         case 'specific':
           // Store chapter data.
-          $data['meetings'][$meeting->id]['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['nr'] = $amendment->chapter;
+          $data['meeting']['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['nr'] = $amendment->chapter;
           // Store page data.
-          $data['meetings'][$meeting->id]['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['pages'][$amendment->page]['nr'] = $amendment->page;
+          $data['meeting']['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['pages'][$amendment->page]['nr'] = $amendment->page;
           // Store amendment data.
-          $data['meetings'][$meeting->id]['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = array(
+          $data['meeting']['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = array(
             'id' => $amendment->id,
             'chapter' => check_plain($amendment->chapter),
             'page' => check_plain($amendment->page),
@@ -373,7 +373,7 @@ function template_preprocess_overview_amendments(&$variables) {
 function template_preprocess_overview_motions(&$variables) {
   if (isset($variables['meeting_id'])) {
     $meeting = entity_load_single('meeting', $variables['meeting_id']);
-    $data['meetings'][$meeting->id] = array(
+    $data['meeting'] = array(
       'id' => $meeting->id,
       'meeting_id' => $meeting->id,
       'title' => check_plain($meeting->title),
@@ -387,8 +387,8 @@ function template_preprocess_overview_motions(&$variables) {
       $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
       $first_owner = ammo_get_first_owner('motion', $motion->id);
       if (empty($owners_member) && empty($owners_branch)) continue;
-      $data['meetings'][$meeting->id]['branches'][$first_owner['branch_id']]['info'] = $first_owner;
-      $data['meetings'][$meeting->id]['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
+      $data['meeting']['branches'][$first_owner['branch_id']]['info'] = $first_owner;
+      $data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
         'id' => $motion->id,
         'owners_member' => $owners_member,
         'owners_branch' => $owners_branch,

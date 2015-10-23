@@ -39,10 +39,12 @@
 <p><strong>Tekst:</strong><br/><?php print $general; ?></p>
 <?php break; ?>
 <?php endswitch; ?>
-<p>
-  <strong>Toelichting:</strong><br/>
-  <?php print $supplement; ?>
-</p>
+<?php if (!empty($supplement)) : ?>
+  <p>
+    <strong>Toelichting:</strong><br/>
+    <?php print $supplement; ?>
+  </p>
+<?php endif; ?>
 <?php if (!empty($advice)) : ?>
 <?php $options = ammo_amendment_advice(); ?>
   <p>
