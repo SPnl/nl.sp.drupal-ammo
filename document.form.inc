@@ -18,19 +18,21 @@ function ammo_document_form($form, &$form_state) {
   foreach ($meetings as $meeting) {
     $options[$meeting->id] = $meeting->title;
   }
-  $form['meeting'] = array(
-    '#type' => 'select',
-    '#title' => 'Meeting',
-    '#options' => $options,
-    '#empty_option' => 'kies:',
-    '#ajax' => array(
-      'callback' => 'ammo_document_form_ajax',
-      'wrapper' => 'ammo-document-ajax',
-      'method' => 'replace',
-      'effect' => 'fade',
-      'event' => 'change',
-    ),
-  );
+  if (!empty($options)) {
+    $form['meeting'] = array(
+      '#type' => 'select',
+      '#title' => 'Meeting',
+      '#options' => $options,
+      '#empty_option' => 'kies:',
+      '#ajax' => array(
+        'callback' => 'ammo_document_form_ajax',
+        'wrapper' => 'ammo-document-ajax',
+        'method' => 'replace',
+        'effect' => 'fade',
+        'event' => 'change',
+      ),
+    );
+  }
 
   if (!empty($form_state['values']['meeting'])) {
     $form['title'] = array(
