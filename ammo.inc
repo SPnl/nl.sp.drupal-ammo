@@ -384,7 +384,7 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
     if (!empty($differences)) {
       if ($form_state['step'] == $form_state['storage']['changes_step']) {
         drupal_set_message('Er wordt een e-mail met de wijzigingen verzonden.');
-        ammo_changes_update_mail($entity_type, $entity_id, $differences, $form_state['storage']['meeting_id']);
+        ammo_changes_update_mail($entity_type, $entity_id, $differences, $form_state['storage']['meeting']);
       }
     }
   }
