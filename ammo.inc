@@ -888,7 +888,7 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
   drupal_mail('ammo', 'change_message', 'tdgraaff@sp.nl', $language, $params, $sender_email, TRUE);
   foreach ($relations as $relation) {
     if (!empty($relation['contact_email'])) {
-      //drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
+      drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
     }
   }
 }
@@ -920,7 +920,7 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
   }
   foreach ($relations as $relation) {
     if (!empty($relation['contact_email'])) {
-      //drupal_mail('ammo', 'withdraw_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
+      drupal_mail('ammo', 'withdraw_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
     }
   }
 }
