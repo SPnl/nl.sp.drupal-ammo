@@ -446,7 +446,16 @@ function ammo_amendment_form_validate($form, &$form_state)
         form_set_error('page', 'Pagina nr. moet een getal zijn.');
       }
       if (!preg_match('/^[1-9][0-9]*$/', $values['line'])) {
-        form_set_error('chapter', 'Regelnummer moet een getal zijn.');
+        form_set_error('line', 'Regelnummer moet een getal zijn.');
+      }
+      // Extra validation for specific document!
+      if ($storage['document'] == 2) {
+        if ($values['chapter'] < 4) {
+          form_set_error('chapter', 'De eerste drie hoofdstukken zijn niet amendeerbaar.');
+        }
+        if ($values['page'] < 10) {
+          form_set_error('page', 'Controleer het paginanummer, alleen hoofdstuk 4 en verder zijn amendeerbaar.');
+        }
       }
       if (empty($values['action'])) {
         form_set_error('action', 'Kies het soort amendement.');
