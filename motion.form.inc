@@ -125,7 +125,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     );
 
     $ammo_default = ammo_default($form_state, 'follow_up_opening');
-    $default = (empty($ammo_default)) ? 'Verzoekt het congres het bestuur' : $ammo_default;
+    $default = (empty($ammo_default)) ? 'Verzoekt ...' : $ammo_default;
     $form['follow_up_opening'] = array(
       '#type' => 'textfield',
       '#title' => '',
