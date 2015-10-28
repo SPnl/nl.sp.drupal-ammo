@@ -237,7 +237,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   // If we are on first step, we do not want a back button
   if(
     $form_state['step'] > $form_state['storage']['first_step'] &&
-    $form_state['step'] > 5
+    $form_state['step'] <> 5
   )
   {
     $form['buttons']['back'] = array

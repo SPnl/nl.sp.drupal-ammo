@@ -516,10 +516,16 @@ function ammo_preset_form($type, $entity_id, &$form_state) {
 }
 
 function ammo_checked_form(&$form, &$form_state, $type) {
-  $text = ($type == 'amendment') ? 'vergelijkbaar amendement' : 'vergelijkbare motie';
+  $text1 = ($type == 'amendment') ? 'vergelijkbaar amendement' : 'vergelijkbare motie';
+  $text2 = ($type == 'amendment') ? 'amendementen' : 'moties';
+  $text3 = ($type == 'amendment') ? 'het amendement' : 'de motie';
+  $link1 = l('gecontroleerd', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']);
+  $link2 = l('overzicht', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']);
+  $description = 'Om te voorkomen dat er meerdere ' . $text2 . ' met dezelfde strekking worden ingedient dient er vóóraf een controle plaats te vinden of er niet reeds een ' . $text1 . ' is ingediend. Indien er een ' . $text1 . ' reeds door een andere afdeling is ingedient, kan in het ' . $link2 . ' door een druk op de knop "mede indienen" ' . $text3 . ' mede ingedient worden. Mocht de orginele indiener ' . $text3 . ' intrekken, dan blijft ' . $text3 . ' staan als er nog andere indieners zijn.';
   $form['backed'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Ik heb ' . l('gecontroleerd', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']) . ' of er niet reeds een ' . $text . ' is die onze afdeling kan mede indienen.',
+    '#title' => 'Ik heb ' . $link . ' of er niet reeds een ' . $text1 . ' is die onze afdeling kan mede indienen.',
+    '#description' => $description,
     '#default_value' => FALSE,
     '#required' => TRUE,
   );
@@ -528,6 +534,7 @@ function ammo_checked_form(&$form, &$form_state, $type) {
 function ammo_select_owner_form($type, &$form, &$form_state) {
   // Get meeting.
   $meeting = entity_load_single('meeting', $form_state['storage']['meeting']);
+  $description = ($meeting->no_member_owners) ? 'Wordt ingedient namens de afdeling.' : 'Kies hier of u wilt indienen namens de afdeling, of namens leden van de afdeling.';
   // Backed by local branch?
   if (
     ammo_is_related($form_state['storage'][$type], $type, 'owner', 'branch', $form_state['storage']['branch_id']) ||
@@ -541,6 +548,7 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
   $form['backed'] = array(
     '#type' => 'checkbox',
     '#title' => 'Ingediend door afdeling',
+    '#description' => $description,
     '#default_value' => $default,
     '#name' => 'backed',
     '#disabled' => $meeting->no_member_owners,
@@ -613,11 +621,15 @@ function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
 
 function ammo_select_afdeling_form(&$form, &$form_state) {
   $afdelingen = ammo_afdelingen_access();
+  if (empty($afdelingen)) {
+    $afdelingen = array();
+  }
+  $text1 = ($type == 'amendment') ? 'het amendement' : 'de motie';
   $form['branch_id'] = array(
     '#type' => 'select',
     '#title' => 'Afdeling',
+    '#description' => 'Kies welke afdeling ' . $text1 . ' indient.',
     '#options' => $afdelingen,
-    '#empty_option' => 'kies:',
     '#default_value' => ammo_default($form_state, 'branch_id'),
     '#required' => true,
     '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
@@ -635,8 +647,8 @@ function ammo_select_meeting_form(&$form, &$form_state) {
   $form['meeting'] = array(
     '#type' => 'select',
     '#title' => 'Bijeenkomst',
+    '#description' => 'Kies de bijeenkomst waar het amendement of de motie behandeld wordt.',
     '#options' => $options,
-    '#empty_option' => 'kies:',
     '#default_value' => ammo_default($form_state, 'meeting'),
     '#required' => true,
     '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),

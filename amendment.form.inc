@@ -106,8 +106,8 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     $form['document'] = array(
       '#type' => 'select',
       '#title' => 'Document',
+      '#description' => 'Kies het document wat u wilt amenderen.',
       '#options' => $options,
-      '#empty_option' => 'kies:',
       '#default_value' => ammo_default($form_state, 'document'),
       '#required' => true,
       '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
@@ -353,7 +353,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   // If we are on first step, we do not want a back button
   if(
     $form_state['step'] > $form_state['storage']['first_step'] &&
-    $form_state['step'] > 6
+    $form_state['step'] <> 6
   )
   {
     $form['buttons']['back'] = array
