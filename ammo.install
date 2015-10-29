@@ -100,14 +100,6 @@ function ammo_schema() {
         'type' => 'varchar',
         'length' => '255',
       ),
-      'type' => array(
-        'type' => 'varchar',
-        'length' => '255',
-      ),
-      'general' => array(
-        'description' => 'General amendment content.',
-        'type' => 'text',
-      ),
       'chapter' => array(
         'type' => 'int',
         'size' => 'small',
@@ -120,21 +112,12 @@ function ammo_schema() {
         'type' => 'int',
         'size' => 'small',
       ),
-      'action' => array(
-        'description' => 'Action to take on the amended text.',
-        'type' => 'varchar',
-        'length' => '255',
+      'amendment_text' => array(
+        'description' => 'The amendment text.',
+        'type' => 'text',
       ),
       'supplement' => array(
         'description' => 'Supplementary information about the amendment.',
-        'type' => 'text',
-      ),
-      'current_text' => array(
-        'description' => 'Text that is amended.',
-        'type' => 'text',
-      ),
-      'new_text' => array(
-        'description' => 'Text that replaces or is added to amended text.',
         'type' => 'text',
       ),
       'advice' => array(
@@ -142,25 +125,8 @@ function ammo_schema() {
         'type' => 'varchar',
         'length' => '255',
       ),
-      'advice_general' => array(
-        'description' => 'General amendment content.',
-        'type' => 'text',
-      ),
       'advice_supplement' => array(
         'description' => 'Supplementary information about the advice.',
-        'type' => 'text',
-      ),
-      'advice_action' => array(
-        'description' => 'Action to take on the amended text.',
-        'type' => 'varchar',
-        'length' => '255',
-      ),
-      'advice_current_text' => array(
-        'description' => 'Text that is amended.',
-        'type' => 'text',
-      ),
-      'advice_new_text' => array(
-        'description' => 'Text that replaces or is added to amended text.',
         'type' => 'text',
       ),
     ),

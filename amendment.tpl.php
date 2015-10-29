@@ -20,25 +20,8 @@
     <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
   <?php endif; ?>
 <?php endif; ?>
-<?php switch ($type): ?>
-<?php case 'specific': ?>
 <p>Regel <?php print $line; ?></p>
-<?php switch ($action): ?>
-<?php case 'add': ?>
-<p><strong>Toe te voegen tekst:</strong><br/><?php print $new_text; ?></p>
-<?php break; ?>
-<?php case 'delete': ?>
-<p><strong>Te verwijderen tekst:</strong><br/><?php print $current_text; ?></p>
-<?php break; ?>
-<?php case 'replace': ?>
-<p><strong>De tekst:</strong><br/><?php print $current_text; ?><br/><strong>vervangen door:</strong><br/><?php print $new_text; ?></p>
-<?php break; ?>
-<?php endswitch; ?>
-<?php break; ?>
-<?php case 'general': ?>
-<p><strong>Tekst:</strong><br/><?php print $general; ?></p>
-<?php break; ?>
-<?php endswitch; ?>
+<p><strong>Amendement tekst:</strong><br/><?php print $amendment_text; ?></p>
 <?php if (!empty($supplement)) : ?>
   <p>
     <strong>Toelichting:</strong><br/>

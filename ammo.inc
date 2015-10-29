@@ -402,7 +402,6 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
     $form_state['storage']['amendment'] = $entity_id;
     $mapping = array(
       'document_id' => 'document',
-      'type' => 'type',
       'chapter' => 'chapter',
       'page' => 'page',
       'line' => 'line',
@@ -418,8 +417,7 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
     $prefill_fields = array(
       'general' => 'general',
       'action' => 'action',
-      'current_text' => 'current_text',
-      'new_text' => 'new_text',
+      'amendment_text' => 'amendment_text',
     );
     foreach ($prefill_fields as $database_field => $form_field) {
       // Store normal values.
@@ -959,8 +957,7 @@ function ammo_filter_fields($source) {
     'follow_up_opening' => 'Openingsregel vervolg',
     'follow_up_text' => 'Inhoud vervolg',
     'supplement' => 'Toelichting',
-    'current_text' => 'Huidige tekst',
-    'new_text' => 'Nieuwe tekst',
+    'amendment_text' => 'Amendement tekst',
   );
   return (isset($translation[$source])) ? $translation[$source] : FALSE; 
 }

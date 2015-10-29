@@ -208,21 +208,13 @@ function template_preprocess_amendment(&$variables) {
     }
     $vars = array(
       'document_id' => $entity->document_id,
-      'type' => $entity->type,
-      'general' => $entity->general,
       'chapter' => $entity->chapter,
       'page' => $entity->page,
       'line' => $entity->line,
-      'action' => $entity->action,
+      'amendment_text' => $entity->amendment_text,
       'supplement' => $entity->supplement,
-      'current_text' => $entity->current_text,
-      'new_text' => $entity->new_text,
       'advice' => $entity->advice,
-      'advice_general' => $entity->advice_general,
       'advice_supplement' => $entity->advice_supplement,
-      'advice_action' => $entity->advice_action,
-      'advice_current_text' => $entity->advice_current_text,
-      'advice_new_text' => $entity->advice_new_text,
       'state' => $entity->state,
       'document_title' => $document->title,
       'document_description' => $document->description,
@@ -334,36 +326,24 @@ function template_preprocess_overview_amendments(&$variables) {
         'description' => check_plain($document->description),
         'meeting_id' => check_plain($document->meeting_id),
       );
-      $amendments_results = db_query("SELECT id, type, chapter, page FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY type, chapter, page, line, id", array(":document_id" => $document->id));
+      $amendments_results = db_query("SELECT id, chapter, page FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, page, line, id", array(":document_id" => $document->id));
       foreach ($amendments_results as $amendment) {
         // Get owners.
         $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
         $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
         if (empty($owners_member) && empty($owners_branch)) continue;
-        switch ($amendment->type) {
-        case 'general':
-          // Store amendment data.
-          $data['meeting']['documents'][$document->id]['type'][$amendment->type]['amendments'][$amendment->id] = array(
-            'id' => $amendment->id,
-            'owners_member' => $owners_member,
-            'owners_branch' => $owners_branch,
-          );
-          break;
-        case 'specific':
-          // Store chapter data.
-          $data['meeting']['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['nr'] = $amendment->chapter;
-          // Store page data.
-          $data['meeting']['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['pages'][$amendment->page]['nr'] = $amendment->page;
-          // Store amendment data.
-          $data['meeting']['documents'][$document->id]['type'][$amendment->type]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = array(
-            'id' => $amendment->id,
-            'chapter' => check_plain($amendment->chapter),
-            'page' => check_plain($amendment->page),
-            'owners_member' => $owners_member,
-            'owners_branch' => $owners_branch,
-          );
-          break;
-        }
+        // Store chapter data.
+        $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['nr'] = $amendment->chapter;
+        // Store page data.
+        $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['nr'] = $amendment->page;
+        // Store amendment data.
+        $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = array(
+          'id' => $amendment->id,
+          'chapter' => check_plain($amendment->chapter),
+          'page' => check_plain($amendment->page),
+          'owners_member' => $owners_member,
+          'owners_branch' => $owners_branch,
+        );
       }
     }
     $variables = $variables + $data;
