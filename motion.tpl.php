@@ -33,6 +33,15 @@
     <?php print $supplement; ?>
   </p>
 <?php endif; ?>
+<?php if (!empty($advice)) : ?>
+<?php $options = ammo_motion_advice(); ?>
+  <p>
+    <strong>Advies:</strong> <?php print strtolower($options[$advice]); ?>
+    <?php if (!empty($advice_supplement)) : ?>
+      <br/><?php print $advice_supplement; ?>
+    <?php endif; ?>
+  </p>
+<?php endif; ?>
 <?php if ($no_links !== TRUE) : ?>
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
   <ul class="ammo-list">

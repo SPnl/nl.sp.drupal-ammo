@@ -520,7 +520,7 @@ function ammo_checked_form(&$form, &$form_state, $type) {
   $link1 = l('gecontroleerd', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']);
   $link2 = l('overzicht', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']);
   $description = 'Om te voorkomen dat er meerdere ' . $text2 . ' met dezelfde strekking worden ingedient dient er vóóraf een controle plaats te vinden of er niet reeds een ' . $text1 . ' is ingediend. Indien er een ' . $text1 . ' reeds door een andere afdeling is ingedient, kan in het ' . $link2 . ' door een druk op de knop "mede indienen" ' . $text3 . ' mede ingedient worden. Mocht de orginele indiener ' . $text3 . ' intrekken, dan blijft ' . $text3 . ' staan als er nog andere indieners zijn.';
-  $form['backed'] = array(
+  $form['checked'] = array(
     '#type' => 'checkbox',
     '#title' => 'Ik heb ' . $link . ' of er niet reeds een ' . $text1 . ' is die onze afdeling kan mede indienen.',
     '#description' => $description,
