@@ -80,30 +80,45 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
 
   $form['title'] = array(
     '#type' => 'item',
-    '#markup' => '<h2>Stap '.($form_state['step'] - $form_state['storage']['first_step'] + 1).' / '.($form_state['storage']['last_step'] - $form_state['storage']['first_step'] + 1).'</h2>',
+    '#markup' => '<h2>Motie indienen</h2>',
   );
 
   // Depending on which step of the form we are on, we output different form fields
-  switch($form_state['step'])
-  {
+  if ($form_state['step'] == 1) {
+    $options = ammo_get_meetings();
+    if (count($options) == 1) {
+      $form_state['step'] ++;
+      $form_state['storage']['meeting'] = key($options);
+    }
+    else {
+      ammo_select_meeting_form($form, $form_state, $options);
+    }
+  }
 
-  case 1:
-    ammo_select_meeting_form($form, $form_state);
-    break;
+  if ($form_state['step'] == 2) {
+    ammo_checked_form($form, $form_state, 'motion');
+  }
 
-  case 2:
-    ammo_checked_form($form, $form_state);
-    break;
+  if ($form_state['step'] == 3) {
+    $options = ammo_afdelingen_access();
+    if (empty($options)) {
+      $options = array();
+    }
+    if (count($options) == 1) {
+      $form_state['step'] ++;
+      $form_state['storage']['branch_id'] = key($options);
+      $form_state['storage']['branch_display_name'] = current($options);
+    }
+    else {
+      ammo_select_afdeling_form($form, $form_state, 'motion', $options);
+    }
+  }
 
-  case 3:
-    ammo_select_afdeling_form($form, $form_state);
-    break;
-
-  case 4:
+  if ($form_state['step'] == 4) {
     ammo_select_owner_form('motion', $form, $form_state);
-    break;
+  }
 
-  case 5:
+  if ($form_state['step'] == 5) {
     $ammo_default = ammo_default($form_state, 'consideration_opening');
     $default = (empty($ammo_default)) ? 'Overwegende dat' : $ammo_default;
     $form['consideration_opening'] = array(
@@ -141,9 +156,9 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       '#title' => 'Toelichting',
       '#default_value' => ammo_default($form_state, 'supplement'),
     );
-    break;
+  }
 
-  case 6:
+  if ($form_state['step'] == 6) {
     $form['item'] = array(
       '#type' => 'item',
       '#markup' => theme('motion', array('entity_id' => $form_state['storage']['motion'], 'no_links' => TRUE)),
@@ -222,7 +237,6 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       '#empty_option' => 'kies:',
       '#default_value' => ammo_default($form_state, 'state'),
     );
-    break;
   }
 
   // Create a container for our buttons
@@ -233,7 +247,8 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   // If we are on first step, we do not want a back button
   if(
     $form_state['step'] > $form_state['storage']['first_step'] &&
-    $form_state['step'] <> 4
+    $form_state['step'] <> 4 &&
+    !empty($form_state['active_steps'])
   )
   {
     $form['buttons']['back'] = array
@@ -337,7 +352,7 @@ function ammo_motion_form_validate($form, &$form_state)
 function ammo_motion_form_back_submit($form, &$form_state)
 {
   // Go step back.
-  $form_state['step']--;
+  $form_state['step'] = array_pop($form_state['active_steps']);
 
   // Because this is a multi-step form, we always need to rebuild the form
   // on every step, even after submission. This allows our form to be completely
@@ -420,6 +435,7 @@ function ammo_motion_form_submit($form, &$form_state)
     }
     else {
       // Increase the step by one, to move on to the next step
+      $form_state['active_steps'][$form_state['step']] = $form_state['step'];
       $form_state['step']++;
     }
     break;

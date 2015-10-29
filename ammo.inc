@@ -617,29 +617,27 @@ function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
   );
 }
 
-function ammo_select_afdeling_form(&$form, &$form_state) {
-  $afdelingen = ammo_afdelingen_access();
-  if (empty($afdelingen)) {
-    $afdelingen = array();
-  }
+function ammo_select_afdeling_form(&$form, &$form_state, $type, $options) {
   $text1 = ($type == 'amendment') ? 'het amendement' : 'de motie';
   $form['branch_id'] = array(
     '#type' => 'select',
     '#title' => 'Afdeling',
-    '#description' => 'Kies welke afdeling ' . $text1 . ' indient.',
-    '#options' => $afdelingen,
+    '#description' => 'Kies welke afdeling ' . $text1 . ' invoert.',
+    '#options' => $options,
     '#default_value' => ammo_default($form_state, 'branch_id'),
     '#required' => true,
     '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
   );
 }
 
-function ammo_select_meeting_form(&$form, &$form_state) {
-  $meetings = entity_load('meeting');
-  $options = array();
-  foreach ($meetings as $meeting) {
-    if (in_array(arg(1), array('amendments', 'motions')) || ammo_edit_access($meeting->id)) {
-      $options[$meeting->id] = $meeting->title;
+function ammo_select_meeting_form(&$form, &$form_state, $options = array()) {
+  if (empty($options)) {
+    $meetings = entity_load('meeting');
+    $options = array();
+    foreach ($meetings as $meeting) {
+      if (in_array(arg(1), array('amendments', 'motions')) || ammo_edit_access($meeting->id)) {
+        $options[$meeting->id] = $meeting->title;
+      }
     }
   }
   $form['meeting'] = array(
@@ -1017,4 +1015,27 @@ function ammo_mailadress($meeting_id) {
   $meeting = entity_load_single('meeting', $meeting_id);
   $sender_mail = (!empty($meeting->email)) ? $meeting->email : variable_get('site_mail', 'webmaster@sp.nl');
   return $sender_mail;
+}
+
+function ammo_get_meetings() {
+  // Check if there is more than one option to choose from.
+  $meetings = entity_load('meeting');
+  $options = array();
+  foreach ($meetings as $meeting) {
+    if (ammo_edit_access($meeting->id)) {
+      $options[$meeting->id] = $meeting->title;
+    }
+  }
+  return $options;
+}
+
+function ammo_get_documents($form_state) {
+  $documents = entity_load('document');
+  $options = array();
+  foreach ($documents as $document) {
+    if ($document->meeting_id == $form_state['storage']['meeting']) {
+      $options[$document->id] = $document->title;
+    }
+  }
+  return $options;
 }

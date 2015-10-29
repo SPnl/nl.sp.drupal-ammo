@@ -82,47 +82,64 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
 
   $form['title'] = array(
     '#type' => 'item',
-    '#markup' => '<h2>Stap '.($form_state['step'] - $form_state['storage']['first_step'] + 1).' / '.($form_state['storage']['last_step'] - $form_state['storage']['first_step'] + 1).'</h2>',
+    '#markup' => '<h2>Amendement indienen</h2>',
   );
 
   // Depending on which step of the form we are on, we output different form fields
-  switch($form_state['step']) {
-  case 1:
-    ammo_select_meeting_form($form, $form_state);
-    break;
-
-  case 2:
-    ammo_checked_form($form, $form_state, 'amendment');
-    break;
-
-  case 3:
-    $documents = entity_load('document');
-    $options = array();
-    foreach ($documents as $document) {
-      if ($document->meeting_id == $form_state['storage']['meeting']) {
-        $options[$document->id] = $document->title;
-      }
+  if ($form_state['step'] == 1) {
+    $options = ammo_get_meetings();
+    if (count($options) == 1) {
+      $form_state['step'] ++;
+      $form_state['storage']['meeting'] = key($options);
     }
-    $form['document'] = array(
-      '#type' => 'select',
-      '#title' => 'Document',
-      '#description' => 'Kies het document wat u wilt amenderen.',
-      '#options' => $options,
-      '#default_value' => ammo_default($form_state, 'document'),
-      '#required' => true,
-      '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
-    );
-    break;
+    else {
+      ammo_select_meeting_form($form, $form_state, $options);
+    }
+  }
 
-  case 4:
-    ammo_select_afdeling_form($form, $form_state);
-    break;
+  if ($form_state['step'] == 2) {
+    ammo_checked_form($form, $form_state, 'amendment');
+  }
 
-  case 5:
+  if ($form_state['step'] == 3) {
+    $options = ammo_get_documents($form_state);
+    if (count($options) == 1) {
+      $form_state['step'] ++;
+      $form_state['storage']['document'] = key($options);
+    }
+    else {
+      $form['document'] = array(
+        '#type' => 'select',
+        '#title' => 'Document',
+        '#description' => 'Kies het document wat u wilt amenderen.',
+        '#options' => $options,
+        '#default_value' => ammo_default($form_state, 'document'),
+        '#required' => true,
+        '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
+      );
+    }
+  }
+
+  if ($form_state['step'] == 4) {
+    $options = ammo_afdelingen_access();
+    if (empty($options)) {
+      $options = array();
+    }
+    if (count($options) == 1) {
+      $form_state['step'] ++;
+      $form_state['storage']['branch_id'] = key($options);
+      $form_state['storage']['branch_display_name'] = current($options);
+    }
+    else {
+      ammo_select_afdeling_form($form, $form_state, 'amendment', $options);
+    }
+  }
+  
+  if ($form_state['step'] == 5) {
     ammo_select_owner_form('amendment', $form, $form_state);
-    break;
+  }
 
-  case 6:
+  if ($form_state['step'] == 6) {
     $form['chapter'] = array(
       '#type' => 'textfield',
       '#title' => 'Hoofdstuk nr.',
@@ -148,9 +165,9 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       '#title' => 'Toelichting',
       '#default_value' => ammo_default($form_state, 'supplement'),
     );
-    break;
+  }
 
-  case 7:
+  if ($form_state['step'] == 7) {
     $form['item'] = array(
       '#type' => 'item',
       '#markup' => theme('amendment', array('entity_id' => $form_state['storage']['amendment'], 'no_links' => TRUE)),
@@ -176,7 +193,6 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       '#empty_option' => 'kies:',
       '#default_value' => ammo_default($form_state, 'state'),
     );
-    break;
   }
 
   // Create a container for our buttons
@@ -187,7 +203,8 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   // If we are on first step, we do not want a back button
   if(
     $form_state['step'] > $form_state['storage']['first_step'] &&
-    $form_state['step'] <> 5
+    $form_state['step'] <> 5 &&
+    !empty($form_state['active_steps'])
   )
   {
     $form['buttons']['back'] = array
@@ -300,7 +317,7 @@ function ammo_amendment_form_validate($form, &$form_state)
 function ammo_amendment_form_back_submit($form, &$form_state)
 {
   // Go step back.
-  $form_state['step']--;
+  $form_state['step'] = array_pop($form_state['active_steps']);
 
   // Because this is a multi-step form, we always need to rebuild the form
   // on every step, even after submission. This allows our form to be completely
@@ -383,6 +400,7 @@ function ammo_amendment_form_submit($form, &$form_state)
     }
     else {
       // Increase the step by one, to move on to the next step
+      $form_state['active_steps'][$form_state['step']] = $form_state['step'];
       $form_state['step']++;
     }
     break;
