@@ -16,7 +16,7 @@
   <?php if (!empty($owners_branch)) : ?>
     <p>Mede ingediend door afdeling <?php print $owners_list; ?>.</p>
   <?php endif; ?>
-  <p>Ondersteunt door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?>.</p>
+<p>Ondersteunt door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?><?php if (empty($owners_branch)) : print ' ('; print ($number >= 5) ? 'voldoende' : 'onvoldoende'; print ' ledensteun)'; endif ?>.</p>
 <?php else: ?>
   <?php if (!empty($owners_branch)) : ?>
     <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
