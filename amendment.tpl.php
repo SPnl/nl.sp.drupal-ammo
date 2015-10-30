@@ -16,7 +16,7 @@
   <?php if (!empty($owners_branch)) : ?>
     <p>Mede ingediend door afdeling <?php print $owners_list; ?>.</p>
   <?php endif; ?>
-<p>Ondersteunt door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?><?php if (empty($owners_branch)) : print ' ('; print ($number >= 5) ? 'voldoende' : 'onvoldoende'; print ' ledensteun)'; endif ?>.</p>
+<p>Ondersteunt door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?><?php if (empty($owners_branch)) : print ' ('; print ($number >= 5) ? 'voldoende' : 'onvoldoende'; print ' steun)'; endif ?>.</p>
 <?php else: ?>
   <?php if (!empty($owners_branch)) : ?>
     <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
@@ -55,7 +55,7 @@
         <?php if (!empty($owners_member)) : ?>
           <?php if ($backed_by_user) : ?>
             <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/amendment/' . $entity_id, array('query' => $dest))?></li>
-          <?php else  : ?>
+          <?php elseif (!$owned_by_user)  : ?>
               <li><?php print l('steun als lid', 'ammo/support/add/member/amendment/' . $entity_id, array('query' => $dest))?></li>
           <?php endif; ?>
         <?php endif; ?>

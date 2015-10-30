@@ -122,7 +122,7 @@ function ammo_support_form_validate($form, &$form_state) {
       form_set_error('support', 'Zet een vinkje');
     }
     if (FALSE !== $entity) {
-      $backed = ammo_is_related($entity_id, $target_type, 'backer', $contact_type); 
+      $backed = ammo_is_related($entity_id, $target_type, NULL, $contact_type); 
       switch ($action) {
       case 'add':
         if ($backed) {

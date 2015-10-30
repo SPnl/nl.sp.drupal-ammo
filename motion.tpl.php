@@ -58,7 +58,7 @@
         <?php if (!empty($owners_member)) : ?>
           <?php if ($backed_by_user) : ?>
             <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/motion/' . $entity_id, array('query' => $dest))?></li>
-          <?php else  : ?>
+          <?php elseif (!$owned_by_user)  : ?>
             <li><?php print l('steun als lid', 'ammo/support/add/member/motion/' . $entity_id, array('query' => $dest))?></li>
           <?php endif; ?>
         <?php endif; ?>

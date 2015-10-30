@@ -252,7 +252,7 @@ function ammo_get_related_contacts($target_id, $target_type, $relation_type = NU
  * @relation_type: either backer or owner.
  * @contact_type: either member or branch.
  */
-function ammo_is_related($target_id, $target_type, $relation_type, $contact_type, $contact_id = NULL) {
+function ammo_is_related($target_id, $target_type, $relation_type = NULL, $contact_type, $contact_id = NULL) {
   if (empty($contact_id)) {
     global $user;
     $contact_id = $user->name;
@@ -262,9 +262,12 @@ function ammo_is_related($target_id, $target_type, $relation_type, $contact_type
   $query->entityCondition('entity_type', 'contact_relation')
     ->propertyCondition('target_id', $target_id)
     ->propertyCondition('target_type', $target_type)
-    ->propertyCondition('relation_type', $relation_type)
     ->propertyCondition('contact_id', $contact_id)
     ->propertyCondition('contact_type', $contact_type);
+
+  if (!empty($relation_type)) {
+    $query->propertyCondition('relation_type', $relation_type);
+  }
 
   $result = $query->execute();
 
@@ -663,10 +666,6 @@ function ammo_view_entity_form($type, $entity_id) {
   return array();
 }
 
-/*
- * @branch_id: contact id local branch
- * @entity_id: id of amendment document, or motion meeting
- */
 function ammo_support_access($meeting_id) {
   // Check if meeting submit date has passed.
   if (!ammo_passed_date($meeting_id, 'event')) {
@@ -675,10 +674,6 @@ function ammo_support_access($meeting_id) {
   return FALSE;
 }
 
-/*
- * @branch_id: contact id local branch
- * @entity_id: id of amendment document, or motion meeting
- */
 function ammo_edit_access($meeting_id, $branch_id = NULL) {
   $result = ammo_access($meeting_id, 'submit', $branch_id);
   if ($result || ammo_superadmin_access()) {
@@ -687,10 +682,6 @@ function ammo_edit_access($meeting_id, $branch_id = NULL) {
   return FALSE;
 }
 
-/*
- * @branch_id: contact id local branch
- * @entity_id: id of amendment document, or motion meeting
- */
 function ammo_withdraw_access($meeting_id, $branch_id = NULL) {
   return ammo_access($meeting_id, 'withdraw', $branch_id);
 }

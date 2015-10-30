@@ -192,6 +192,7 @@ function template_preprocess_amendment(&$variables) {
     $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch'); 
     $backers = ammo_get_related_contacts($entity->id, 'amendment', 'backer', 'member'); 
     $first_owner = ammo_get_first_owner('amendment', $entity->id);
+    $owned_by_user = ammo_is_related($entity->id, 'amendment', 'owner', 'member');
     $backed_by_user = ammo_is_related($entity->id, 'amendment', 'backer', 'member');
     $branches = ammo_get_afdelingen($user->name);
     if (!empty($branches)) {
@@ -231,6 +232,7 @@ function template_preprocess_amendment(&$variables) {
       'owners_branch' => $owners_branch,
       'backers' => $backers,
       'backed_by_user' => $backed_by_user,
+      'owned_by_user' => $owned_by_user,
       'supported_branches' => $supported_branches,
       'unsupported_branches' => $unsupported_branches,
     );
@@ -253,6 +255,7 @@ function template_preprocess_motion(&$variables) {
     $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch'); 
     $backers = ammo_get_related_contacts($entity->id, 'motion', 'backer'); 
     $backed_by_user = ammo_is_related($entity->id, 'motion', 'backer', 'member');
+    $owned_by_user = ammo_is_related($entity->id, 'motion', 'owner', 'member');
     $first_owner = ammo_get_first_owner('motion', $entity->id);
     $branches = ammo_get_afdelingen($user->name);
     $supported_branches = FALSE;
@@ -295,6 +298,7 @@ function template_preprocess_motion(&$variables) {
       'owners_branch' => $owners_branch,
       'backers' => $backers,
       'backed_by_user' => $backed_by_user,
+      'owned_by_user' => $owned_by_user,
       'supported_branches' => $supported_branches,
       'unsupported_branches' => $unsupported_branches,
     );
