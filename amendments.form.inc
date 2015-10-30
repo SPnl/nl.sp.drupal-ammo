@@ -4,23 +4,24 @@ function ammo_overview_amendments_form($form, &$form_state, $meeting_id = NULL) 
   // Store destination before ajax call.
   ammo_set_destination($form_state);
 
-  if (!empty($meeting_id)) {
-    $form['overview'] = array(
-      '#type' => 'item',
-      '#markup' => theme('overview_amendments', array('meeting_id' => $meeting_id, 'destination' => $form_state['storage']['destination'])),
-    );
-    return $form;
-  }
-
   $form['#attached']['js'] = array(
     drupal_get_path('module', 'ammo') . '/ammo.js',
   );
 
   $form['#prefix'] = '<div id="ajax_form">';
   $form['#suffix'] = '</div>';
-  ammo_select_meeting_form($form, $form_state);
-  $form['submit'] = array
-    (
+
+  // Check if there is choice.
+  $options = ammo_get_meetings();
+  if (count($options) == 1 || !empty($meeting_id)) {
+    $form['overview'] = array(
+      '#type' => 'item',
+      '#markup' => theme('overview_amendments', array('meeting_id' => key($options), 'destination' => $form_state['storage']['destination'])),
+    );
+  }
+  else {
+    ammo_select_meeting_form($form, $form_state, $options);
+    $form['submit'] = array(
       '#type' => 'submit',
       '#value' => 'kies',
       '#name' => 'action_button',
@@ -32,9 +33,10 @@ function ammo_overview_amendments_form($form, &$form_state, $meeting_id = NULL) 
         'callback' => 'ammo_overview_amendments_form_ajax_callback',
       ),
     );
-  $form['overview'] = array(
-    '#type' => 'item',
-  );
+    $form['overview'] = array(
+      '#type' => 'item',
+    );
+  }
   return $form;
 }
 
