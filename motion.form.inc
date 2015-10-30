@@ -80,15 +80,16 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
 
   $form['title'] = array(
     '#type' => 'item',
-    '#markup' => '<h2>Motie indienen</h2>',
   );
 
   // Depending on which step of the form we are on, we output different form fields
   if ($form_state['step'] == 1) {
+    $form['title']['#markup'] = '<h2>Motie indienen</h2>';
     ammo_checked_form($form, $form_state, 'motion');
   }
 
   if ($form_state['step'] == 2) {
+    $form['title']['#markup'] = '<h2>Motie indienen</h2>';
     $options = ammo_get_meetings();
     if (count($options) == 1) {
       $form_state['step'] ++;
@@ -101,6 +102,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   }
 
   if ($form_state['step'] == 3) {
+    $form['title']['#markup'] = '<h2>Motie indienen</h2>';
     $options = ammo_afdelingen_access();
     if (empty($options)) {
       $options = array();
@@ -118,10 +120,12 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   }
 
   if ($form_state['step'] == 4) {
+    $form['title']['#markup'] = '<h2>Motie bewerken</h2>';
     ammo_select_owner_form('motion', $form, $form_state);
   }
 
   if ($form_state['step'] == 5) {
+    $form['title']['#markup'] = '<h2>Motie bewerken</h2>';
     $ammo_default = ammo_default($form_state, 'consideration_opening');
     $default = (empty($ammo_default)) ? 'Overwegende dat' : $ammo_default;
     $form['consideration_opening'] = array(
@@ -145,7 +149,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     $form['follow_up_opening'] = array(
       '#type' => 'textfield',
       '#title' => '',
-      '#description' => 'Vul hier de openingstekst van het vervolg in (Bijv. &lsquo;Verzoekt het congres het bestuur&rsquo;, of &lsquo;Draagt het congres het bestuur op&rsquo;)',
+      '#description' => 'Vul hier de openingstekst van het vervolg in (Bijv. &lsquo;Verzoekt&rsquo;, of &lsquo;Draagt het congres het bestuur op&rsquo;)',
       '#default_value' => $default,
       '#size' => 50,
       '#maxlength' => 80,
@@ -166,6 +170,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   }
 
   if ($form_state['step'] == 6) {
+    $form['title']['#markup'] = '<h2>Motie advies</h2>';
     $form['item'] = array(
       '#type' => 'item',
       '#markup' => theme('motion', array('entity_id' => $form_state['storage']['motion'], 'no_links' => TRUE)),
@@ -261,7 +266,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     $form['buttons']['back'] = array
       (
         '#type' => 'submit',
-        '#value' => t('Back'),
+        '#value' => 'Terug',
         '#name' => 'back',
         '#limit_validation_errors' => array(),
         '#submit' => array('ammo_motion_form_back_submit'),
@@ -418,6 +423,7 @@ function ammo_motion_form_submit($form, &$form_state)
         'state' => 'state',
       );
       ammo_store('motion', $storage['motion'], $mapping, $form, $form_state);
+      drupal_set_message('<h3>Opgeslagen</h3>' . theme('motion', array('entity_id' => $storage['motion'], 'no_links' => TRUE)));
       break;
     case 6:
       $mapping = array(
@@ -430,6 +436,7 @@ function ammo_motion_form_submit($form, &$form_state)
         'state' => 'state',
       );
       ammo_store('motion', $storage['motion'], $mapping, $form, $form_state);
+      drupal_set_message('Het advies is opgeslagen.');
       break;
     }
     // Set next page, or finish form.

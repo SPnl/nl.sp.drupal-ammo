@@ -82,15 +82,16 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
 
   $form['title'] = array(
     '#type' => 'item',
-    '#markup' => '<h2>Amendement indienen</h2>',
   );
 
   // Depending on which step of the form we are on, we output different form fields
   if ($form_state['step'] == 1) {
+    $form['title']['#markup'] = '<h2>Amendement indienen</h2>';
     ammo_checked_form($form, $form_state, 'amendment');
   }
 
   if ($form_state['step'] == 2) {
+    $form['title']['#markup'] = '<h2>Amendement indienen</h2>';
     $options = ammo_get_meetings();
     if (count($options) == 1) {
       $form_state['step'] ++;
@@ -103,6 +104,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
 
   if ($form_state['step'] == 3) {
+    $form['title']['#markup'] = '<h2>Amendement indienen</h2>';
     $options = ammo_get_documents($form_state);
     if (count($options) == 1) {
       $form_state['step'] ++;
@@ -124,6 +126,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
 
   if ($form_state['step'] == 4) {
+    $form['title']['#markup'] = '<h2>Amendement indienen</h2>';
     $options = ammo_afdelingen_access();
     if (empty($options)) {
       $options = array();
@@ -142,6 +145,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
   
   if ($form_state['step'] == 5) {
+    $form['title']['#markup'] = '<h2>Amendement bewerken</h2>';
     ammo_select_owner_form('amendment', $form, $form_state);
     $form['backed']['#prefix'] =
       '<p>Bijeenkomst: ' . check_plain($form_state['storage']['meeting_display_name']) . '<br/>' .
@@ -149,6 +153,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
 
   if ($form_state['step'] == 6) {
+    $form['title']['#markup'] = '<h2>Amendement bewerken</h2>';
     $form['chapter'] = array(
       '#type' => 'textfield',
       '#title' => 'Hoofdstuk nr.',
@@ -178,6 +183,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
 
   if ($form_state['step'] == 7) {
+    $form['title']['#markup'] = '<h2>Amendement advies</h2>';
     $form['item'] = array(
       '#type' => 'item',
       '#markup' => theme('amendment', array('entity_id' => $form_state['storage']['amendment'], 'no_links' => TRUE)),
@@ -220,7 +226,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     $form['buttons']['back'] = array
       (
         '#type' => 'submit',
-        '#value' => t('Back'),
+        '#value' => 'Terug',
         '#name' => 'back',
         '#limit_validation_errors' => array(),
         '#submit' => array('ammo_amendment_form_back_submit'),
@@ -391,6 +397,7 @@ function ammo_amendment_form_submit($form, &$form_state)
         'state' => 'state',
       );
       ammo_store('amendment', $storage['amendment'], $mapping, $form, $form_state);
+      drupal_set_message('<h3>Opgeslagen</h3>' . theme('amendment', array('entity_id' => $storage['amendment'], 'no_links' => TRUE)));
       break;
     case 7:
       $mapping = array(
@@ -399,6 +406,7 @@ function ammo_amendment_form_submit($form, &$form_state)
         'state' => 'state',
       );
       ammo_store('amendment', $storage['amendment'], $mapping, $form, $form_state);
+      drupal_set_message('Het advies is opgeslagen.');
       break;
     }
     // Set next page, or finish form.
