@@ -375,9 +375,6 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
   if (empty($entity)) {
     drupal_set_message('Waarden zijn niet opgeslagen.' , 'error');
   }
-  else {
-    drupal_set_message('Waarden zijn opgeslagen.');
-  }
   if (!empty($differences) || empty($original_entity)) {
     global $language;
     // Send mails if ammo values where changed.
@@ -545,7 +542,7 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
   }
   $form['backed'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Ingediend door afdeling',
+    '#title' => 'Ingediend door afdeling ' . check_plain($form_state['storage']['branch_display_name']),
     '#description' => $description,
     '#default_value' => $default,
     '#name' => 'backed',
@@ -622,7 +619,7 @@ function ammo_select_afdeling_form(&$form, &$form_state, $type, $options) {
   $form['branch_id'] = array(
     '#type' => 'select',
     '#title' => 'Afdeling',
-    '#description' => 'Kies welke afdeling ' . $text1 . ' invoert.',
+    '#description' => 'Kies namens welke afdeling u ' . $text1 . ' invoert.',
     '#options' => $options,
     '#default_value' => ammo_default($form_state, 'branch_id'),
     '#required' => true,

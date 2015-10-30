@@ -85,18 +85,19 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
 
   // Depending on which step of the form we are on, we output different form fields
   if ($form_state['step'] == 1) {
+    ammo_checked_form($form, $form_state, 'motion');
+  }
+
+  if ($form_state['step'] == 2) {
     $options = ammo_get_meetings();
     if (count($options) == 1) {
       $form_state['step'] ++;
       $form_state['storage']['meeting'] = key($options);
+      $form_state['storage']['meeting_display_name'] = current($options);
     }
     else {
       ammo_select_meeting_form($form, $form_state, $options);
     }
-  }
-
-  if ($form_state['step'] == 2) {
-    ammo_checked_form($form, $form_state, 'motion');
   }
 
   if ($form_state['step'] == 3) {
@@ -111,6 +112,8 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     }
     else {
       ammo_select_afdeling_form($form, $form_state, 'motion', $options);
+      $form['branch_id']['#prefix'] =
+        '<p>Bijeenkomst: ' . check_plain($form_state['storage']['meeting_display_name']) . '</p>'; 
     }
   }
 
@@ -124,6 +127,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     $form['consideration_opening'] = array(
       '#type' => 'textfield',
       '#title' => '',
+      '#description' => 'Vul hier de openingstekst van de overweging in (Bijv. &lsquo;Omdat&rsquo;, of &lsquo;Overwegende dat&rsquo;).',
       '#default_value' => $default,
       '#size' => 50,
       '#maxlength' => 80,
@@ -132,6 +136,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     $form['consideration_text'] = array(
       '#type' => 'textarea',
       '#title' => '',
+      '#description' => 'Vul hier de inhoud van de overweging, de reden van de motie, de context, in.',
       '#default_value' => ammo_default($form_state, 'consideration_text'),
     );
 
@@ -140,6 +145,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     $form['follow_up_opening'] = array(
       '#type' => 'textfield',
       '#title' => '',
+      '#description' => 'Vul hier de openingstekst van het vervolg in (Bijv. &lsquo;Verzoekt het congres het bestuur&rsquo;, of &lsquo;Draagt het congres het bestuur op&rsquo;)',
       '#default_value' => $default,
       '#size' => 50,
       '#maxlength' => 80,
@@ -148,6 +154,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     $form['follow_up_text'] = array(
       '#type' => 'textarea',
       '#title' => '',
+      '#description' => 'Vul hier de actie van de motie in, wat moet er gebeuren.',
       '#default_value' => ammo_default($form_state, 'follow_up_text'),
     );
 
@@ -370,8 +377,9 @@ function ammo_motion_form_submit($form, &$form_state)
   switch ($trigger) {
   case 'action_button':
     switch ($step) {
-    case 1:
+    case 2:
       $form_state['storage']['meeting'] = $values['meeting'];
+      $form_state['storage']['meeting_display_name'] = $form['meeting']['#options'][$values['meeting']];
       break;
     case 3:
       $form_state['storage']['branch_id'] = $values['branch_id'];

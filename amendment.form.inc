@@ -87,18 +87,19 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
 
   // Depending on which step of the form we are on, we output different form fields
   if ($form_state['step'] == 1) {
+    ammo_checked_form($form, $form_state, 'amendment');
+  }
+
+  if ($form_state['step'] == 2) {
     $options = ammo_get_meetings();
     if (count($options) == 1) {
       $form_state['step'] ++;
       $form_state['storage']['meeting'] = key($options);
+      $form_state['storage']['meeting_display_name'] = current($options);
     }
     else {
       ammo_select_meeting_form($form, $form_state, $options);
     }
-  }
-
-  if ($form_state['step'] == 2) {
-    ammo_checked_form($form, $form_state, 'amendment');
   }
 
   if ($form_state['step'] == 3) {
@@ -106,6 +107,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     if (count($options) == 1) {
       $form_state['step'] ++;
       $form_state['storage']['document'] = key($options);
+      $form_state['storage']['document_display_name'] = current($options);
     }
     else {
       $form['document'] = array(
@@ -116,6 +118,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
         '#default_value' => ammo_default($form_state, 'document'),
         '#required' => true,
         '#attributes' => array('onchange' => "jQuery('#action_button').mousedown()"),
+        '#prefix' => '<p>Bijeenkomst: ' . check_plain($form_state['storage']['meeting_display_name']) . '</p>',
       );
     }
   }
@@ -132,11 +135,17 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     }
     else {
       ammo_select_afdeling_form($form, $form_state, 'amendment', $options);
+      $form['branch_id']['#prefix'] =
+        '<p>Bijeenkomst: ' . check_plain($form_state['storage']['meeting_display_name']) . '<br/>' .
+        'Document: ' . check_plain($form_state['storage']['document_display_name'])  . '</p>';
     }
   }
   
   if ($form_state['step'] == 5) {
     ammo_select_owner_form('amendment', $form, $form_state);
+    $form['backed']['#prefix'] =
+      '<p>Bijeenkomst: ' . check_plain($form_state['storage']['meeting_display_name']) . '<br/>' .
+      'Document: ' . check_plain($form_state['storage']['document_display_name'])  . '</p>'; 
   }
 
   if ($form_state['step'] == 6) {
@@ -153,6 +162,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     $form['line'] = array(
       '#type' => 'textfield',
       '#title' => 'Regelnr.',
+      '#description' => 'Het regelnummer waar de bestaande tekst die geamendeerd wordt begint, of het regelnummer waar tekst moet worden toegevoegd.',
       '#default_value' => ammo_default($form_state, 'line'),
     );
     $form['amendment_text'] = array(
@@ -308,7 +318,7 @@ function ammo_amendment_form_validate($form, &$form_state)
       }
     }
     if (empty($values['amendment_text'])) {
-      form_set_error('general', 'Vul de amendement tekst in.');
+      form_set_error('amendment_text', 'Vul de amendement tekst in.');
     }
     break;
   }
@@ -335,11 +345,13 @@ function ammo_amendment_form_submit($form, &$form_state)
   switch ($trigger) {
   case 'action_button':
     switch ($step) {
-    case 1:
+    case 2:
       $form_state['storage']['meeting'] = $values['meeting'];
+      $form_state['storage']['meeting_display_name'] = $form['meeting']['#options'][$values['meeting']];
       break;
     case 3:
       $form_state['storage']['document'] = $values['document'];
+      $form_state['storage']['document_display_name'] = $form['document']['#options'][$values['document']];
       break;
     case 4:
       $form_state['storage']['branch_id'] = $values['branch_id'];
@@ -353,6 +365,7 @@ function ammo_amendment_form_submit($form, &$form_state)
       $new_amendment = ammo_store('amendment', NULL, $mapping, $form, $form_state);
       $form_state['storage']['amendment'] = $new_amendment->id;
       $form_state['storage']['new'] = TRUE;
+      drupal_set_message('Er is een nieuw amendement aangemaakt (nr. ' . $new_amendment->id .')');
       break;
     case 5:
       if ($values['backed']) {
