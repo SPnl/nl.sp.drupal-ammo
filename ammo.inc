@@ -518,12 +518,12 @@ function ammo_checked_form(&$form, &$form_state, $type) {
   $text1 = ($type == 'amendment') ? 'vergelijkbaar amendement' : 'vergelijkbare motie';
   $text2 = ($type == 'amendment') ? 'amendementen' : 'moties';
   $text3 = ($type == 'amendment') ? 'het amendement' : 'de motie';
-  $link1 = l('gecontroleerd', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']);
-  $link2 = l('overzicht', 'ammo/' . $type . 's/'. $form_state['storage']['meeting']);
-  $description = 'Om te voorkomen dat er meerdere ' . $text2 . ' met dezelfde strekking worden ingedient dient er vóóraf een controle plaats te vinden of er niet reeds een ' . $text1 . ' is ingediend. Indien er een ' . $text1 . ' reeds door een andere afdeling is ingedient, kan in het ' . $link2 . ' door een druk op de knop "mede indienen" ' . $text3 . ' mede ingedient worden. Mocht de orginele indiener ' . $text3 . ' intrekken, dan blijft ' . $text3 . ' staan als er nog andere indieners zijn.';
+  $link1 = l('gecontroleerd', 'ammo/' . $type . 's');
+  $link2 = l('overzicht', 'ammo/' . $type . 's');
+  $description = 'Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingedient. Dit kun je vooraf controleren in het ' . $link2 . '. Als er al een ' . $text1 . ' is ingediend, kun je het in dat overzicht met een druk op de knop "mede-indienen". Wanneer de eerste indiener ' . $text3 . ' intrekt, dan blijft deze staan zolang er nog mede-indieners zijn.';
   $form['checked'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Ik heb ' . $link . ' of er niet reeds een ' . $text1 . ' is die onze afdeling kan mede indienen.',
+    '#title' => 'Ik heb ' . $link1 . ' dat er niet al een ' . $text1 . ' is ingediend.',
     '#description' => $description,
     '#default_value' => FALSE,
     '#required' => TRUE,
@@ -533,7 +533,7 @@ function ammo_checked_form(&$form, &$form_state, $type) {
 function ammo_select_owner_form($type, &$form, &$form_state) {
   // Get meeting.
   $meeting = entity_load_single('meeting', $form_state['storage']['meeting']);
-  $description = ($meeting->no_member_owners) ? 'Wordt ingedient namens de afdeling.' : 'Kies hier of u wilt indienen namens de afdeling, of namens leden van de afdeling.';
+  $description = 'Verwijder het vinkje om namens een individueel lid in te dienen.';
   // Backed by local branch?
   if (
     ammo_is_related($form_state['storage'][$type], $type, 'owner', 'branch', $form_state['storage']['branch_id']) ||

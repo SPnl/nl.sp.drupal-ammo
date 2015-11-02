@@ -239,7 +239,7 @@ function template_preprocess_amendment(&$variables) {
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
-      $value = check_plain($value);
+      $value = nl2br(check_plain($value));
     }
     $variables = $variables + $vars;
   }
@@ -306,7 +306,7 @@ function template_preprocess_motion(&$variables) {
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
-      $value = check_plain($value);
+      $value = nl2br(check_plain($value));
     }
     $variables = $variables + $vars;
   }
