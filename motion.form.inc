@@ -111,6 +111,16 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       $form_state['step'] ++;
       $form_state['storage']['branch_id'] = key($options);
       $form_state['storage']['branch_display_name'] = current($options);
+      // Save new motion.
+      $form_state['storage']['state'] = 'concept';
+      $mapping = array(
+        'meeting_id' => 'meeting',
+        'state' => 'state',
+      );
+      $new_motion = ammo_store('motion', NULL, $mapping, $form, $form_state);
+      drupal_set_message('Er is een nieuwe motie aangemaakt (nr. ' . $new_motion->id .')');
+      $form_state['storage']['motion'] = $new_motion->id;
+      $form_state['storage']['new'] = TRUE;
     }
     else {
       ammo_select_afdeling_form($form, $form_state, 'motion', $options);
@@ -396,6 +406,7 @@ function ammo_motion_form_submit($form, &$form_state)
         'state' => 'state',
       );
       $new_motion = ammo_store('motion', NULL, $mapping, $form, $form_state);
+      drupal_set_message('Er is een nieuwe motie aangemaakt (nr. ' . $new_motion->id .')');
       $form_state['storage']['motion'] = $new_motion->id;
       $form_state['storage']['new'] = TRUE;
       break;

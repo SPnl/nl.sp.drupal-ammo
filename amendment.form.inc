@@ -135,6 +135,16 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       $form_state['step'] ++;
       $form_state['storage']['branch_id'] = key($options);
       $form_state['storage']['branch_display_name'] = current($options);
+      // Save new amendment.
+      $form_state['storage']['state'] = 'concept';
+      $mapping = array(
+        'document_id' => 'document',
+        'state' => 'state',
+      );
+      $new_amendment = ammo_store('amendment', NULL, $mapping, $form, $form_state);
+      $form_state['storage']['amendment'] = $new_amendment->id;
+      $form_state['storage']['new'] = TRUE;
+      drupal_set_message('Er is een nieuw amendement aangemaakt (nr. ' . $new_amendment->id .')');
     }
     else {
       ammo_select_afdeling_form($form, $form_state, 'amendment', $options);

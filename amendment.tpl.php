@@ -53,7 +53,7 @@
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
   <ul class="ammo-list">
     <li><a href="#inhoud">^</a></li>
-    <?php if (!empty($owners_branch)) : ?>
+    <?php if (!empty($owners_branch) || !empty($owners_member)) : ?>
       <?php if ($edit_access) : ?>
         <li><?php print l('bewerk', 'ammo/amendment/edit/' . $entity_id, array('query' => $dest))?></li>
       <?php endif; ?>
@@ -72,7 +72,7 @@
         <?php endif; ?>
       <?php endif; ?>
     <?php endif; ?>
-    <?php if (!empty($owners_branch)) : ?>
+    <?php if (!empty($owners_branch) || !empty($owners_member)) : ?>
       <?php if ($withdraw_access) : ?>
         <?php if ($unsupported_branches) : ?>
           <li><?php print l('mede indienen als afdeling', 'ammo/support/add/branch/amendment/' . $entity_id, array('query' => $dest))?></li>
