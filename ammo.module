@@ -235,6 +235,7 @@ function template_preprocess_amendment(&$variables) {
       'owned_by_user' => $owned_by_user,
       'supported_branches' => $supported_branches,
       'unsupported_branches' => $unsupported_branches,
+      'removable_member_owners' => ammo_removable_member_owners('amendment', $entity->id), 
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
@@ -301,6 +302,7 @@ function template_preprocess_motion(&$variables) {
       'owned_by_user' => $owned_by_user,
       'supported_branches' => $supported_branches,
       'unsupported_branches' => $unsupported_branches,
+      'removable_member_owners' => ammo_removable_member_owners('motion', $entity->id), 
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;

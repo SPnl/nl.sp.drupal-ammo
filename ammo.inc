@@ -1027,3 +1027,27 @@ function ammo_get_documents($form_state) {
   }
   return $options;
 }
+
+/*
+ * Checks wether there are member owners of a motion or amendment that may
+ * be removed by the branch chairman.
+ *
+ */
+function ammo_removable_member_owners($target_type, $entity_id) {
+  global $user;
+  $contacts = ammo_get_related_contacts($entity_id, $target_type, 'owner', 'member');
+  // Controleer of de betreffende leden lid zijn van afdeling voorzitter.
+  $afdelingen = ammo_get_afdelingen($user->name);
+  if ($afdelingen) {
+    $afdelingen_ids = array_keys($afdelingen);
+    foreach ($contacts as $member) {
+      if (!in_array($member['branch_id'], $afdelingen_ids) && !ammo_superadmin_access()) {
+        return FALSE;
+      }
+    }
+  }
+  else {
+    return FALSE;
+  }
+  return TRUE;
+}

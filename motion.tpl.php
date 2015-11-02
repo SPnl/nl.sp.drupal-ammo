@@ -71,6 +71,9 @@
       <?php if ($supported_branches) : ?>
         <li><?php print l('intrekken als afdeling', 'ammo/support/withdraw/branch/motion/' . $entity_id, array('query' => $dest))?></li>
       <?php endif; ?>
+      <?php if ($removable_member_owners) : ?>
+        <li><?php print l('intrekken individuele indieners', 'ammo/support/withdraw/branchmembers/motion/' . $entity_id, array('query' => $dest))?></li>
+      <?php endif; ?>
     <?php endif; ?>
   </ul>
 <?php endif; ?>

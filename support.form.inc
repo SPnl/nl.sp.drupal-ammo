@@ -2,9 +2,10 @@
 
 function ammo_support_form($form, &$form_state, $action, $contact_type, $target_type = NULL, $entity_id = NULL) {
   global $user;
+  $meeting_id = ammo_get_meeting_id($target_type, $entity_id);
   if (
     !in_array($action, array('add', 'withdraw')) ||
-    !in_array($contact_type, array('member', 'branch')) ||
+    !in_array($contact_type, array('member', 'branch', 'branchmembers')) ||
     !in_array($target_type, array('amendment', 'motion')) ||
     filter_var($entity_id, FILTER_VALIDATE_INT) === FALSE
   ) {
@@ -18,6 +19,11 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
 
   switch ($contact_type) {
   case 'member':
+    // Controleer toegang op basis evenement.
+    if (!$meeting_id || !ammo_support_access($meeting_id)) {
+      form_set_error('support', 'Het is niet (meer) mogelijk te ondersteunen.');
+      return array();
+    }
     switch ($action) {
     case 'add':
       switch ($target_type) {
@@ -46,6 +52,11 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
     );
     break;
   case 'branch':
+    // Controleer toegang op basis evenement.
+    if (!$meeting_id || !ammo_withdraw_access($meeting_id)) {
+      form_set_error('support', 'Het is niet (meer) mogelijk in te dienen of in te trekken.');
+      return array();
+    }
     // Create texts.
     switch ($action) {
     case 'add':
@@ -95,6 +106,42 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
       '#title' => $text,
       '#type' => 'checkboxes',
       '#options' => $options,
+    );
+    break;
+  case 'branchmembers':
+    switch ($action) {
+    case 'withdraw':
+      // Controleer toegang op basis evenement.
+      if (!$meeting_id || !ammo_withdraw_access($meeting_id)) {
+        form_set_error('support', 'Het is niet (meer) mogelijk in te dienen of in te trekken.');
+        return array();
+      }
+      // Controleer of er leden zijn die hebben ingediend.
+      if (!ammo_removable_member_owners($target_type, $entity_id)) {
+        form_set_error('support', 'U heeft geen rechten om een amendement of motie voor betreffende leden in te trekken.');
+        return array();
+      }
+      $contacts = ammo_get_related_contacts($entity_id, $target_type, 'owner', 'member');
+      $form_state['storage']['branchmembers'] = $contacts;
+      $list = '<ul>';
+      foreach ($contacts as $contact) {
+        $list .= '<li>' . check_plain($contact['contact_display_name']) . '</li>';
+      }
+      $list .= '</ul>';
+      switch ($target_type) {
+      case 'amendment':
+        $text = 'Onderstaande leden dienen dit amendement niet langer in';
+        break;
+      case 'motion':
+        $text = 'Onderstaande leden dienen deze motie niet langer in';
+        break;
+      }
+      break;
+    }
+    $form['support'] = array(
+      '#type' => 'checkbox',
+      '#title' => $text,
+      '#suffix' => $list,
     );
     break;
   }
@@ -164,6 +211,10 @@ function ammo_support_form_validate($form, &$form_state) {
       form_set_error('contact_id', 'Vink minimaal één afdeling aan.');
     }
     break;
+  case 'branchmembers':
+    if (!$form_state['values']['support']) {
+      form_set_error('support', 'Zet een vinkje');
+    }
   }
 }
 
@@ -234,6 +285,21 @@ function ammo_support_form_submit($form, &$form_state) {
           else {
             drupal_set_message('Er is een fout opgetreden.' , 'error');
           }
+        }
+      }
+      break;
+    }
+    break;
+  case 'branchmembers':
+    switch ($action) {
+    case 'withdraw':
+      foreach ($form_state['storage']['branchmembers'] as $member) {
+        $result = entity_delete('contact_relation', $member['id']);
+        if ($result !== FALSE) {
+          drupal_set_message(check_plain($member['contact_display_name']) . ' is niet langer (mede) indiener.');
+        }
+        else {
+          drupal_set_message('Er is een fout opgetreden.' , 'error');
         }
       }
       break;
