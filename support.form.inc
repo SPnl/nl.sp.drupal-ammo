@@ -306,5 +306,10 @@ function ammo_support_form_submit($form, &$form_state) {
     }
     break;
   }
+  $owners = ammo_get_related_contacts($entity_id, $target_type, 'owner');
+  if (empty($owners)) {
+    $entity->state = 'withdrawn';
+    entity_save($target_type, $entity);
+  }
   $form_state['redirect'] = ammo_get_destination();
 }

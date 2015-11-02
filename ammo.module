@@ -332,12 +332,11 @@ function template_preprocess_overview_amendments(&$variables) {
         'description' => check_plain($document->description),
         'meeting_id' => check_plain($document->meeting_id),
       );
-      $amendments_results = db_query("SELECT id, chapter, page FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, page, line, id", array(":document_id" => $document->id));
+      $amendments_results = db_query("SELECT id, chapter, page, state FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, page, line, id", array(":document_id" => $document->id));
       foreach ($amendments_results as $amendment) {
         // Get owners.
         $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
         $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
-        if (empty($owners_member) && empty($owners_branch)) continue;
         // Store chapter data.
         $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['nr'] = $amendment->chapter;
         // Store page data.
@@ -349,6 +348,7 @@ function template_preprocess_overview_amendments(&$variables) {
           'page' => check_plain($amendment->page),
           'owners_member' => $owners_member,
           'owners_branch' => $owners_branch,
+          'state' => $amendment->state,
         );
       }
     }
@@ -367,17 +367,17 @@ function template_preprocess_overview_motions(&$variables) {
       'date' => $meeting->date,
       'submission_closing_date' => $meeting->submission_closing_date,
     );
-    $motions_results = db_query("SELECT id FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $meeting->id));
+    $motions_results = db_query("SELECT id, state FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $meeting->id));
     foreach ($motions_results as $motion) {
       $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
       $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
       $first_owner = ammo_get_first_owner('motion', $motion->id);
-      if (empty($owners_member) && empty($owners_branch)) continue;
       $data['meeting']['branches'][$first_owner['branch_id']]['info'] = $first_owner;
       $data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
         'id' => $motion->id,
         'owners_member' => $owners_member,
         'owners_branch' => $owners_branch,
+        'state' => $motion->state,
       );
     }
     $variables = $variables + $data;

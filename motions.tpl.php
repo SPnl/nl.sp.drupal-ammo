@@ -22,7 +22,7 @@
         <h2 id="branch<?php print $branch['info']['contact_id']; ?>"><?php print $branch['info']['branch_display_name']; ?></h2>
         <ul>
           <?php foreach ($branch['motions'] as $motion) : ?>
-            <li>
+            <li class="ammo-element <?php print $motion['state']; ?>">
               <?php print theme('motion', array('entity_id' => $motion['id'], 'destination' => $destination)); ?>
             </li>
           <?php endforeach; ?>

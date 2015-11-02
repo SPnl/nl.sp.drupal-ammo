@@ -24,6 +24,7 @@ function ammo_states() {
     //'accepted_amended' => 'Aangepast overgenomen',
     'accepted_intention' => 'Strekking overgenomen',
     'rejected' => 'Afgewezen',
+    'withdrawn' => 'Ingetrokken',
   );
 }
 
@@ -1038,7 +1039,7 @@ function ammo_removable_member_owners($target_type, $entity_id) {
   $contacts = ammo_get_related_contacts($entity_id, $target_type, 'owner', 'member');
   // Controleer of de betreffende leden lid zijn van afdeling voorzitter.
   $afdelingen = ammo_get_afdelingen($user->name);
-  if ($afdelingen) {
+  if (!empty($afdelingen) && !empty($contacts)) {
     $afdelingen_ids = array_keys($afdelingen);
     foreach ($contacts as $member) {
       if (!in_array($member['branch_id'], $afdelingen_ids) && !ammo_superadmin_access()) {

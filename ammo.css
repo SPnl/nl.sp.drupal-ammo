@@ -52,3 +52,10 @@ ul.ammo-list li a:hover {
   background-color: #000;
 }
 
+li.withdrawn {
+  background-color: #ccc;
+}
+
+li.ammo-element {
+  padding: 1em;
+}

@@ -30,13 +30,22 @@
     <?php print $supplement; ?>
   </p>
 <?php endif; ?>
-<?php if (!empty($advice)) : ?>
-<?php $options = ammo_amendment_advice(); ?>
+<?php if (!empty($state) || !empty($advice)) : ?>
   <p>
+  <?php if (!empty($state)) : ?>
+    <?php $options = ammo_states(); ?>
+    <strong>Status:</strong> <?php print strtolower($options[$state]); ?>
+  <?php endif; ?>
+  <?php if (!empty($advice)) : ?>
+    <?php if (!empty($state)) : ?>
+      <br/>
+    <?php endif; ?>
+    <?php $options = ammo_amendment_advice(); ?>
     <strong>Advies:</strong> <?php print strtolower($options[$advice]); ?>
     <?php if (!empty($advice_supplement)) : ?>
       <br/><?php print $advice_supplement; ?>
     <?php endif; ?>
+  <?php endif; ?>
   </p>
 <?php endif; ?>
 
@@ -44,11 +53,13 @@
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
   <ul class="ammo-list">
     <li><a href="#inhoud">^</a></li>
-    <?php if ($edit_access) : ?>
-      <li><?php print l('bewerk', 'ammo/amendment/edit/' . $entity_id, array('query' => $dest))?></li>
-    <?php endif; ?>
-    <?php if (($admin_access && $support_access) || $superadmin_access) : ?>
-      <li><?php print l('bewerk advies', 'ammo/amendment/advice/' . $entity_id, array('query' => $dest))?></li>
+    <?php if (!empty($owners_branch)) : ?>
+      <?php if ($edit_access) : ?>
+        <li><?php print l('bewerk', 'ammo/amendment/edit/' . $entity_id, array('query' => $dest))?></li>
+      <?php endif; ?>
+      <?php if (($admin_access && $support_access) || $superadmin_access) : ?>
+        <li><?php print l('bewerk advies', 'ammo/amendment/advice/' . $entity_id, array('query' => $dest))?></li>
+      <?php endif; ?>
     <?php endif; ?>
     <?php if (!$admin_access) : ?>
       <?php if ($support_access) : ?>
@@ -61,15 +72,17 @@
         <?php endif; ?>
       <?php endif; ?>
     <?php endif; ?>
-    <?php if ($withdraw_access) : ?>
-      <?php if ($unsupported_branches) : ?>
-        <li><?php print l('mede indienen als afdeling', 'ammo/support/add/branch/amendment/' . $entity_id, array('query' => $dest))?></li>
-      <?php endif; ?>
-      <?php if ($supported_branches) : ?>
-        <li><?php print l('intrekken als afdeling', 'ammo/support/withdraw/branch/amendment/' . $entity_id, array('query' => $dest))?></li>
-      <?php endif; ?>
-      <?php if ($removable_member_owners) : ?>
-        <li><?php print l('intrekken individuele indieners', 'ammo/support/withdraw/branchmembers/amendment/' . $entity_id, array('query' => $dest))?></li>
+    <?php if (!empty($owners_branch)) : ?>
+      <?php if ($withdraw_access) : ?>
+        <?php if ($unsupported_branches) : ?>
+          <li><?php print l('mede indienen als afdeling', 'ammo/support/add/branch/amendment/' . $entity_id, array('query' => $dest))?></li>
+        <?php endif; ?>
+        <?php if ($supported_branches) : ?>
+          <li><?php print l('intrekken als afdeling', 'ammo/support/withdraw/branch/amendment/' . $entity_id, array('query' => $dest))?></li>
+        <?php endif; ?>
+        <?php if ($removable_member_owners) : ?>
+          <li><?php print l('intrekken individuele indieners', 'ammo/support/withdraw/branchmembers/amendment/' . $entity_id, array('query' => $dest))?></li>
+        <?php endif; ?>
       <?php endif; ?>
     <?php endif; ?>
   </ul>

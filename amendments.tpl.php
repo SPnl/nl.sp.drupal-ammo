@@ -34,7 +34,7 @@
 
   <ul class="first">
     <?php foreach ($meeting['documents'] as $document) : ?>
-      <li>
+    <li>
         <h1 id="document<?php print $document['id']; ?>"><?php print $document['title']; ?></h1>
         <ul>
           <?php if (!empty($document['chapters'])): ?>
@@ -47,7 +47,7 @@
                       <h2 id="page<?php print $page['nr']; ?>">Pagina <?php print $page['nr']; ?></h2>
                       <ul>
                         <?php foreach ($page['amendments'] as $amendment) : ?>
-                          <li>
+                          <li class="ammo-element <?php print $amendment['state']; ?>">
                             <?php print theme('amendment', array('entity_id' => $amendment['id'], 'destination' => $destination)); ?>
                           </li>
                         <?php endforeach; ?>
