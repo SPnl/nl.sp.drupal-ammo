@@ -25,7 +25,7 @@
         <li>De status van ingediende amendementen en moties aanpassen.</li>
       <?php endif; ?>
     <?php endif; ?>
-    <!--<li>Indien er individueel ingediende amendementen en moties moties zijn kunt u deze steunen.</li>-->
+    <li>Individueel ingediende amendementen en moties moties steunen.</li>
   </ul>
   <p><strong>Klik op een van de grijze tabjes bovenaan voor de gewenste functies.</strong></p>
 </div>

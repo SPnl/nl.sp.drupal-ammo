@@ -16,23 +16,19 @@
   <?php if (!empty($owners_branch)) : ?>
     <p>Mede ingediend door afdeling <?php print $owners_list; ?>.</p>
   <?php endif; ?>
-  <p>Ondersteunt door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?>.</p>
+	<p>Ondersteunt door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?><?php if (empty($owners_branch)) : print ' ('; print ($number >= 5) ? 'voldoende' : 'onvoldoende'; print ' steun)'; endif ?>.</p>
 <?php else: ?>
   <?php if (!empty($owners_branch)) : ?>
     <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
   <?php endif; ?>
 <?php endif; ?>
-<p>
-  <strong><?php print $consideration_opening; ?></strong><br/>
-  <?php print $consideration_body; ?><br/>
-  <strong><?php print $follow_up_opening; ?></strong><br/>
-  <?php print $follow_up_body; ?>
-</p>
+  <h4 class="inline-title"><?php print $consideration_opening; ?></h4>
+  <p class="text-limit"><?php print $consideration_body; ?></p>
+  <h4 class="inline-title"><?php print $follow_up_opening; ?></h4>
+  <p class="text-limit"><?php print $follow_up_body; ?></p>
 <?php if (!empty($supplement)) : ?>
-  <p>
-    <strong>Toelichting:</strong><br/>
-    <?php print $supplement; ?>
-  </p>
+  <h4 class="inline-title">Toelichting:</h4>
+  <p class="text-limit"><?php print $supplement; ?></p>
 <?php endif; ?>
 <?php if (!empty($state) || !empty($advice)) : ?>
   <p>

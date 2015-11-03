@@ -53,9 +53,81 @@ ul.ammo-list li a:hover {
 }
 
 li.withdrawn {
-  background-color: #ccc;
+  background-color: #eee;
+  color: #888;
 }
 
 li.ammo-element {
   padding: 1em;
+}
+
+
+/* Overviews */
+
+.page-ammo .navigation .amendments {
+  padding: 0;
+  margin: 0;
+}
+
+.page-ammo .navigation a {
+  text-decoration: none;
+}
+
+.navigation .amendments li, 
+.navigation .motions li {
+  display: inline-block;
+  background: #eee;
+  font-weight: bold; 
+  font-size: .8em;
+  padding: 0;
+}
+
+.navigation .amendments li a, 
+.navigation .motions li a {
+  display: inline-block;
+  padding: .4em .72em;
+  text-decoration: none;
+  margin: 0;
+  text-align: center;
+}
+
+.navigation .amendments li a:hover, 
+.navigation .motions li a:hover {
+  background: #000;
+  color: #fff;
+} 
+
+a.text-limit-toggle, 
+a.text-limit-toggle:visited, 
+a.text-limit-toggle:link {
+	text-decoration: none;
+	color: #f00;
+	white-space: nowrap;
+}
+
+
+.withdrawn a.text-limit-toggle, 
+.withdrawn a.text-limit-toggle:visited, 
+.withdrawn a.text-limit-toggle:link {
+	text-decoration: none;
+	color: #aaa;
+}
+
+h4.inline-title {
+  float: left;
+  margin: 0;
+  padding-right: .4em;
+  font-family: HelveticaNeueLTStd-BdCn, 'Sans serif';
+  font-weight: normal;
+}
+
+.page-ammo .page-nr {
+  font-family: HelveticaNeueLTStd-BdCn, 'Sans serif';
+  font-weight: normal;
+  text-transform: none;
+  margin: 0;
+  color: #aaa;
+  border-bottom: 1px solid #aaa;
+  padding:.72em;
+  font-size: .72em;
 }

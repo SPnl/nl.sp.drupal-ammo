@@ -520,7 +520,7 @@ function ammo_checked_form(&$form, &$form_state, $type) {
   $text3 = ($type == 'amendment') ? 'het amendement' : 'de motie';
   $link1 = l('gecontroleerd', 'ammo/' . $type . 's');
   $link2 = l('overzicht', 'ammo/' . $type . 's');
-  $description = 'Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingedient. Dit kun je vooraf controleren in het ' . $link2 . '. Als er al een ' . $text1 . ' is ingediend, kun je het in dat overzicht met een druk op de knop "mede-indienen". Wanneer de eerste indiener ' . $text3 . ' intrekt, dan blijft deze staan zolang er nog mede-indieners zijn.';
+  $description = 'Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingediend. Dit kun je vooraf controleren in het ' . $link2 . '. Als er al een ' . $text1 . ' is ingediend, kun je het in dat overzicht met een druk op de knop "mede-indienen". Wanneer de eerste indiener ' . $text3 . ' intrekt, dan blijft deze staan zolang er nog mede-indieners zijn.';
   $form['checked'] = array(
     '#type' => 'checkbox',
     '#title' => 'Ik heb ' . $link1 . ' dat er niet al een ' . $text1 . ' is ingediend.',
@@ -885,7 +885,7 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
   drupal_mail('ammo', 'change_message', 'tdgraaff@sp.nl', $language, $params, $sender_email, TRUE);
   foreach ($relations as $relation) {
     if (!empty($relation['contact_email'])) {
-      drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
+      //drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
     }
   }
 }
@@ -913,11 +913,11 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
   );
   drupal_mail('ammo', 'withdraw_ownership', 'tdgraaff@sp.nl', $language, $params, $sender_email, TRUE);
   if (!empty($owner->contact_email)) {
-    drupal_mail('ammo', 'withdraw_ownership', $owner->contact_email, $language, $params, $sender_email, TRUE);
+    //drupal_mail('ammo', 'withdraw_ownership', $owner->contact_email, $language, $params, $sender_email, TRUE);
   }
   foreach ($relations as $relation) {
     if (!empty($relation['contact_email'])) {
-      drupal_mail('ammo', 'withdraw_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
+      //drupal_mail('ammo', 'withdraw_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
     }
   }
 }

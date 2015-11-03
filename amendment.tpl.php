@@ -1,4 +1,4 @@
-<h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print $entity_id; ?></h3>
+<h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print $entity_id; ?> (pagina <?php print $page; ?>, regel <?php print $line; ?>)</h3>
 <?php //print '<p>' . $meeting_title . ' van de SP, in vergadering bijeen op ' . $meeting_date . '.</p>'; ?>
 <?php if (!empty($owners_branch)) : ?>
   <?php $list = array(); ?>
@@ -22,13 +22,11 @@
     <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
   <?php endif; ?>
 <?php endif; ?>
-<p>Regel <?php print $line; ?></p>
-<p><strong>Amendement tekst:</strong><br/><?php print $amendment_text; ?></p>
+<h4 class="inline-title">Amendement tekst:</h4>
+<p class="text-limit"><?php print $amendment_text; ?></p>
 <?php if (!empty($supplement)) : ?>
-  <p>
-    <strong>Toelichting:</strong><br/>
-    <?php print $supplement; ?>
-  </p>
+<h4 class="inline-title">Toelichting:</h4>
+<p class="text-limit"><?php print $supplement; ?></p>
 <?php endif; ?>
 <?php if (!empty($state) || !empty($advice)) : ?>
   <p>

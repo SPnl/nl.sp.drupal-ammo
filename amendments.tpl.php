@@ -1,23 +1,23 @@
-<h1 id="inhoud">Inhoud</h1>
+<h1 id="inhoud">Overzicht ingediende amedementen</h1>
 <?php if (!empty($meeting['documents'])) : ?>
 
-  <ul class="first">
+  <ul class="first navigation">
     <?php foreach ($meeting['documents'] as $document) : ?>
-      <li>
-        <a href="#document<?php print $document['id']; ?>"><?php print $document['title']; ?></a>
+      <li class="document">
+        <a href="#document<?php print $document['id']; ?>"><strong><?php print $document['title']; ?></strong></a>
         <ul>
           <?php if (!empty($document['chapters'])): ?>
             <?php foreach ($document['chapters'] as $chapter) : ?>
-              <li>
+              <li class="chapter">
                 <a href="#chapter<?php print $chapter['nr']; ?>">Hoofdstuk <?php print $chapter['nr']; ?></a>
                 <ul>
                   <?php foreach ($chapter['pages'] as $page) : ?>
                     <li>
-                      <a href="#page<?php print $page['nr']; ?>">Pagina <?php print $page['nr']; ?></a>
-                      <ul>
+                      <span class="label"><a href="#page<?php print $page['nr']; ?>">Pagina <?php print $page['nr']; ?></a></span>
+                      <ul class="amendments">
                         <?php foreach ($page['amendments'] as $amendment) : ?>
                           <li>
-                            <a href="#amendment<?php print $amendment['id']; ?>">Amendement nr. <?php print $amendment['id']; ?></a>
+                            <a href="#amendment<?php print $amendment['id']; ?>">#<?php print $amendment['id']; ?></a>
                           </li>
                         <?php endforeach; ?>
                       </ul>
@@ -35,16 +35,16 @@
   <ul class="first">
     <?php foreach ($meeting['documents'] as $document) : ?>
     <li>
-        <h1 id="document<?php print $document['id']; ?>"><?php print $document['title']; ?></h1>
+        <h1 id="document<?php print $document['id']; ?>" class="document-title"><?php print $document['title']; ?></h1>
         <ul>
           <?php if (!empty($document['chapters'])): ?>
             <?php foreach ($document['chapters'] as $chapter) : ?>
               <li>
-                <h2 id="chapter<?php print $chapter['nr']; ?>">Hoofdstuk <?php print $chapter['nr']; ?></h2>
+                <h2 id="chapter<?php print $chapter['nr']; ?>" class="chapter-nr">Hoofdstuk <?php print $chapter['nr']; ?></h2>
                 <ul>
                   <?php foreach ($chapter['pages'] as $page) : ?>
                     <li>
-                      <h2 id="page<?php print $page['nr']; ?>">Pagina <?php print $page['nr']; ?></h2>
+                      <h3 id="page<?php print $page['nr']; ?>" class="page-nr">Pagina <?php print $page['nr']; ?></h2>
                       <ul>
                         <?php foreach ($page['amendments'] as $amendment) : ?>
                           <li class="ammo-element <?php print $amendment['state']; ?>">
