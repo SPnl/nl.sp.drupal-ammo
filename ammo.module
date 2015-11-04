@@ -89,6 +89,16 @@ function ammo_menu() {
     'weight' => 5,
   );
 
+  $items['ammo/print'] = array(
+    'title' => 'Print',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_print_form'),
+    'access callback' => 'ammo_admin_access',
+    'file' => 'print.form.inc',
+    'weight' => 5,
+  );
+
   $items['ammo/support/%/%/%/%'] = array(
     'title' => 'Steun',
     'page callback' => 'drupal_get_form',
@@ -96,7 +106,6 @@ function ammo_menu() {
     'file' => 'support.form.inc',
     'type' => MENU_CALLBACK,
     'access callback' => 'user_is_logged_in',
-    'weight' => 6,
   );
 
   $items['ammo/autocomplete_members/%/%'] = array(
@@ -175,6 +184,22 @@ function ammo_theme() {
     'intropage' => array(
       'variables' => array(),
       'template' => 'intropage',
+    ),
+    'print_amendments_by_location' => array(
+      'variables' => array(),
+      'template' => 'print_amendments_by_location',
+    ),
+    'print_amendments_by_number' => array(
+      'variables' => array(),
+      'template' => 'print_amendments_by_number',
+    ),
+    'print_motions_by_branch' => array(
+      'variables' => array(),
+      'template' => 'print_motions_by_branch',
+    ),
+    'print_motions_by_number' => array(
+      'variables' => array(),
+      'template' => 'print_motions_by_number',
     ),
   );
   return $theme;
@@ -384,6 +409,161 @@ function template_preprocess_overview_motions(&$variables) {
   }
 }
 
+function template_preprocess_print_amendments_by_location(&$variables) {
+  $data = _ammo_preprocess_meeting_data($variables); 
+  $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title", array(":meeting_id" => $variables['values']['meeting']));
+  foreach ($documents_results as $document) {
+    // Store document data.
+    $data['meeting']['documents'][$document->id] = array(
+      'id' => $document->id,
+      'title' => check_plain($document->title),
+      'description' => check_plain($document->description),
+      'meeting_id' => check_plain($document->meeting_id),
+    );
+    $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, page, line, id", array(":document_id" => $document->id));
+    foreach ($amendments_results as $amendment) {
+      // Get owners.
+      $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
+      $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
+      $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
+      // Store chapter data.
+      $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['nr'] = $amendment->chapter;
+      // Store page data.
+      $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['nr'] = $amendment->page;
+      // Store amendment data.
+      $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = array(
+        'id' => $amendment->id,
+        'chapter' => $amendment->chapter,
+        'page' => $amendment->page,
+        'line' => $amendment->line,
+        'amendment_text' => $amendment->amendment_text,
+        'supplement' => $amendment->supplement,
+        'advice' => $amendment->advice,
+        'advice_supplement' => $amendment->advice_supplement,
+        'state' => $amendment->state,
+        'owners_member' => $owners_member,
+        'owners_branch' => $owners_branch,
+        'backers' => $backers,
+      );
+      foreach ($data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] as $key => &$value) {
+        if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
+        $value = nl2br(check_plain($value));
+      }
+    }
+  }
+  $variables['meeting'] = $data['meeting'];
+}
+
+function template_preprocess_print_amendments_by_number(&$variables) {
+  $data = _ammo_preprocess_meeting_data($variables); 
+  $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE state != 'concept' ORDER BY id");
+  $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
+  foreach ($amendments_results as $amendment) {
+    // Get owners.
+    $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
+    $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
+    $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
+    $document = entity_load_single('document', $amendment->document_id);
+    dpm($document);
+    // Store amendment data.
+    $data['meeting']['amendments'][$amendment->id] = array(
+      'id' => $amendment->id,
+      'document_id' => check_plain($amendment->document_id),
+      'document_title' => check_plain($document->title),
+      'chapter' => check_plain($amendment->chapter),
+      'page' => check_plain($amendment->page),
+      'line' => check_plain($amendment->line),
+      'amendment_text' => check_plain($amendment->amendment_text),
+      'supplement' => check_plain($amendment->supplement),
+      'advice' => check_plain($amendment->advice),
+      'advice_supplement' => check_plain($amendment->advice_supplement),
+      'state' => $amendment->state,
+      'owners_member' => $owners_member,
+      'owners_branch' => $owners_branch,
+      'backers' => $backers,
+    );
+    foreach ($data['meeting']['amendments'][$amendment->id] as $key => &$value) {
+      if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
+      $value = nl2br(check_plain($value));
+    }
+  }
+  $variables['meeting'] = $data['meeting'];
+}
+
+function template_preprocess_print_motions_by_branch(&$variables) {
+  $data = _ammo_preprocess_meeting_data($variables); 
+  $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $variables['values']['meeting']));
+  foreach ($motions_results as $motion) {
+    $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
+    $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
+    $backers = ammo_get_related_contacts($motion->id, 'motion', 'backer'); 
+    $first_owner = ammo_get_first_owner('motion', $motion->id);
+    $data['meeting']['branches'][$first_owner['branch_id']]['first_owner'] = $first_owner;
+    $data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
+      'id' => $motion->id,
+      'consideration_opening' => $motion->consideration_opening,
+      'consideration_body' => $motion->consideration_body,
+      'follow_up_opening' => $motion->follow_up_opening,
+      'follow_up_body' => $motion->follow_up_body,
+      'supplement' => $motion->supplement,
+      'advice' => $motion->advice,
+      'advice_supplement' => $motion->advice_supplement,
+      'state' => $motion->state,
+      'owners_member' => $owners_member,
+      'owners_branch' => $owners_branch,
+      'backers' => $backers,
+    );
+    foreach ($data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] as $key => &$value) {
+      if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
+      $value = nl2br(check_plain($value));
+    }
+  }
+  $variables['meeting'] = $data['meeting'];
+}
+
+function template_preprocess_print_motions_by_number(&$variables) {
+  $data = _ammo_preprocess_meeting_data($variables); 
+  $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $variables['values']['meeting']));
+  foreach ($motions_results as $motion) {
+    $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
+    $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
+    $backers = ammo_get_related_contacts($motion->id, 'motion', 'backer'); 
+    $data['meeting']['motions'][$motion->id] = array(
+      'id' => $motion->id,
+      'consideration_opening' => $motion->consideration_opening,
+      'consideration_body' => $motion->consideration_body,
+      'follow_up_opening' => $motion->follow_up_opening,
+      'follow_up_body' => $motion->follow_up_body,
+      'supplement' => $motion->supplement,
+      'advice' => $motion->advice,
+      'advice_supplement' => $motion->advice_supplement,
+      'state' => $motion->state,
+      'owners_member' => $owners_member,
+      'owners_branch' => $owners_branch,
+      'backers' => $backers,
+    );
+    foreach ($data['meeting']['motions'][$motion->id] as $key => &$value) {
+      if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
+      $value = nl2br(check_plain($value));
+    }
+  }
+  $variables['meeting'] = $data['meeting'];
+}
+
+function _ammo_preprocess_meeting_data(&$variables) {
+  $meeting = entity_load_single('meeting', $variables['values']['meeting']);
+  // Store meeting data.
+  $data['meeting'] = array(
+    'id' => $meeting->id,
+    'title' => check_plain($meeting->title),
+    'description' => check_plain($meeting->description),
+    'date' => $meeting->date,
+    'submission_closing_date' => $meeting->submission_closing_date,
+    'withdrawal_closing_date' => $meeting->withdrawal_closing_date,
+  );
+  return $data;
+}
+
 /**
  * Implements hook_entity_info().
  */
@@ -448,19 +628,6 @@ function ammo_entity_info() {
   return $info;
 }
 
-function ammo_intropage() {
-  $amendments_link = l('Amendement indienen', 'ammo/amendment', array('query' => array('destination' => 'ammo')));
-  $motions_link = l('Motie indienen', 'ammo/motion', array('query' => array('destination' => 'ammo')));
-
-  return theme('intropage', array(
-    'amendments_link' => $amendments_link,
-    'motions_link' => $motions_link,
-    'add_access' => ammo_add_access(),
-    'admin_access' => ammo_admin_access(),
-    'superadmin_access' => ammo_superadmin_access(),
-  ));
-}
-
 function ammo_mail($key, &$message, $params) {
   global $base_url;
   $values = $params['values'];
@@ -496,4 +663,12 @@ function ammo_mail($key, &$message, $params) {
     $message['body'][] = $values['entity']['markup'];
     break;
   }
+}
+
+function ammo_intropage() {
+  return theme('intropage', array(
+    'add_access' => ammo_add_access(),
+    'admin_access' => ammo_admin_access(),
+    'superadmin_access' => ammo_superadmin_access(),
+  ));
 }
