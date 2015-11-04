@@ -464,7 +464,6 @@ function template_preprocess_print_amendments_by_number(&$variables) {
     $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
     $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
     $document = entity_load_single('document', $amendment->document_id);
-    dpm($document);
     // Store amendment data.
     $data['meeting']['amendments'][$amendment->id] = array(
       'id' => $amendment->id,
