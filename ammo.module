@@ -348,7 +348,7 @@ function template_preprocess_overview_amendments(&$variables) {
       'date' => $meeting->date,
       'submission_closing_date' => $meeting->submission_closing_date,
     );
-    $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title", array(":meeting_id" => $variables['meeting_id']));
+    $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title DESC", array(":meeting_id" => $variables['meeting_id']));
     foreach ($documents_results as $document) {
       // Store document data.
       $data['meeting']['documents'][$document->id] = array(

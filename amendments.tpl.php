@@ -1,4 +1,4 @@
-<h1 id="inhoud">Overzicht ingediende amedementen</h1>
+<h1 id="inhoud">Overzicht alle ingediende amendementen</h1>
 <?php if (!empty($meeting['documents'])) : ?>
 
   <ul class="first navigation">
@@ -35,12 +35,12 @@
   <ul class="first">
     <?php foreach ($meeting['documents'] as $document) : ?>
     <li>
-        <h1 id="document<?php print $document['id']; ?>" class="document-title"><?php print $document['title']; ?></h1>
+        <h2 id="document<?php print $document['id']; ?>" class="document-title"><?php print $document['title']; ?></h2>
         <ul>
           <?php if (!empty($document['chapters'])): ?>
             <?php foreach ($document['chapters'] as $chapter) : ?>
               <li>
-                <h2 id="chapter<?php print $chapter['nr']; ?>" class="chapter-nr">Hoofdstuk <?php print $chapter['nr']; ?></h2>
+                <h3 id="chapter<?php print $chapter['nr']; ?>" class="chapter-nr">Hoofdstuk <?php print $chapter['nr']; ?></h3>
                 <ul>
                   <?php foreach ($chapter['pages'] as $page) : ?>
                     <li>

@@ -1,5 +1,6 @@
+<h1 id="inhoud">Overzicht alle ingediende moties</h1>
 <?php if (!empty($meeting['branches'])) : ?>
-  <h1 id="inhoud">Inhoud</h1>
+  <h2 id="inhoud">Inhoud</h2>
 
   <ul class="navigation">
     <?php foreach ($meeting['branches'] as $branch) : ?>
