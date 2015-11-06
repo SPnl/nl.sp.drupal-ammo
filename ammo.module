@@ -213,6 +213,7 @@ function template_preprocess_amendment(&$variables) {
     $meeting = entity_load_single('meeting', $document->meeting_id);
     $meeting_date = new DateTime($meeting->date);
     $meeting_date_formatted = $meeting_date->format('d F Y');
+    $hide_advice = $meeting->hide_advice;
     $owners_member = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch'); 
     $backers = ammo_get_related_contacts($entity->id, 'amendment', 'backer', 'member'); 
@@ -261,6 +262,7 @@ function template_preprocess_amendment(&$variables) {
       'supported_branches' => $supported_branches,
       'unsupported_branches' => $unsupported_branches,
       'removable_member_owners' => ammo_removable_member_owners('amendment', $entity->id), 
+      'hide_advice' => $hide_advice,
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
@@ -277,6 +279,7 @@ function template_preprocess_motion(&$variables) {
     $meeting = entity_load_single('meeting', $entity->meeting_id);
     $meeting_date = new DateTime($meeting->date);
     $meeting_date_formatted = $meeting_date->format('d F Y');
+    $hide_advice = $meeting->hide_advice;
     $owners_member = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch'); 
     $backers = ammo_get_related_contacts($entity->id, 'motion', 'backer'); 
@@ -328,6 +331,7 @@ function template_preprocess_motion(&$variables) {
       'supported_branches' => $supported_branches,
       'unsupported_branches' => $unsupported_branches,
       'removable_member_owners' => ammo_removable_member_owners('motion', $entity->id), 
+      'hide_advice' => $hide_advice,
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;

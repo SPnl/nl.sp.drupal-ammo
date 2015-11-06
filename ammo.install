@@ -46,6 +46,10 @@ function ammo_schema() {
         'type' => 'int',
         'size' => 'tiny',
       ),
+      'hide_advice' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+      ),
     ),
     'primary key' => array(
       'id',

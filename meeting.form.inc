@@ -53,6 +53,11 @@ function ammo_meeting_form($form, &$form_state) {
     '#title' => 'Geen individuele indieners.',
   );
 
+  $form['hide_advice'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Verberg advies.',
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => 'submit',
@@ -122,6 +127,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
   $withdrawal_closing_date = $values['withdrawal_closing_date'];
   $submission_closing_date = $values['submission_closing_date'];
   $no_member_owners = $values['no_member_owners'];
+  $hide_advice = $values['hide_advice'];
   $email = $values['email'];
 
   // Check if delete meeting button was clicked.
@@ -159,6 +165,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     $form['submission_closing_date']['date']['#value'] = $date->format('d-m-Y');
     $form['submission_closing_date']['time']['#value'] = $date->format('H:i');
     $form['no_member_owners']['#checked'] = $meeting->no_member_owners;
+    $form['hide_advice']['#checked'] = $meeting->hide_advice;
     return $form;
   }
 
@@ -209,6 +216,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
         'withdrawal_closing_date' => $withdrawal_closing_date,
         'email' => $email,
         'no_member_owners' => $no_member_owners,
+        'hide_advice' => $hide_advice,
       ), $meeting_id);    
     if ($saved) {
       drupal_set_message('Bijeenkomst is opgeslagen.');

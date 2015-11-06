@@ -36,7 +36,7 @@
   <?php $options = ammo_states(); ?>
     <strong>Status:</strong> <?php print strtolower($options[$state]); ?>
   <?php endif; ?>
-  <?php if (!empty($advice)) : ?>
+  <?php if (!empty($advice) && (!$hide_advice || $admin_access)) : ?>
   <?php $options = ammo_motion_advice(); ?>
       <br/><strong>Advies:</strong> <?php print strtolower($options[$advice]); ?>
       <?php if (!empty($advice_supplement)) : ?>

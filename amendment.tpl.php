@@ -34,7 +34,7 @@
     <?php $options = ammo_states(); ?>
     <strong>Status:</strong> <?php print strtolower($options[$state]); ?>
   <?php endif; ?>
-  <?php if (!empty($advice)) : ?>
+  <?php if (!empty($advice) && (!$hide_advice || $admin_access)) : ?>
     <?php if (!empty($state)) : ?>
       <br/>
     <?php endif; ?>
