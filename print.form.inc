@@ -65,6 +65,24 @@ function ammo_print_form($form, &$form_state) {
   }
 
   if (!empty($form_state['values']['type'])) {
+    $form['writerordoc'] = array(
+      '#type' => 'radios',
+      '#title' => 'Bestand voor',
+      '#name' => 'writerordoc',
+      '#required' => TRUE,
+      '#options' => array(
+        'writer' => 'Libreoffice writer',
+        'doc' => 'Mircosoft word',
+      ),
+      '#default_value' => 'writer',
+      '#ajax' => array(
+        'wrapper' => 'ajax-print-form-wrapper',
+        'callback' => 'ammo_print_form_ajax_callback',
+      ),
+    );
+  }
+
+  if (!empty($form_state['values']['type'])) {
     $form['submit'] = array(
       '#type' => 'submit',
       '#value' => 'Print',
@@ -110,6 +128,10 @@ function ammo_print_form_submit($form, &$form_state) {
     break;
   }
 
+  if ($form_state['values']['writerordoc'] == 'doc') {
+    $content = ammo_encodeToIso($content);
+  }
+
   fputs($f, $content);
   fclose($f);
   drupal_exit();
@@ -117,4 +139,8 @@ function ammo_print_form_submit($form, &$form_state) {
 
 function ammo_print_form_ajax_callback($form, &$form_state) {
   return $form;
+}
+
+function ammo_encodeToIso($string) {
+  return mb_convert_encoding($string, "ISO-8859-1", mb_detect_encoding($string, "UTF-8, ISO-8859-1, ISO-8859-15", true));
 }

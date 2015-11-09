@@ -451,7 +451,7 @@ function template_preprocess_print_amendments_by_location(&$variables) {
       );
       foreach ($data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] as $key => &$value) {
         if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
-        $value = nl2br(check_plain($value));
+        $value = nl2br($value);
       }
     }
   }
@@ -487,7 +487,7 @@ function template_preprocess_print_amendments_by_number(&$variables) {
     );
     foreach ($data['meeting']['amendments'][$amendment->id] as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
-      $value = nl2br(check_plain($value));
+      $value = nl2br($value);
     }
   }
   $variables['meeting'] = $data['meeting'];
@@ -518,7 +518,7 @@ function template_preprocess_print_motions_by_branch(&$variables) {
     );
     foreach ($data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
-      $value = nl2br(check_plain($value));
+      $value = nl2br($value);
     }
   }
   $variables['meeting'] = $data['meeting'];
@@ -547,7 +547,7 @@ function template_preprocess_print_motions_by_number(&$variables) {
     );
     foreach ($data['meeting']['motions'][$motion->id] as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
-      $value = nl2br(check_plain($value));
+      $value = nl2br($value);
     }
   }
   $variables['meeting'] = $data['meeting'];
