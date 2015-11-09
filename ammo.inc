@@ -518,6 +518,7 @@ function ammo_checked_form(&$form, &$form_state, $type) {
   $text1 = ($type == 'amendment') ? 'vergelijkbaar amendement' : 'vergelijkbare motie';
   $text2 = ($type == 'amendment') ? 'amendementen' : 'moties';
   $text3 = ($type == 'amendment') ? 'het amendement' : 'de motie';
+	$text4 = '<p><strong>Let op! </strong>Amendementen zijn wijzigingsvoorstellen die betrekking hebben op de resolutie (de tekst over wat ons de komende jaren te doen staat) of het huishoudelijk reglement. Moties zijn voor grote of actuele kwesties die buiten de resolutie vallen.</p>';
   $link1 = l('gecontroleerd', 'ammo/' . $type . 's');
   $link2 = l('overzicht', 'ammo/' . $type . 's');
   $description = 'Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingediend. Dit kun je vooraf controleren in het ' . $link2 . '. Als er al een ' . $text1 . ' is ingediend, kun je het in dat overzicht met een druk op de knop "mede-indienen". Wanneer de eerste indiener ' . $text3 . ' intrekt, dan blijft deze staan zolang er nog mede-indieners zijn.';
@@ -527,6 +528,7 @@ function ammo_checked_form(&$form, &$form_state, $type) {
     '#description' => $description,
     '#default_value' => FALSE,
     '#required' => TRUE,
+		'#prefix' => $text4,
   );
 }
 
