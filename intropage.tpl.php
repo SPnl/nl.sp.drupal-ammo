@@ -13,8 +13,7 @@
   </ul>
   <p><strong>In een overzicht kunt u:</strong></p>
   <ul>
-      <?php if ($add_access): ?>
-      <li>Uw ingediende amendementen en moties intrekken.</li>
+    <?php if ($add_access): ?>
       <li>Amendementen en moties van andere afdelingen mede indienen.</li>
       <?php if (!$admin_access): ?>
         <li>Uw ingediende amendementen en moties aanpassen.</li>
@@ -24,6 +23,7 @@
         <li>Ingediende amendementen en moties voorzien van advies.</li>
         <li>De status van ingediende amendementen en moties aanpassen.</li>
       <?php endif; ?>
+      <li>Uw ingediende amendementen en moties intrekken.</li>
     <?php endif; ?>
     <li>Individueel ingediende amendementen en moties moties steunen.</li>
   </ul>
