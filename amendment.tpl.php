@@ -14,7 +14,7 @@
   <p>Ingediend door <?php print $members_list; ?> van afdeling <?php print $owner_member['branch_display_name']; ?>.</p>
   <?php $number = count($backers) + count($owners_member); ?>
   <?php if (!empty($owners_branch)) : ?>
-    <p>Mede ingediend door afdeling <?php print $owners_list; ?>.</p>
+    <p>Mede ingediend door afdeling <?php print $owners_list; ?>, dus voldoende steun.</p>
   <?php endif; ?>
 <p>Ondersteund door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?><?php if (empty($owners_branch)) : print ' ('; print ($number >= 50) ? 'voldoende' : 'onvoldoende'; print ' steun)'; endif ?>.</p>
 <?php else: ?>
