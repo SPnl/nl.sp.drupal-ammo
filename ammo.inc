@@ -635,13 +635,7 @@ function ammo_select_afdeling_form(&$form, &$form_state, $type, $options) {
 
 function ammo_select_meeting_form(&$form, &$form_state, $options = array()) {
   if (empty($options)) {
-    $meetings = entity_load('meeting');
-    $options = array();
-    foreach ($meetings as $meeting) {
-      if (in_array(arg(1), array('amendments', 'motions')) || ammo_edit_access($meeting->id)) {
-        $options[$meeting->id] = $meeting->title;
-      }
-    }
+		$options = ammo_get_meetings();
   }
   $form['meeting'] = array(
     '#type' => 'select',
@@ -679,7 +673,7 @@ function ammo_support_access($meeting_id) {
 
 function ammo_edit_access($meeting_id, $branch_id = NULL) {
   $result = ammo_access($meeting_id, 'submit', $branch_id);
-  if ($result || ammo_superadmin_access()) {
+  if ($result || ammo_admin_access()) {
     return TRUE;
   }
   return FALSE;
@@ -1012,7 +1006,7 @@ function ammo_mailadress($meeting_id) {
 
 function ammo_get_meetings() {
   // Check if there is more than one option to choose from.
-  $meetings = entity_load('meeting');
+  $meetings = entity_load('meeting', FALSE, array(), TRUE);
   $options = array();
   foreach ($meetings as $meeting) {
     if (ammo_edit_access($meeting->id) || in_array(arg(1), array('amendments', 'motions'))) {
