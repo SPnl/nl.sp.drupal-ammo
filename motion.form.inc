@@ -52,12 +52,13 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       break;
     }
   }
-	else {
-    if (empty(ammo_get_meetings())) { 
+  else {
+    $meetings = ammo_get_meetings();
+    if (empty($meetings)) { 
       drupal_set_message('De termijn voor het indienen van moties is verstreken.', 'warning');
       return;
     }
-	}
+  }
 
   // Always set first step.
   if (empty($form_state['storage']['first_step'])) {

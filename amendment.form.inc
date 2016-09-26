@@ -55,7 +55,8 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     }
   }
   else {
-    if (empty(ammo_get_meetings())) { 
+    $meetings = ammo_get_meetings();
+    if (empty($meetings)) { 
       drupal_set_message('De termijn voor het indienen van amendementen is verstreken.', 'warning');
       return;
     }
@@ -150,7 +151,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       $new_amendment = ammo_store('amendment', NULL, $mapping, $form, $form_state);
       $form_state['storage']['amendment'] = $new_amendment->id;
       $form_state['storage']['new'] = TRUE;
-      drupal_set_message('Er is een nieuw amendement aangemaakt (nr. ' . $new_amendment->id .')');
+      drupal_set_message('Er is een nieuw amendement aangemaakt (id. ' . $new_amendment->id .')');
     }
     else {
       ammo_select_afdeling_form($form, $form_state, 'amendment', $options);
@@ -413,6 +414,16 @@ function ammo_amendment_form_submit($form, &$form_state)
         'state' => 'state',
       );
       ammo_store('amendment', $storage['amendment'], $mapping, $form, $form_state);
+      // Store chapterized id when not set yet.
+      $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter';
+      $max_chapterized_id = db_query($query, array(':chapter' => $storage['chapter']))->fetchField(); 
+      $num_updated = db_update('ammo_amendments')
+        ->fields(array(
+          'chapterized_id' => $max_chapterized_id + 1,
+        ))
+        ->condition('id', $storage['amendment'])
+        ->isNull('chapterized_id')
+        ->execute();
       drupal_set_message('<h3>Opgeslagen</h3>' . theme('amendment', array('entity_id' => $storage['amendment'], 'no_links' => TRUE)));
       break;
     case 7:

@@ -94,6 +94,11 @@ function ammo_schema() {
         'size' => 'big',
         'not null' => TRUE,
       ),
+      'chapterized_id' => array(
+        'description' => 'Amendment id by chapter.',
+        'type' => 'int',
+        'size' => 'big',
+      ),
       'document_id' => array(
         'description' => 'Id of the document that is amended.',
         'type' => 'int',
@@ -274,4 +279,19 @@ function ammo_schema() {
   );
 
   return $schema;
+}
+
+/**
+ * Add chapterized_id to  {ammo_amendments} table.
+ */
+function ammo_update_7001() {
+  $spec = array(
+    'description' => 'Amendment id by chapter.',
+    'type' => 'int',
+    'size' => 'big',
+  );
+  db_add_field( 'ammo_amendments', 'chapterized_id', $spec);
+
+  // Add unique key for chapter and chapterized_id.
+  db_add_unique_key('ammo_amendments', 'chapterized_id', array('chapter', 'chapterized_id'));  
 }
