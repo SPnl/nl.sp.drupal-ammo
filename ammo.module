@@ -234,6 +234,7 @@ function template_preprocess_amendment(&$variables) {
       }
     }
     $vars = array(
+      'chapterized_id' => $entity->chapterized_id,
       'document_id' => $entity->document_id,
       'chapter' => $entity->chapter,
       'page' => $entity->page,
