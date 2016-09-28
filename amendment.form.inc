@@ -414,9 +414,13 @@ function ammo_amendment_form_submit($form, &$form_state)
         'state' => 'state',
       );
       ammo_store('amendment', $storage['amendment'], $mapping, $form, $form_state);
+      // Reset storage variable.
+      $values = $form_state['values'];
+      $storage = $form_state['storage'];
       // Store chapterized id when not set yet.
       $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter';
-      $max_chapterized_id = db_query($query, array(':chapter' => $storage['chapter']))->fetchField(); 
+      $result = db_query($query, array(':chapter' => $storage['chapter'])); 
+      $max_chapterized_id = $result->fetchField(); 
       $num_updated = db_update('ammo_amendments')
         ->fields(array(
           'chapterized_id' => $max_chapterized_id + 1,
