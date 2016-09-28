@@ -83,6 +83,13 @@ function ammo_print_form($form, &$form_state) {
   }
 
   if (!empty($form_state['values']['type'])) {
+    $form['notespace'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Ruimte voor notities toevoegen',
+    );
+  }
+
+  if (!empty($form_state['values']['type'])) {
     $form['submit'] = array(
       '#type' => 'submit',
       '#value' => 'Print',

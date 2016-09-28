@@ -457,6 +457,7 @@ function template_preprocess_print_amendments_by_location(&$variables) {
     }
   }
   $variables['meeting'] = $data['meeting'];
+  $variables['meeting']['notespacetext'] = '<p><br/><br/><br/><br/></p>';
 }
 
 function template_preprocess_print_amendments_by_number(&$variables) {
@@ -492,6 +493,7 @@ function template_preprocess_print_amendments_by_number(&$variables) {
     }
   }
   $variables['meeting'] = $data['meeting'];
+  $variables['meeting']['notespacetext'] = '<p><br/><br/><br/><br/></p>';
 }
 
 function template_preprocess_print_motions_by_branch(&$variables) {
@@ -523,6 +525,7 @@ function template_preprocess_print_motions_by_branch(&$variables) {
     }
   }
   $variables['meeting'] = $data['meeting'];
+  $variables['meeting']['notespacetext'] = '<p><br/><br/><br/><br/></p>';
 }
 
 function template_preprocess_print_motions_by_number(&$variables) {
@@ -552,6 +555,7 @@ function template_preprocess_print_motions_by_number(&$variables) {
     }
   }
   $variables['meeting'] = $data['meeting'];
+  $variables['meeting']['notespacetext'] = '<p><br/><br/><br/><br/></p>';
 }
 
 function _ammo_preprocess_meeting_data(&$variables) {

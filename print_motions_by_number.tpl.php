@@ -26,11 +26,15 @@
         <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
       <?php endif; ?>
     <?php endif; ?>
+    <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
     <p><strong><?php print $motion['consideration_opening']; ?></strong> <?php print $motion['consideration_body']; ?></p>
+    <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
     <p><strong><?php print $motion['follow_up_opening']; ?></strong> <?php print $motion['follow_up_body']; ?></p>
+    <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
     <?php if (!empty($motion['supplement'])) : ?>
       <p><strong>Toelichting</strong></p>
       <p><?php print $motion['supplement']; ?></p>
+      <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
     <?php endif; ?>
     <?php $options = ammo_states(); ?>
     <p><strong>Status:</strong> <?php print $options[$motion['state']]; ?></p>
@@ -40,6 +44,7 @@
       <?php if (!empty($motion['advice_supplement'])) : ?>
         <p><?php print $motion['advice_supplement']; ?></p>
       <?php endif; ?>
+      <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
     <?php endif; ?>
     <br style="page-break-before: always">
   <?php endforeach; ?>

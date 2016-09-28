@@ -26,11 +26,14 @@
       <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
     <?php endif; ?>
   <?php endif; ?>
+  <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
   <p><strong>Amendement tekst</strong></p>
   <p><?php print $amendment['amendment_text']; ?></p>
+  <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
   <?php if (!empty($amendment['supplement'])) : ?>
     <p><strong>Toelichting</strong></p>
     <p><?php print $amendment['supplement']; ?></p>
+    <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
   <?php endif; ?>
   <?php $options = ammo_states(); ?>
   <p><strong>Status:</strong> <?php print $options[$amendment['state']]; ?></p>
@@ -40,9 +43,9 @@
     <?php if (!empty($amendment['advice_supplement'])) : ?>
       <p><?php print $amendment['advice_supplement']; ?></p>
     <?php endif; ?>
+    <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
   <?php endif; ?>
   <br style="page-break-before: always">
 <?php endforeach; ?>
 </body>
 </html>
-
