@@ -11,7 +11,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   if (!empty($path_id) && !empty($form_action) && empty($form_state['storage']['first_step'])) {
     switch ($form_action) {
     case 'edit':
-      if (ammo_preset_form('amendment', $path_id, $form_state)) {
+      if (ammo_populate_form('amendment', $path_id, $form_state)) {
         $meeting_id = ammo_get_meeting_id('amendment', $form_state['storage']['amendment']);
         // Check access right.
         if (
@@ -31,7 +31,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       break;
     case 'advice':
       if (ammo_admin_access()) {
-        if (ammo_preset_form('amendment', $path_id, $form_state)) {
+        if (ammo_populate_form('amendment', $path_id, $form_state)) {
           $meeting_id = ammo_get_meeting_id('amendment', $form_state['storage']['amendment']);
           if (ammo_support_access($meeting_id) || ammo_superadmin_access()) {
             $form_state['storage']['first_step'] = 7;
@@ -313,9 +313,16 @@ function ammo_amendment_form_validate($form, &$form_state)
         form_set_error('add_owner', 'Contact was reeds toegevoegd.');
       }
       // Check if owner is member.
-      $members = ammo_get_afdeling_members($storage['branch_id']);
+
+      $admin_access = ammo_admin_access();
+      if ($admin_access) {
+        $members = ammo_get_all_members();
+      }
+      else {
+        $members = ammo_get_afdeling_members($scope);
+      }
       if (!array_key_exists($values['owner'], $members)) {
-        form_set_error('add_owner', 'Geen lid.');
+        form_set_error('add_owner', 'Contact bestaat niet.');
       }
       break;
     }

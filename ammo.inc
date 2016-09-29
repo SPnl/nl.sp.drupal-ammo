@@ -129,6 +129,41 @@ function ammo_get_afdelingen_helper($contact_id = NULL) {
   return FALSE;
 }
 
+function ammo_get_all_members($afdeling_id) {
+  $allmembers = &drupal_static(__FUNCTION__);
+  if (!isset($allmembers)) {
+    if ($cache = cache_get('ammo_data')) {
+      $data = $cache->data;
+      if (isset($data['allmembers'])) {
+        $allmembers = $data['allmembers'];
+      }
+      else {
+        $allmembers = ammo_get_all_members_helper();
+        $data['allmembers'] = $allmembers;
+        cache_set('ammo_data', $data, 'cache', time() + 86400);
+      }
+    }
+    else {
+      $allmembers = ammo_get_all_members_helper();
+      $data['allmembers'] = $allmembers;
+      cache_set('ammo_data', $data, 'cache', time() + 86400);
+    }
+  }
+  return $allmembers;
+}
+
+function ammo_get_all_members_helper() {
+  civicrm_initialize();
+  $allmembers = array();
+  $result = db_query("SELECT c.id, c.display_name FROM {civicrm_contact} c INNER JOIN {civicrm_membership} m ON c.id = m.contact_id WHERE (m.membership_type_id = 1 OR m.membership_type_id = 2) AND c.contact_type = 'Individual' AND (m.status_id = 1 OR m.status_id = 2)", array());
+  if ($result) {
+    while ($row = $result->fetchAssoc()) {
+      $members[$row['id']] = $row['display_name'];
+    }
+  }
+  return $members;
+}
+
 function ammo_get_afdeling_members($afdeling_id) {
   $afdelingmembers = &drupal_static(__FUNCTION__);
   if (!isset($afdelingmembers[$afdeling_id])) {
@@ -164,11 +199,17 @@ function ammo_get_afdeling_members_helper($afdeling_id) {
   return $members;
 }
 
-function ammo_find_members($afdeling_id, $string) {
+function ammo_find_members($scope, $string) {
   $selected_members = array();
   if (strlen($string) > 2) {
     // Check if participant is already subscribed.
-    $members = ammo_get_afdeling_members($afdeling_id);
+    $admin_access = ammo_admin_access();
+    if ($scope === 'all' && $admin_access) {
+      $members = ammo_get_all_members();
+    }
+    else {
+      $members = ammo_get_afdeling_members($scope);
+    }
     foreach ($members as $member_id => $member_name) {
       if (count($selected_members) > 9) {
         break;
@@ -181,8 +222,8 @@ function ammo_find_members($afdeling_id, $string) {
   return $selected_members;
 }
 
-function ammo_autocomplete_members($afdeling_id, $string) {
-  $selected_members = ammo_find_members($afdeling_id, $string);
+function ammo_autocomplete_members($scope, $string) {
+  $selected_members = ammo_find_members($scope, $string);
   drupal_json_output($selected_members);
   exit;
 }
@@ -394,82 +435,93 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
 
 function ammo_populate_form($type, $entity_id, &$form_state) {
   $values = $form_state['values'];
-  $storage = $form_state['storage'];
+  $storage = &$form_state['storage'];
 
-  switch ($type) {
-  case 'amendment':
-    // Get and store values from existing amendment in form.
-    $amendment = entity_load_single('amendment', $entity_id);
-    $form_state['storage']['amendment'] = $entity_id;
-    $mapping = array(
-      'document_id' => 'document',
-      'chapter' => 'chapter',
-      'page' => 'page',
-      'line' => 'line',
-      'supplement' => 'supplement',
-      'advice' => 'advice',
-      'advice_supplement' => 'advice_supplement',
-      'state' => 'state',
-    );
-    foreach ($mapping as $database_field => $form_field) {
-      $form_state['storage'][$form_field] = $amendment->$database_field;
-    }
-    // Prefill advice fields.
-    $prefill_fields = array(
-      'general' => 'general',
-      'action' => 'action',
-      'amendment_text' => 'amendment_text',
-    );
-    foreach ($prefill_fields as $database_field => $form_field) {
-      // Store normal values.
-      $form_state['storage'][$form_field] = $amendment->$database_field;
-      // Prepopulate advice values if empty.
-      $advice_database_field = 'advice_' . $database_field;
-      $advice_form_field = 'advice_' . $form_field;
-      if (empty($amendment->$advice_database_field)) {
-        $form_state['storage'][$advice_form_field] = $amendment->$database_field;
+  // check if exists.
+  $entity = entity_load_single($type, $entity_id);
+  if ($entity) {
+    // Check access. 
+    $afdelingen = ammo_afdelingen_access();
+    // Get first owner.
+    $first_owner = ammo_get_first_owner($type, $entity->id);
+    if (array_key_exists($first_owner['branch_id'], $afdelingen)) {
+      $storage['branch_id'] = $first_owner['branch_id'];
+      $storage['branch_display_name'] = $first_owner['branch_display_name'];
+      $storage[$type] = $path_id;
+
+      $meeting_id = ammo_get_meeting_id($type, $entity_id);
+      $meeting = entity_load_single('meeting', $meeting_id);
+      $storage['meeting'] = $meeting_id;
+      $storage['meeting_display_name'] = $meeting->title;
+
+      $storage[$type] = $entity->id;
+
+      // Get and store values from existing amendment/motion in form.
+      $mapping = array(
+        'amendment' => array(
+          'document_id' => 'document',
+          'chapter' => 'chapter',
+          'page' => 'page',
+          'line' => 'line',
+          'supplement' => 'supplement',
+          'advice' => 'advice',
+          'advice_supplement' => 'advice_supplement',
+          'state' => 'state',
+          'chapterized_id' => 'chapterized_id',
+        ),
+        'motion' => array(
+          'meeting_id' => 'meeting',
+          'supplement' => 'supplement',
+          'advice' => 'advice',
+          'advice_supplement' => 'advice_supplement',
+          'state' => 'state',
+        ),
+      );
+      foreach ($mapping[$type] as $database_field => $form_field) {
+        $storage[$form_field] = $entity->$database_field;
       }
-      else {
-        $form_state['storage'][$advice_form_field] = $amendment->$advice_database_field;
+
+      // Prefill advice fields.
+      $prefill_fields = array(
+        'amendment' => array(
+          'general' => 'general',
+          'action' => 'action',
+          'amendment_text' => 'amendment_text',
+        ),
+        'motion' => array(
+          'consideration_opening' => 'consideration_opening',
+          'consideration_body' => 'consideration_text',
+          'follow_up_opening' => 'follow_up_opening',
+          'follow_up_body' => 'follow_up_text',
+        ),
+      );
+      foreach ($prefill_fields[$type] as $database_field => $form_field) {
+        // Store normal values.
+        $storage[$form_field] = $entity->$database_field;
+        // Prepopulate advice values if empty.
+        $advice_database_field = 'advice_' . $database_field;
+        $advice_form_field = 'advice_' . $form_field;
+        if (empty($entity->$advice_database_field)) {
+          $storage[$advice_form_field] = $entity->$database_field;
+        }
+        else {
+          $storage[$advice_form_field] = $entity->$advice_database_field;
+        }
       }
-    }
-    break;
-  case 'motion':
-    // Get and store values from existing motion in form.
-    $motion = entity_load_single('motion', $entity_id);
-    $form_state['storage']['motion'] = $entity_id;
-    $mapping = array(
-      'meeting_id' => 'meeting',
-      'supplement' => 'supplement',
-      'advice' => 'advice',
-      'advice_supplement' => 'advice_supplement',
-      'state' => 'state',
-    );
-    foreach ($mapping as $database_field => $form_field) {
-      $form_state['storage'][$form_field] = $motion->$database_field;
-    }
-    // Prefill advice fields.
-    $prefill_fields = array(
-      'consideration_opening' => 'consideration_opening',
-      'consideration_body' => 'consideration_text',
-      'follow_up_opening' => 'follow_up_opening',
-      'follow_up_body' => 'follow_up_text',
-    );
-    foreach ($prefill_fields as $database_field => $form_field) {
-      // Store normal values.
-      $form_state['storage'][$form_field] = $motion->$database_field;
-      // Prepopulate advice values if empty.
-      $advice_database_field = 'advice_' . $database_field;
-      $advice_form_field = 'advice_' . $form_field;
-      if (empty($motion->$advice_database_field)) {
-        $form_state['storage'][$advice_form_field] = $motion->$database_field;
+      if ($type === 'amendment') {
+        $document = entity_load_single('document', $form_state['storage']['document']);
+        $storage['document_display_name'] = $document->title;
       }
-      else {
-        $form_state['storage'][$advice_form_field] = $motion->$advice_database_field;
-      }
+      return TRUE;
     }
-    break;
+    else {
+      drupal_set_message('Data kon niet worden geladen.', 'error');
+    }
   }
+  else {
+      drupal_set_message('Data kon niet worden geladen.', 'error');
+  }
+  return FALSE;
 }
 
 function ammo_afdelingen_access() {
@@ -482,36 +534,6 @@ function ammo_afdelingen_access() {
     $afdelingen = ammo_get_afdelingen($user->name);
   }
   return $afdelingen;
-}
-
-function ammo_preset_form($type, $entity_id, &$form_state) {
-  // check if exists.
-  $entity = entity_load_single($type, $entity_id);
-  if ($entity) {
-    // Check access. 
-    $afdelingen = ammo_afdelingen_access();
-    // Get first owner.
-    $first_owner = ammo_get_first_owner($type, $entity->id);
-    if (array_key_exists($first_owner['branch_id'], $afdelingen)) {
-      // Set form step and get data.
-      $form_state['storage']['branch_id'] = $first_owner['branch_id'];
-      $form_state['storage']['branch_display_name'] = $first_owner['branch_display_name'];
-      $form_state['storage'][$type] = $path_id;
-      ammo_populate_form($type, $entity_id, $form_state); 
-      if ($type == 'amendment') {
-        $meeting_id = ammo_get_meeting_id('amendment', $form_state['storage']['amendment']);
-        $form_state['storage']['meeting'] = $meeting_id;
-      }
-      return TRUE;
-    }
-    else {
-      drupal_set_message('Data kon niet worden geladen.', 'error');
-    }
-  }
-  else {
-      drupal_set_message('Data kon niet worden geladen.', 'error');
-  }
-  return FALSE;
 }
 
 function ammo_checked_form(&$form, &$form_state, $type) {
@@ -583,10 +605,11 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
     );
   }
   // create add participant button.
+  $scope = (ammo_admin_access()) ? 'all' : $form_state['storage']['branch_id'];
   $form['owners']['owner'] = array(
     '#type' => 'textfield',
     '#title' => 'naam / lidnummer',
-    '#autocomplete_path' => 'ammo/autocomplete_members/' . $form_state['storage']['branch_id'],
+    '#autocomplete_path' => 'ammo/autocomplete_members/' . $scope,
   );
   $form['owners']['add_owner'] = array(
     '#type' => 'submit',
