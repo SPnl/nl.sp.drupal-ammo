@@ -7,13 +7,19 @@
         <a href="#document<?php print $document['id']; ?>"><strong><?php print $document['title']; ?></strong></a>
         <ul>
           Amendement index
-          <ul class="amendments">
-          <?php foreach ($document['amendment_index'] as $amendment_id) : ?>
-            <?php $amendment = $document['amendments'][$amendment_id]; ?>
-            <li>
-              <a href="#amendment<?php print $amendment['id']; ?>">#<?php print $amendment['chapter'] . '.' . $amendment['chapterized_id']; ?></a>
-            </li>
-          <?php endforeach; ?>
+          <ul class="chapters">
+            <?php foreach ($document['amendment_index'] as $chapter => $amendment_ids) : ?>
+              <li>
+                <ul class="amendments">
+                <?php foreach ($amendment_ids as $amendment_id) : ?>
+                  <?php $amendment = $document['amendments'][$amendment_id]; ?>
+                  <li>
+                    <a href="#amendment<?php print $amendment['id']; ?>">#<?php print $amendment['chapter'] . '.' . $amendment['chapterized_id']; ?></a>
+                  </li>
+                <?php endforeach; ?>
+                </ul>
+              </li>
+            <?php endforeach; ?>
           </ul>
           <?php if (!empty($document['chapters'])): ?>
             <?php foreach ($document['chapters'] as $chapter) : ?>

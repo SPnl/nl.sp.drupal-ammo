@@ -385,9 +385,9 @@ function template_preprocess_overview_amendments(&$variables) {
         $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = $amendment->id;
       }
       // Store amendment index by chapterized id.
-      $amendments_index_results = db_query("SELECT id FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
+      $amendments_index_results = db_query("SELECT id, chapter FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
       foreach ($amendments_index_results as $amendment) {
-        $data['meeting']['documents'][$document->id]['amendment_index'][] = $amendment->id;
+        $data['meeting']['documents'][$document->id]['amendment_index'][$amendment->chapter][] = $amendment->id;
       }
     }
     $variables = $variables + $data;
