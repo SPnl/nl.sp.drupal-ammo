@@ -6,6 +6,15 @@
       <li class="document">
         <a href="#document<?php print $document['id']; ?>"><strong><?php print $document['title']; ?></strong></a>
         <ul>
+          Amendement index
+          <ul class="amendments">
+          <?php foreach ($document['amendment_index'] as $amendment_id) : ?>
+            <?php $amendment = $document['amendments'][$amendment_id]; ?>
+            <li>
+              <a href="#amendment<?php print $amendment['id']; ?>">#<?php print $amendment['chapter'] . '.' . $amendment['chapterized_id']; ?></a>
+            </li>
+          <?php endforeach; ?>
+          </ul>
           <?php if (!empty($document['chapters'])): ?>
             <?php foreach ($document['chapters'] as $chapter) : ?>
               <li class="chapter">
@@ -14,13 +23,16 @@
                   <?php foreach ($chapter['pages'] as $page) : ?>
                     <li>
                       <span class="label"><a href="#page<?php print $page['nr']; ?>">Pagina <?php print $page['nr']; ?></a></span>
+                      <!--
                       <ul class="amendments">
-                        <?php foreach ($page['amendments'] as $amendment) : ?>
+                        <?php foreach ($page['amendments'] as $amendment_id) : ?>
+                          <?php $amendment = $document['amendments'][$amendment_id]; ?>
                           <li>
-                            <a href="#amendment<?php print $amendment['id']; ?>">#<?php print $amendment['id']; ?></a>
+                            <a href="#amendment<?php print $amendment['id']; ?>">#<?php print $amendment['chapter'] . '.' . $amendment['chapterized_id']; ?></a>
                           </li>
                         <?php endforeach; ?>
                       </ul>
+                      -->
                     </li>
                   <?php endforeach; ?>
                 </ul>
@@ -46,7 +58,8 @@
                     <li>
                       <h3 id="page<?php print $page['nr']; ?>" class="page-nr">Pagina <?php print $page['nr']; ?></h2>
                       <ul>
-                        <?php foreach ($page['amendments'] as $amendment) : ?>
+                        <?php foreach ($page['amendments'] as $amendment_id) : ?>
+                          <?php $amendment = $document['amendments'][$amendment_id]; ?>
                           <li class="ammo-element <?php print $amendment['state']; ?>">
                             <?php print theme('amendment', array('entity_id' => $amendment['id'], 'destination' => $destination)); ?>
                           </li>

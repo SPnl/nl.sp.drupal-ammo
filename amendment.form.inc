@@ -151,7 +151,6 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       $new_amendment = ammo_store('amendment', NULL, $mapping, $form, $form_state);
       $form_state['storage']['amendment'] = $new_amendment->id;
       $form_state['storage']['new'] = TRUE;
-      drupal_set_message('Er is een nieuw amendement aangemaakt (id. ' . $new_amendment->id .')');
     }
     else {
       ammo_select_afdeling_form($form, $form_state, 'amendment', $options);
@@ -388,7 +387,6 @@ function ammo_amendment_form_submit($form, &$form_state)
       $new_amendment = ammo_store('amendment', NULL, $mapping, $form, $form_state);
       $form_state['storage']['amendment'] = $new_amendment->id;
       $form_state['storage']['new'] = TRUE;
-      drupal_set_message('Er is een nieuw amendement aangemaakt (nr. ' . $new_amendment->id .')');
       break;
     case 5:
       if ($values['backed']) {

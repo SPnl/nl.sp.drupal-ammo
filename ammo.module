@@ -362,7 +362,7 @@ function template_preprocess_overview_amendments(&$variables) {
         'description' => check_plain($document->description),
         'meeting_id' => check_plain($document->meeting_id),
       );
-      $amendments_results = db_query("SELECT id, chapter, page, state FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, page, line, id", array(":document_id" => $document->id));
+      $amendments_results = db_query("SELECT id, chapter, page, state, chapterized_id FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, page, line, chapterized_id", array(":document_id" => $document->id));
       foreach ($amendments_results as $amendment) {
         // Get owners.
         $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
@@ -372,14 +372,22 @@ function template_preprocess_overview_amendments(&$variables) {
         // Store page data.
         $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['nr'] = $amendment->page;
         // Store amendment data.
-        $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = array(
+        $data['meeting']['documents'][$document->id]['amendments'][$amendment->id] = array(
           'id' => $amendment->id,
           'chapter' => check_plain($amendment->chapter),
           'page' => check_plain($amendment->page),
           'owners_member' => $owners_member,
           'owners_branch' => $owners_branch,
           'state' => $amendment->state,
+          'chapterized_id' => $amendment->chapterized_id,
         );
+        // Store amendments in document structure.
+        $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = $amendment->id;
+      }
+      // Store amendment index by chapterized id.
+      $amendments_index_results = db_query("SELECT id FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
+      foreach ($amendments_index_results as $amendment) {
+        $data['meeting']['documents'][$document->id]['amendment_index'][] = $amendment->id;
       }
     }
     $variables = $variables + $data;
