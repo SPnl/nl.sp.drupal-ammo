@@ -362,7 +362,7 @@ function template_preprocess_overview_amendments(&$variables) {
         'description' => check_plain($document->description),
         'meeting_id' => check_plain($document->meeting_id),
       );
-      $amendments_results = db_query("SELECT id, chapter, page, state, chapterized_id FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, page, line, chapterized_id", array(":document_id" => $document->id));
+      $amendments_results = db_query("SELECT id, chapter, page, state, chapterized_id FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' AND state != 'blocked' ORDER BY chapter, page, line, chapterized_id", array(":document_id" => $document->id));
       foreach ($amendments_results as $amendment) {
         // Get owners.
         $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
@@ -385,7 +385,7 @@ function template_preprocess_overview_amendments(&$variables) {
         $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = $amendment->id;
       }
       // Store amendment index by chapterized id.
-      $amendments_index_results = db_query("SELECT id, chapter FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
+      $amendments_index_results = db_query("SELECT id, chapter FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' AND state != 'blocked' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
       foreach ($amendments_index_results as $amendment) {
         $data['meeting']['documents'][$document->id]['amendment_index'][$amendment->chapter][] = $amendment->id;
       }
@@ -405,7 +405,7 @@ function template_preprocess_overview_motions(&$variables) {
       'date' => $meeting->date,
       'submission_closing_date' => $meeting->submission_closing_date,
     );
-    $motions_results = db_query("SELECT id, state FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $meeting->id));
+    $motions_results = db_query("SELECT id, state FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept' AND state != 'blocked'", array(":meeting_id" => $meeting->id));
     foreach ($motions_results as $motion) {
       $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
       $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
@@ -646,7 +646,6 @@ function ammo_entity_info() {
 
 function ammo_mail($key, &$message, $params) {
   global $base_url;
-  $values = $params['values'];
 
   // Set reply-to header.
   $message['headers']['Reply-To'] = $params['reply_to'];
@@ -655,28 +654,35 @@ function ammo_mail($key, &$message, $params) {
   switch($key) {
   case 'change_message':
     // Create messeage
-    $type = ($values['entity']['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
-    $message['subject'] = $type . ' nr. ' . $values['entity']['entity_id'] . '.';
-    $message['body'][] = $values['entity']['markup'];
+    $type = ($params['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
+    $message['subject'] = $type . ' nr. ' . $params['id'] . '.';
+    $message['body'][] = $params['markup'];
     $message['body'][] = '<h3>Wijzigingen</h3>';
-    foreach ($values['differences'] as $key => $difference) {
+    foreach ($params['differences'] as $key => $difference) {
       $message['body'][] = '<p>' . $key . ': ' . $difference . '</p>';
     }
-    $path = $base_url . '/ammo/' . $values['entity']['entity_type'] . 's/' . $values['meeting_id'] . '#' . $values['entity']['entity_type'] . $values['entity']['entity_id'];
+    $path = $base_url . '/ammo/' . $params['entity_type'] . 's/' . $params['meeting_id'] . '#' . $params['entity_type'] . $params['entity_id'];
     $message['body'][] = '<p><a href="' . $path . '">Bekijk online</a></p>';
     break;
   case 'withdraw_ownership':
     // Create messeage
-    if ($values['rest']) {
+    if ($params['rest']) {
       $text = 'niet langer mede ingediend door';
     }
     else {
       $text = 'ingetrokken door';
     }
-    $type = ($values['entity']['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
-    $message['subject'] = $type . ' nr. ' . $values['entity']['entity_id'] . ' ' . $text . ' afdeling ' . $values['branch_display_name'];
-    $message['body'][] = '<h3>' . ucfirst($text) . ' ' . $values['branch_display_name'] . '</h3>';
-    $message['body'][] = $values['entity']['markup'];
+    $type = ($params['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
+    $message['subject'] = $type . ' nr. ' . $params['id'] . ' ' . $text . ' afdeling ' . $params['branch_display_name'];
+    $message['body'][] = '<h3>' . ucfirst($text) . ' ' . $params['branch_display_name'] . '</h3>';
+    $message['body'][] = $params['markup'];
+    break;
+  case 'delete_message':
+    // Create messeage
+    $type = ($params['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
+    $message['subject'] = $type . ' nr. ' . $params['id'] . ' is verwijderd.';
+    $message['body'][] = $params['mail_text'];
+    $message['body'][] = $params['markup'];
     break;
   }
 }

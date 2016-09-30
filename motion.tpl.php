@@ -55,6 +55,7 @@
       <?php endif; ?>
       <?php if (($admin_access && $support_access) || $superadmin_access) : ?>
         <li><?php print l('bewerk advies', 'ammo/motion/advice/' . $entity_id, array('query' => $dest))?></li>
+        <li><?php print l('verwijder', 'ammo/motion/delete/' . $entity_id, array('query' => $dest))?></li>
       <?php endif; ?>
     <?php endif; ?>
     <?php if (!$admin_access) : ?>

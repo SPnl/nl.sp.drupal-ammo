@@ -26,7 +26,7 @@ function ammo_overview_motions_form($form, &$form_state, $motion_id = NULL) {
       '#value' => 'kies',
       '#name' => 'action_button',
       '#id' => 'action_button',
-      '#submit' => 'ammo_overview_motions_form_submit',
+      '#submit' => array('ammo_overview_motions_form_submit'),
       '#ajax' => array
       (
         'wrapper' => 'ajax_form',

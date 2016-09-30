@@ -50,6 +50,15 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       $form = ammo_view_entity_form('motion', $path_id);
       return $form;
       break;
+    case 'delete':
+      if (ammo_admin_access()) {
+        if (ammo_populate_form('motion', $path_id, $form_state)) {
+          $form = ammo_delete_entity_form('motion', $path_id);
+          return $form;
+        }
+      }
+      return;
+      break;
     }
   }
   else {
@@ -506,6 +515,18 @@ function ammo_motion_form_submit($form, &$form_state)
       break;
     }
     break;
+  case 'delete_amot':
+    $motion = entity_load_single('motion', $storage['motion']);
+    $motion->state = 'blocked';
+    $result = entity_save('motion', $motion);
+    if ($result) {
+      drupal_set_message('Motie is verwijderd.');
+      ammo_delete_mail('motion', $motion->id, $motion->meeting_id, $values['mail_text']);
+    }
+    else {
+      drupal_set_message('Het was niet mogelijk om de motie te verwijderen.', 'error');
+    }
+    drupal_goto();
   }
 
   // Check if delete button was pressed.
