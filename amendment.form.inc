@@ -319,7 +319,7 @@ function ammo_amendment_form_validate($form, &$form_state)
         $members = ammo_get_all_members();
       }
       else {
-        $members = ammo_get_afdeling_members($scope);
+        $members = ammo_get_afdeling_members($storage['branch_id']);
       }
       if (!array_key_exists($values['owner'], $members)) {
         form_set_error('add_owner', 'Contact bestaat niet.');

@@ -11,7 +11,7 @@
   <?php foreach ($owners_member as $owner_member) : $list[] = $owner_member['contact_display_name']; endforeach; ?>
   <?php $last = array_pop($list); ?>
   <?php if (count($list) === 0) : $members_list = $last; else : $members_list = implode(', ', $list) . ' en ' . $last; endif; ?>
-  <p>Ingediend door <?php print $members_list; ?> van afdeling <?php print $owner_member['branch_display_name']; ?>.</p>
+  <p>Ingediend door <?php print $members_list; ?>.</p>
   <?php $number = count($backers) + count($owners_member); ?>
   <?php if (!empty($owners_branch)) : ?>
     <p>Mede ingediend door afdeling <?php print $owners_list; ?>, dus voldoende steun.</p>

@@ -130,7 +130,7 @@ function ammo_get_afdelingen_helper($contact_id = NULL) {
   return FALSE;
 }
 
-function ammo_get_all_members($afdeling_id) {
+function ammo_get_all_members() {
   $allmembers = &drupal_static(__FUNCTION__);
   if (!isset($allmembers)) {
     if ($cache = cache_get('ammo_data')) {
@@ -378,15 +378,19 @@ function ammo_save_entity($type, $values, $entity_id = NULL) {
   else {
     $entity = entity_load_single($type, $entity_id);
   }
-  foreach ($values as $key => $value) {
-    $entity->$key = $value;
+  if (!empty($values)) {
+    foreach ($values as $key => $value) {
+      $entity->$key = $value;
+    }
   }
   $result = entity_save($type, $entity);
   return ($result !== FALSE) ? $entity : FALSE;
 }
 
 function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
-  $original_entity = entity_load_single($entity_type, $entity_id);
+  if (!empty($entity_id)) {
+    $original_entity = entity_load_single($entity_type, $entity_id);
+  }
   $differences = array();
   foreach($mapping as $database_field => $form_field) {
     if (isset($form_state['values'][$form_field])) {
