@@ -418,7 +418,7 @@ function ammo_amendment_form_submit($form, &$form_state)
         'supplement' => 'supplement',
         'state' => 'state',
       );
-      ammo_store('amendment', $storage['amendment'], $mapping, $form, $form_state);
+      $amendment = ammo_store('amendment', $storage['amendment'], $mapping, $form, $form_state);
       // Reset storage variable.
       $values = $form_state['values'];
       $storage = $form_state['storage'];
@@ -426,13 +426,8 @@ function ammo_amendment_form_submit($form, &$form_state)
       $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter';
       $result = db_query($query, array(':chapter' => $storage['chapter'])); 
       $new_chapterized_id = $result->fetchField() + 1; 
-      $num_updated = db_update('ammo_amendments')
-        ->fields(array(
-          'chapterized_id' => $new_chapterized_id,
-        ))
-        ->condition('id', $storage['amendment'])
-        ->isNull('chapterized_id')
-        ->execute();
+      $amendment->chapterized_id = $new_chapterized_id;
+      entity_save('amendment', $amendment);
       // Create short url.
       global $base_url;
       $long_url = $base_url . '/ammo/support/add/member/amendment/' . $storage['amendment'];

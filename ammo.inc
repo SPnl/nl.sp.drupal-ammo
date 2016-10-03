@@ -298,7 +298,8 @@ function ammo_get_related_contacts($target_id, $target_type, $relation_type = NU
 function ammo_is_related($target_id, $target_type, $relation_type = NULL, $contact_type, $contact_id = NULL) {
   if (empty($contact_id)) {
     global $user;
-    $contact_id = $user->name;
+    $user_wrapper = entity_metadata_wrapper('user', $user);
+    $contact_id = $user_wrapper->field_contact_id->value();
   }
   // Get related contacts.
   $query = new EntityFieldQuery();
@@ -531,12 +532,15 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
 
 function ammo_afdelingen_access() {
   global $user;
+  $user_wrapper = entity_metadata_wrapper('user', $user);
+  $contact_id = $user_wrapper->field_contact_id->value();
+
   // Afdelingen filteren op gebruikers id.
   if(ammo_admin_access()) {
     $afdelingen = ammo_get_afdelingen();
   }
   else {
-    $afdelingen = ammo_get_afdelingen($user->name);
+    $afdelingen = ammo_get_afdelingen($contact_id);
   }
   return $afdelingen;
 }
@@ -1116,9 +1120,12 @@ function ammo_get_documents($form_state) {
  */
 function ammo_removable_member_owners($target_type, $entity_id) {
   global $user;
+  $user_wrapper = entity_metadata_wrapper('user', $user);
+  $contact_id = $user_wrapper->field_contact_id->value();
+
   $contacts = ammo_get_related_contacts($entity_id, $target_type, 'owner', 'member');
   // Controleer of de betreffende leden lid zijn van afdeling voorzitter.
-  $afdelingen = ammo_get_afdelingen($user->name);
+  $afdelingen = ammo_get_afdelingen($contact_id);
   if (!empty($afdelingen) && !empty($contacts)) {
     $afdelingen_ids = array_keys($afdelingen);
     foreach ($contacts as $member) {

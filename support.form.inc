@@ -2,6 +2,9 @@
 
 function ammo_support_form($form, &$form_state, $action, $contact_type, $target_type = NULL, $entity_id = NULL) {
   global $user;
+  $user_wrapper = entity_metadata_wrapper('user', $user);
+  $contact_id = $user_wrapper->field_contact_id->value();
+
   $meeting_id = ammo_get_meeting_id($target_type, $entity_id);
   if (
     !in_array($action, array('add', 'withdraw')) ||
@@ -81,7 +84,7 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
       break;
     }
     // Get afdelingen.
-    $branches = ammo_get_afdelingen($user->name);
+    $branches = ammo_get_afdelingen($contact_id);
     // Filter branches that already support.
     foreach ($branches as $contact_id => $branch) {
       $backed = ammo_is_related($entity_id, $target_type, 'owner', $contact_type, $contact_id); 
@@ -220,6 +223,9 @@ function ammo_support_form_validate($form, &$form_state) {
 
 function ammo_support_form_submit($form, &$form_state) {
   global $user;
+  $user_wrapper = entity_metadata_wrapper('user', $user);
+  $contact_id = $user_wrapper->field_contact_id->value();
+
   $values = $form_state['values'];
   $action = arg(2);
   $contact_type = arg(3);
@@ -231,9 +237,9 @@ function ammo_support_form_submit($form, &$form_state) {
   case 'member':
     switch ($action) {
     case 'add':
-      $display_name = ammo_contact_get_display_name($user->name);
+      $display_name = ammo_contact_get_display_name($contact_id);
       // Sla nieuwe backer op.
-      $backer = ammo_save_relation('backer', $target_type, $entity_id, $user->name, $contact_type, $display_name); 
+      $backer = ammo_save_relation('backer', $target_type, $entity_id, $contact_id, $contact_type, $display_name); 
       if ($backer) {
         drupal_set_message('Uw steun is opgeslagen.');
       }
