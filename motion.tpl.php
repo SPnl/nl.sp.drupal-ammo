@@ -1,3 +1,4 @@
+<?php global $base_url; ?>
 <h3 id="motion<?php print $entity_id; ?>">Motie nr. <?php print $entity_id; ?></h3>
 <?php //print '<p>' . $meeting_title . ' van de SP, in vergadering bijeen op ' . $meeting_date . '.</p>'; ?>
 <?php if (!empty($owners_branch)) : ?>
@@ -45,6 +46,13 @@
   <?php endif; ?>
   </p>
 <?php endif; ?>
+<?php if ($support_access) : ?>
+  <?php if (!empty($owners_member)) : ?>
+    <?php if (!$owned_by_user)  : ?>
+    <p>Steunlink om te delen: <a href = "<?php print $base_url . '/mo' . $entity_id; ?>"><?php print $base_url . '/mo' . $entity_id; ?></a></p>
+    <?php endif; ?>
+  <?php endif; ?>
+<?php endif; ?>
 <?php if ($no_links !== TRUE) : ?>
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
   <ul class="ammo-list">
@@ -63,7 +71,7 @@
         <?php if ($backed_by_user) : ?>
           <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/motion/' . $entity_id, array('query' => $dest))?></li>
         <?php elseif (!$owned_by_user)  : ?>
-          <li><?php print l('steun als lid', 'ammo/support/add/member/motion/' . $entity_id, array('query' => $dest))?></li>
+          <li><?php print l('steun als lid', 'mo' . $entity_id, array('query' => $dest))?></li>
         <?php endif; ?>
       <?php endif; ?>
     <?php endif; ?>

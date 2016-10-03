@@ -425,14 +425,19 @@ function ammo_amendment_form_submit($form, &$form_state)
       // Store chapterized id when not set yet.
       $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter';
       $result = db_query($query, array(':chapter' => $storage['chapter'])); 
-      $max_chapterized_id = $result->fetchField(); 
+      $new_chapterized_id = $result->fetchField() + 1; 
       $num_updated = db_update('ammo_amendments')
         ->fields(array(
-          'chapterized_id' => $max_chapterized_id + 1,
+          'chapterized_id' => $new_chapterized_id,
         ))
         ->condition('id', $storage['amendment'])
         ->isNull('chapterized_id')
         ->execute();
+      // Create short url.
+      global $base_url;
+      $long_url = $base_url . '/ammo/support/add/member/amendment/' . $storage['amendment'];
+      $custom = 'am' . $storage['chapter'] . $new_chapterized_id;
+      shurly_shorten($long_url, $custom);
       drupal_set_message('<h3>Opgeslagen</h3>' . theme('amendment', array('entity_id' => $storage['amendment'], 'no_links' => TRUE)));
       break;
     case 7:

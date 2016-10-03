@@ -456,6 +456,11 @@ function ammo_motion_form_submit($form, &$form_state)
         'state' => 'state',
       );
       ammo_store('motion', $storage['motion'], $mapping, $form, $form_state);
+      // Create short url.
+      global $base_url;
+      $long_url = $base_url . '/ammo/support/add/member/motion/' . $storage['motion'];
+      $custom = 'mo' . $storage['motion'];
+      shurly_shorten($long_url, $custom);
       drupal_set_message('<h3>Opgeslagen</h3>' . theme('motion', array('entity_id' => $storage['motion'], 'no_links' => TRUE)));
       break;
     case 6:

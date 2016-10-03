@@ -5,5 +5,6 @@ package = sprbs
 
 dependencies[] = number
 dependencies[] = date_popup
+dependencies[] = shurly
 
 stylesheets[all][] = ammo.css
