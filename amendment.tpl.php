@@ -1,5 +1,5 @@
 <?php global $base_url; ?>
-<h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print $chapter . '.' . $chapterized_id; ?> (pagina <?php print $page; ?>, regel <?php print $line; ?>)</h3>
+<h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print (!empty($chapterized_id)) ? $chapter . '.' . $chapterized_id : $entity_id; ?> (pagina <?php print $page; ?>, regel <?php print $line; ?>)</h3>
 <?php //print '<p>' . $meeting_title . ' van de SP, in vergadering bijeen op ' . $meeting_date . '.</p>'; ?>
 <?php if (!empty($owners_branch)) : ?>
   <?php $list = array(); ?>
