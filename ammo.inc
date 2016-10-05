@@ -1139,3 +1139,9 @@ function ammo_removable_member_owners($target_type, $entity_id) {
   }
   return TRUE;
 }
+
+function ammo_shurly($type, $id) {
+  $prefix = ($type === 'amendment') ? 'a' : 'm';
+  $code = $prefix . base_convert($id, 10, 36);
+  return $code;
+}

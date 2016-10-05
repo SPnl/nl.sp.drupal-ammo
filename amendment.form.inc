@@ -423,7 +423,8 @@ function ammo_amendment_form_submit($form, &$form_state)
       $values = $form_state['values'];
       $storage = $form_state['storage'];
       // Store chapterized id when not set yet.
-      if (empty($amendment->chapterized_id)) {
+      $event_open = ammo_support_access($storage['meeting']); 
+      if (empty($amendment->chapterized_id) && $event_open) {
         $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter';
         $result = db_query($query, array(':chapter' => $storage['chapter'])); 
         $new_chapterized_id = $result->fetchField() + 1; 
@@ -432,8 +433,8 @@ function ammo_amendment_form_submit($form, &$form_state)
         // Create short url.
         global $base_url;
         $long_url = $base_url . '/ammo/support/add/member/amendment/' . $storage['amendment'];
-        $custom = 'am' . $storage['chapter'] . $new_chapterized_id;
-        shurly_shorten($long_url, $custom);
+        $code = ammo_shurly('amendment', $storage['amendment']);
+        shurly_shorten($long_url, $code);
       }
       drupal_set_message('<h3>Opgeslagen</h3>' . theme('amendment', array('entity_id' => $storage['amendment'], 'no_links' => TRUE)));
       break;

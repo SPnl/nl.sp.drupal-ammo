@@ -5,22 +5,24 @@
     <?php foreach ($meeting['documents'] as $document) : ?>
       <li class="document">
         <a href="#document<?php print $document['id']; ?>"><strong><?php print $document['title']; ?></strong></a>
-        <ul>
-          Amendement index
-          <ul class="chapters">
+        <p>Amendement index</p>
+        <?php if (!empty($document['amendment_index'])) : ?>
+          <ul class="amendment-index">
             <?php foreach ($document['amendment_index'] as $chapter => $amendment_ids) : ?>
               <li>
                 <ul class="amendments">
                 <?php foreach ($amendment_ids as $amendment_id) : ?>
                   <?php $amendment = $document['amendments'][$amendment_id]; ?>
                   <li>
-                    <a href="#amendment<?php print $amendment['id']; ?>">#<?php print (!empty($chapterized_id)) ? $amendment['chapter'] . '.' . $amendment['chapterized_id'] : $amendment_id; ?></a>
+                    <a href="#amendment<?php print $amendment['id']; ?>">#<?php print (!empty($amendment['chapterized_id'])) ? $amendment['chapter'] . '.' . $amendment['chapterized_id'] : $amendment['chapter'] . '.' . $amendment_id; ?></a>
                   </li>
                 <?php endforeach; ?>
                 </ul>
               </li>
             <?php endforeach; ?>
           </ul>
+        <?php endif; ?>
+        <ul class="chapters">
           <?php if (!empty($document['chapters'])): ?>
             <?php foreach ($document['chapters'] as $chapter) : ?>
               <li class="chapter">

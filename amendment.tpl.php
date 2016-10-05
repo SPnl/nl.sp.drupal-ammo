@@ -1,5 +1,5 @@
 <?php global $base_url; ?>
-<h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print (!empty($chapterized_id)) ? $chapter . '.' . $chapterized_id : $entity_id; ?> (pagina <?php print $page; ?>, regel <?php print $line; ?>)</h3>
+<h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print (!empty($chapterized_id)) ? $chapter . '.' . $chapterized_id : $chapter . '.' . $entity_id; ?> (pagina <?php print $page; ?>, regel <?php print $line; ?>)</h3>
 <?php //print '<p>' . $meeting_title . ' van de SP, in vergadering bijeen op ' . $meeting_date . '.</p>'; ?>
 <?php if (!empty($owners_branch)) : ?>
   <?php $list = array(); ?>
@@ -50,7 +50,7 @@
 <?php if ($support_access) : ?>
   <?php if (!empty($owners_member)) : ?>
     <?php if (!$owned_by_user)  : ?>
-    <p>Steunlink om te delen: <a href = "<?php print $base_url . '/am' . $chapter . $chapterized_id; ?>"><?php print $base_url . '/am' . $chapter . $chapterized_id; ?></a></p>
+    <p>Steunlink om te delen: <a href = "<?php print $shurly; ?>"><?php print $shurly; ?></a></p>
     <?php endif; ?>
   <?php endif; ?>
 <?php endif; ?>
@@ -72,7 +72,7 @@
         <?php if ($backed_by_user) : ?>
           <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/amendment/' . $entity_id, array('query' => $dest))?></li>
         <?php elseif (!$owned_by_user)  : ?>
-            <li><?php print l('steun als lid', 'am' . $chapter . $chapterized_id, array('query' => $dest))?></li>
+            <li><?php print l('steun als lid', $shurly, array('query' => $dest))?></li>
         <?php endif; ?>
       <?php endif; ?>
     <?php endif; ?>

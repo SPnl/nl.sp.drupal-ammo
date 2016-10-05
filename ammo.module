@@ -206,7 +206,7 @@ function ammo_theme() {
 }
 
 function template_preprocess_amendment(&$variables) {
-  global $user;
+  global $user, $base_url;
   $user_wrapper = entity_metadata_wrapper('user', $user);
   $contact_id = $user_wrapper->field_contact_id->value();
 
@@ -236,6 +236,7 @@ function template_preprocess_amendment(&$variables) {
         }
       }
     }
+    $code = ammo_shurly('amendment', $entity->id);
     $vars = array(
       'chapterized_id' => $entity->chapterized_id,
       'document_id' => $entity->document_id,
@@ -267,6 +268,7 @@ function template_preprocess_amendment(&$variables) {
       'unsupported_branches' => $unsupported_branches,
       'removable_member_owners' => ammo_removable_member_owners('amendment', $entity->id), 
       'hide_advice' => $hide_advice,
+      'shurly' => $base_url . '/' . $code,
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
@@ -277,7 +279,7 @@ function template_preprocess_amendment(&$variables) {
 }
 
 function template_preprocess_motion(&$variables) {
-  global $user;
+  global $user, $base_url;
   $user_wrapper = entity_metadata_wrapper('user', $user);
   $contact_id = $user_wrapper->field_contact_id->value();
 
@@ -308,6 +310,7 @@ function template_preprocess_motion(&$variables) {
         }
       }
     }
+    $code = ammo_shurly('motion', $entity->id);
     $vars = array(
       'meeting_id' => $entity->meeting_id,
       'consideration_opening' => $entity->consideration_opening,
@@ -339,6 +342,7 @@ function template_preprocess_motion(&$variables) {
       'unsupported_branches' => $unsupported_branches,
       'removable_member_owners' => ammo_removable_member_owners('motion', $entity->id), 
       'hide_advice' => $hide_advice,
+      'shurly' => $base_url . '/' . $code,
     );
     foreach($vars as $key => &$value) {
       if (in_array($key, array('owners_member', 'owners_branch', 'first_owner', 'backers'))) continue;
@@ -391,7 +395,7 @@ function template_preprocess_overview_amendments(&$variables) {
         $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = $amendment->id;
       }
       // Store amendment index by chapterized id.
-      $amendments_index_results = db_query("SELECT id, chapter FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' AND state != 'blocked' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
+      $amendments_index_results = db_query("SELECT id, chapter FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' AND state != 'blocked' ORDER BY chapter, chapterized_id, id", array(":document_id" => $document->id));
       foreach ($amendments_index_results as $amendment) {
         $data['meeting']['documents'][$document->id]['amendment_index'][$amendment->chapter][] = $amendment->id;
       }
