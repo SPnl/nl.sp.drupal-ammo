@@ -72,7 +72,7 @@
         <?php if ($backed_by_user) : ?>
           <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/amendment/' . $entity_id, array('query' => $dest))?></li>
         <?php elseif (!$owned_by_user)  : ?>
-            <li><?php print l('steun als lid', $shurly, array('query' => $dest))?></li>
+            <li><?php print l('steun als lid', 'ammo/support/add/member/amendment/' . $entity_id, array('query' => $dest))?></li>
         <?php endif; ?>
       <?php endif; ?>
     <?php endif; ?>
