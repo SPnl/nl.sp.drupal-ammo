@@ -281,8 +281,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   return $form;
 }
 
-function ammo_amendment_form_validate($form, &$form_state)
-{
+function ammo_amendment_form_validate($form, &$form_state) {
   $values = $form_state['values'];
   $storage = $form_state['storage'];
   $trigger = $form_state['triggering_element']['#name'];

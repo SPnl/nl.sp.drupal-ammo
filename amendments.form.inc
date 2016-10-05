@@ -13,10 +13,13 @@ function ammo_overview_amendments_form($form, &$form_state, $meeting_id = NULL) 
 
   // Check if there is choice.
   $options = ammo_get_meetings();
-  if (count($options) == 1 || !empty($meeting_id)) {
+  if (!empty($meeting_id) || count($options) == 1) {
+    if (count($options) == 1) {
+      $meeting_id = key($options);
+    }
     $form['overview'] = array(
       '#type' => 'item',
-      '#markup' => theme('overview_amendments', array('meeting_id' => key($options), 'destination' => $form_state['storage']['destination'])),
+      '#markup' => theme('overview_amendments', array('meeting_id' => $meeting_id, 'destination' => $form_state['storage']['destination'])),
     );
   }
   else {
