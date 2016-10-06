@@ -294,4 +294,9 @@ function ammo_update_7001() {
 
   // Add unique key for chapter and chapterized_id.
   db_add_unique_key('ammo_amendments', 'chapterized_id', array('chapter', 'chapterized_id'));  
+
+  // Enable shurly.
+  if (!module_exists('shurly')) {
+    module_enable(array('shurly'));
+  }
 }
