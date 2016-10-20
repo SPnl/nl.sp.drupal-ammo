@@ -6,44 +6,21 @@
       <li class="document">
         <a href="#document<?php print $document['id']; ?>"><strong><?php print $document['title']; ?></strong></a>
         <p>Amendement index</p>
-        <?php if (!empty($document['amendment_index'])) : ?>
-          <ul class="amendment-index">
-            <?php foreach ($document['amendment_index'] as $chapter => $amendment_ids) : ?>
-              <li>
-                <ul class="amendments">
-                <?php foreach ($amendment_ids as $amendment_id) : ?>
-                  <?php $amendment = $document['amendments'][$amendment_id]; ?>
-                  <li>
-                    <a href="#amendment<?php print $amendment['id']; ?>">#<?php print (!empty($amendment['chapterized_id'])) ? $amendment['chapter'] . '.' . $amendment['chapterized_id'] : $amendment['chapter'] . '.' . $amendment_id; ?></a>
-                  </li>
-                <?php endforeach; ?>
-                </ul>
-              </li>
-            <?php endforeach; ?>
-          </ul>
-        <?php endif; ?>
         <ul class="chapters">
           <?php if (!empty($document['chapters'])): ?>
             <?php foreach ($document['chapters'] as $chapter) : ?>
               <li class="chapter">
                 <a href="#chapter<?php print $chapter['nr']; ?>">Hoofdstuk <?php print $chapter['nr']; ?></a>
-                <ul>
-                  <?php foreach ($chapter['pages'] as $page) : ?>
-                    <li>
-                      <span class="label"><a href="#page<?php print $page['nr']; ?>">Pagina <?php print $page['nr']; ?></a></span>
-                      <!--
-                      <ul class="amendments">
-                        <?php foreach ($page['amendments'] as $amendment_id) : ?>
-                          <?php $amendment = $document['amendments'][$amendment_id]; ?>
-                          <li>
-                            <a href="#amendment<?php print $amendment['id']; ?>">#<?php print $amendment['chapter'] . '.' . $amendment['chapterized_id']; ?></a>
-                          </li>
-                        <?php endforeach; ?>
-                      </ul>
-                      -->
-                    </li>
-                  <?php endforeach; ?>
-                </ul>
+								<ul class="amendments">
+									<?php $amendment_ids = $document['amendment_index'][$chapter['nr']]; ?>
+									<?php foreach ($amendment_ids as $amendment_id) : ?>
+										<?php $amendment = $document['amendments'][$amendment_id]; ?>
+										<li>
+											<a href="#amendment<?php print $amendment['id']; ?>">#<?php print (!empty($amendment['chapterized_id'])) ? $amendment['chapter'] . '.' . $amendment['chapterized_id'] : $amendment['chapter'] . '.' . $amendment_id; ?></a>
+										</li>
+									<?php endforeach; ?>
+								</ul>
+
               </li>
             <?php endforeach; ?>
           <?php endif; ?>
