@@ -16,7 +16,7 @@
 									<?php foreach ($amendment_ids as $amendment_id) : ?>
 										<?php $amendment = $document['amendments'][$amendment_id]; ?>
 										<li>
-											<a href="#amendment<?php print $amendment['id']; ?>">#<?php print (!empty($amendment['chapterized_id'])) ? $amendment['chapter'] . '.' . $amendment['chapterized_id'] : $amendment['chapter'] . '.' . $amendment_id; ?></a>
+											<a href="#amendment<?php print $amendment['id']; ?>"><?php print (!empty($amendment['chapterized_id'])) ? $amendment['chapter'] . '.' . $amendment['chapterized_id'] : $amendment['chapter'] . '.' . $amendment_id; ?></a>
 										</li>
 									<?php endforeach; ?>
 								</ul>

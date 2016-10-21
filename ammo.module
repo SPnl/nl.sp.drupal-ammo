@@ -420,14 +420,19 @@ function template_preprocess_overview_motions(&$variables) {
       $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
       $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
       $first_owner = ammo_get_first_owner('motion', $motion->id);
-      $data['meeting']['branches'][$first_owner['branch_id']]['info'] = $first_owner;
-      $data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
-        'id' => $motion->id,
-        'owners_member' => $owners_member,
-        'owners_branch' => $owners_branch,
-        'state' => $motion->state,
-      );
+			if (!empty($first_owner)) {
+				$data['meeting']['branches'][$first_owner['branch_id']]['info'] = $first_owner;
+				$data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
+					'id' => $motion->id,
+					'owners_member' => $owners_member,
+					'owners_branch' => $owners_branch,
+					'state' => $motion->state,
+				);
+				$data['meeting']['branch_index'][$first_owner['branch_id']] = $first_owner['branch_display_name'];
+			}
     }
+		// Reorder branch index alphabetically.
+		asort($data['meeting']['branch_index']);
     $variables = $variables + $data;
   }
 }

@@ -3,13 +3,14 @@
   <h2 id="inhoud">Inhoud</h2>
 
   <ul class="navigation">
-    <?php foreach ($meeting['branches'] as $branch) : ?>
+    <?php foreach ($meeting['branch_index'] as $branch_id => $branch_name) : ?>
+		  <?php $branch = $meeting['branches'][$branch_id]; ?>
       <li>
         <a href="#branch<?php print $branch['info']['contact_id']; ?>"><strong><?php print $branch['info']['branch_display_name']; ?></strong></a>
         <ul class="motions">
           <?php foreach ($branch['motions'] as $motion) : ?>
             <li>
-              <a href="#motion<?php print $motion['id']; ?>">#<?php print $motion['id']; ?></a>
+              <a href="#motion<?php print $motion['id']; ?>"><?php print $motion['id']; ?></a>
             </li>
           <?php endforeach; ?>
         </ul>
@@ -18,7 +19,8 @@
   </ul>
 
   <ul>
-    <?php foreach ($meeting['branches'] as $branch) : ?>
+    <?php foreach ($meeting['branch_index'] as $branch_id => $branch_name) : ?>
+		  <?php $branch = $meeting['branches'][$branch_id]; ?>
       <li>
         <h2 id="branch<?php print $branch['info']['contact_id']; ?>"><?php print $branch['info']['branch_display_name']; ?></h2>
         <ul>
