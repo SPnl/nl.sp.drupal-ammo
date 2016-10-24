@@ -216,6 +216,7 @@ function template_preprocess_amendment(&$variables) {
     $meeting = entity_load_single('meeting', $document->meeting_id);
     $meeting_date = new DateTime($meeting->date);
     $meeting_date_formatted = $meeting_date->format('d F Y');
+    $meeting_hide = $meeting->hide_meeting;
     $hide_advice = $meeting->hide_advice;
     $owners_member = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch'); 
@@ -254,6 +255,7 @@ function template_preprocess_amendment(&$variables) {
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
       'meeting_date' => $meeting_date_formatted,
+      'meeting_hide' => $meeting_hide,
       'support_access' => ammo_support_access($meeting->id),
       'edit_access' => ammo_edit_access($meeting->id, $first_owner['branch_id']),
       'withdraw_access' => ammo_withdraw_access($meeting->id),
@@ -288,6 +290,7 @@ function template_preprocess_motion(&$variables) {
     $meeting = entity_load_single('meeting', $entity->meeting_id);
     $meeting_date = new DateTime($meeting->date);
     $meeting_date_formatted = $meeting_date->format('d F Y');
+    $meeting_hide = $meeting->hide_meeting;
     $hide_advice = $meeting->hide_advice;
     $owners_member = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'member'); 
     $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch'); 
@@ -328,6 +331,7 @@ function template_preprocess_motion(&$variables) {
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
       'meeting_date' => $meeting_date_formatted,
+      'meeting_hide' => $meeting_hide,
       'support_access' => ammo_support_access($meeting->id),
       'edit_access' => ammo_edit_access($meeting->id, $first_owner['branch_id']),
       'withdraw_access' => ammo_withdraw_access($meeting->id),
@@ -362,6 +366,7 @@ function template_preprocess_overview_amendments(&$variables) {
       'description' => check_plain($meeting->description),
       'date' => $meeting->date,
       'submission_closing_date' => $meeting->submission_closing_date,
+      'hide' => $meeting->hide_meeting,
     );
     $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title DESC", array(":meeting_id" => $variables['meeting_id']));
     foreach ($documents_results as $document) {
@@ -414,6 +419,7 @@ function template_preprocess_overview_motions(&$variables) {
       'description' => check_plain($meeting->description),
       'date' => $meeting->date,
       'submission_closing_date' => $meeting->submission_closing_date,
+      'hide' => $meeting->hide_meeting,
     );
     $motions_results = db_query("SELECT id, state FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept' AND state != 'blocked'", array(":meeting_id" => $meeting->id));
     foreach ($motions_results as $motion) {

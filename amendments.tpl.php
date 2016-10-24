@@ -1,5 +1,5 @@
 <h2 id="inhoud">Overzicht alle ingediende amendementen</h2>
-<?php if (!empty($meeting['documents'])) : ?>
+<?php if (!empty($meeting['documents']) && empty($meeting['hide'])) : ?>
   <ul class="first navigation">
     <?php foreach ($meeting['documents'] as $document) : ?>
       <li class="document">

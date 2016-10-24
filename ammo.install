@@ -50,6 +50,10 @@ function ammo_schema() {
         'type' => 'int',
         'size' => 'tiny',
       ),
+      'hide_meeting' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+      ),
     ),
     'primary key' => array(
       'id',
@@ -299,4 +303,15 @@ function ammo_update_7001() {
   if (!module_exists('shurly')) {
     module_enable(array('shurly'));
   }
+}
+
+/**
+ * Add hide_meeting to  {ammo_meetings} table.
+ */
+function ammo_update_7002() {
+  $spec = array(
+    'type' => 'int',
+    'size' => 'tiny',
+  );
+  db_add_field( 'ammo_meetings', 'hide_meeting', $spec);
 }

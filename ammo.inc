@@ -1093,7 +1093,13 @@ function ammo_get_meetings() {
   $meetings = entity_load('meeting', FALSE, array(), TRUE);
   $options = array();
   foreach ($meetings as $meeting) {
-    if (ammo_edit_access($meeting->id) || in_array(arg(1), array('amendments', 'motions'))) {
+    if (
+      (
+        ammo_edit_access($meeting->id) || 
+        in_array(arg(1), array('amendments', 'motions'))
+      ) &&
+      empty($meeting->hide_meeting)
+    ) {
       $options[$meeting->id] = $meeting->title;
     }
   }
