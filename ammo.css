@@ -80,6 +80,7 @@ li.ammo-element {
   font-weight: bold; 
   font-size: .8em;
   padding: 0;
+  margin: 0 4px 10px 0;
 }
 
 .navigation .amendments li a, 
@@ -89,6 +90,7 @@ li.ammo-element {
   text-decoration: none;
   margin: 0;
   text-align: center;
+  min-width: 54px;
 }
 
 .navigation .amendments li a:hover, 
@@ -130,4 +132,47 @@ h4.inline-title {
   border-bottom: 1px solid #aaa;
   padding:.72em;
   font-size: .72em;
+}
+
+.page-ammo-amendments ul.tab {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border: 1px solid #ccc;
+	background-color: #f1f1f1;
+}
+
+/* Float the list items side by side */
+.page-ammo-amendments ul.tab li {
+  float: left;
+}
+
+.page-ammo-amendments .chapters li.chapter {
+  padding-bottom: 0px;
+}
+
+.page-ammo-amendments ul.tab li a, 
+.page-ammo-amendments ul.tab li span {
+    display: inline-block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+/* Change background color of links on hover */
+.page-ammo-amendments ul.tab li a:hover {background-color: #ddd;}
+
+/* Create an active/current tablink class */
+.page-ammo-amendments ul.tab li a:focus, .active {background-color: #ccc;}
+
+/* Style the tab content */
+.page-ammo-amendments .tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
 }
