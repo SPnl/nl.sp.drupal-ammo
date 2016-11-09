@@ -549,7 +549,7 @@ function ammo_checked_form(&$form, &$form_state, $type) {
   $text1 = ($type == 'amendment') ? 'vergelijkbaar amendement' : 'vergelijkbare motie';
   $text2 = ($type == 'amendment') ? 'amendementen' : 'moties';
   $text3 = ($type == 'amendment') ? 'het amendement' : 'de motie';
-	$text4 = '<p><strong>Let op! </strong>Amendementen zijn wijzigingsvoorstellen die betrekking hebben op de resolutie (de tekst over wat ons de komende jaren te doen staat) of het huishoudelijk reglement. Met een motie agendeer je een discussiepunt voor grote of actuele kwesties die buiten de resolutie vallen.</p><p>Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingediend. Dit kun je vooraf controleren in het ' . $link2 . '. Als er al een ' . $text1 . ' is ingediend, kun je het in dat overzicht met een druk op de knop "mede-indienen". Wanneer de eerste indiener ' . $text3 . ' intrekt, dan blijft deze staan zolang er nog mede-indieners zijn.</p>';
+	$text4 = '<p><strong>Let op!</strong></p><p>Amendementen zijn wijzigingsvoorstellen op het verkiezingsprogramma.</p><p>Moties roepen het partijbestuur op om iets te ondernemen of na te laten.<p>Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingediend. Dit kun je vooraf controleren in het ' . $link2 . '. Als er al een ' . $text1 . ' is ingediend, kun je het in dat overzicht met een druk op de knop "mede-indienen". Wanneer de eerste indiener ' . $text3 . ' intrekt, dan blijft deze staan zolang er nog mede-indieners zijn.</p>';
   $link1 = l('gecontroleerd', 'ammo/' . $type . 's');
   $link2 = l('overzicht', 'ammo/' . $type . 's');
   $form['checked'] = array(
