@@ -8,13 +8,14 @@
           <ul class="chapters tab">
             <li class="chapter"><span>Hoofdstuk:</span></li>
             <?php foreach ($document['chapters'] as $chapter) : ?>
+              <?php if (empty($firstchapter)) $firstchapter = $chapter['nr']; ?>
               <li class="chapter">
-                <a href="#" class="tablinks" id="<?php print 'tab-'.$document['id'].'-'.$chapter['nr']; ?>"><?php print $chapter['nr']; ?></a>
+                <a href="#" class="tablinks <?php print ($firstchapter == $chapter['nr']) ? 'active' : ''; ?>" id="<?php print 'tab-'.$document['id'].'-'.$chapter['nr']; ?>"><?php print $chapter['nr']; ?></a>
               </li>
             <?php endforeach; ?>
           </ul>
           <?php foreach ($document['chapters'] as $chapter) : ?>
-            <div id="<?php print 'tabcontent-'.$document['id'].'-'.$chapter['nr']; ?>" class="tabcontent">
+          <div id="<?php print 'tabcontent-'.$document['id'].'-'.$chapter['nr']; ?>" class="tabcontent <?php print ($firstchapter == $chapter['nr']) ? 'active' : ''; ?>">
               <ul class="amendments">
                 <li class="amendment">
                   <a href="#chapter<?php print $chapter['nr']; ?>">Hoofdstuk <?php print $chapter['nr']; ?></a>

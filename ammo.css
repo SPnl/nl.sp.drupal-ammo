@@ -168,7 +168,10 @@ h4.inline-title {
 .page-ammo-amendments ul.tab li a:hover {background-color: #ddd;}
 
 /* Create an active/current tablink class */
-.page-ammo-amendments ul.tab li a:focus, .active {background-color: #ccc;}
+.page-ammo-amendments ul.tab li a:focus,
+.page-ammo-amendments ul.tab li a.active {
+  background-color: #ccc;
+}
 
 /* Style the tab content */
 .page-ammo-amendments .tabcontent {
@@ -177,3 +180,7 @@ h4.inline-title {
     border: 1px solid #ccc;
     border-top: none;
 }
+.page-ammo-amendments .tabcontent.active {
+	display: block;
+}
+
