@@ -30,7 +30,7 @@ function ammo_menu() {
   );
 
   $items['ammo/amendment'] = array(
-    'title' => 'Amendement indienen',
+    'title' => 'Wijzigingsvoorstel indienen',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ammo_amendment_form', 2, 3),
     'file' => 'amendment.form.inc',
@@ -50,7 +50,7 @@ function ammo_menu() {
   );
 
   $items['ammo/amendments'] = array(
-    'title' => 'Overzicht amendementen',
+    'title' => 'Overzicht wijzigingsvoorstellen',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ammo_overview_amendments_form', 2),
     'file' => 'amendments.form.inc',
@@ -125,10 +125,10 @@ function ammo_permission() {
       'title' => 'Beheer ammo',
     ),
     'administer amendments and motions' => array(
-      'title' => 'Beheer amendementen en moties',
+      'title' => 'Beheer wijzigingsvoorstellen en moties',
     ),
     'add amendments and motions' => array(
-      'title' => 'Voeg amendementen en moties toe',
+      'title' => 'Voeg wijzigingsvoorstellen en moties toe',
     ),
   );
 }
@@ -675,7 +675,7 @@ function ammo_mail($key, &$message, $params) {
   switch($key) {
   case 'change_message':
     // Create messeage
-    $type = ($params['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
+    $type = ($params['entity_type'] == 'amendment') ? 'Wijzigingsvoorstel' : 'Motie';
     $message['subject'] = $type . ' nr. ' . $params['id'] . '.';
     $message['body'][] = $params['markup'];
     $message['body'][] = '<h3>Wijzigingen</h3>';
@@ -693,14 +693,14 @@ function ammo_mail($key, &$message, $params) {
     else {
       $text = 'ingetrokken door';
     }
-    $type = ($params['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
+    $type = ($params['entity_type'] == 'amendment') ? 'Wijzigingsvoorstel' : 'Motie';
     $message['subject'] = $type . ' nr. ' . $params['id'] . ' ' . $text . ' afdeling ' . $params['branch_display_name'];
     $message['body'][] = '<h3>' . ucfirst($text) . ' ' . $params['branch_display_name'] . '</h3>';
     $message['body'][] = $params['markup'];
     break;
   case 'delete_message':
     // Create messeage
-    $type = ($params['entity_type'] == 'amendment') ? 'Amendement' : 'Motie';
+    $type = ($params['entity_type'] == 'amendment') ? 'Wijzigingsvoorstel' : 'Motie';
     $message['subject'] = $type . ' nr. ' . $params['id'] . ' is verwijderd.';
     $message['body'][] = $params['mail_text'];
     $message['body'][] = $params['markup'];

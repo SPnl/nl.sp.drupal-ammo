@@ -17,7 +17,7 @@ function ammo_print_form($form, &$form_state) {
       '#name' => 'type',
       '#required' => TRUE,
       '#options' => array(
-        'amendments' => 'amendementen',
+        'amendments' => 'wijzigingsvoorstellen',
         'motions' => 'moties',
       ),
       '#ajax' => array(
@@ -31,11 +31,11 @@ function ammo_print_form($form, &$form_state) {
   case 'amendments':
     $form['amendments_order'] = array(
       '#type' => 'radios',
-      '#title' => 'Sorteer de amendementen op volgorde van',
+      '#title' => 'Sorteer de wijzigingsvoorstellen op volgorde van',
       '#required' => TRUE,
       '#options' => array(
         'location' => 'de plaats in het document',
-        'number' => 'het amendement nummer',
+        'number' => 'het wijzigingsvoorstel nummer',
       ),
       '#default_value' => 'location',
       '#ajax' => array(

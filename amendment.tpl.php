@@ -1,5 +1,5 @@
 <?php global $base_url; ?>
-<h3 id="amendment<?php print $entity_id; ?>">Amendement nr. <?php print (!empty($chapterized_id)) ? $chapter . '.' . $chapterized_id : $chapter . '.' . $entity_id; ?> (pagina <?php print $page; ?>, regel <?php print $line; ?>)</h3>
+<h3 id="amendment<?php print $entity_id; ?>">Wijzigingsvoorstel nr. <?php print (!empty($chapterized_id)) ? $chapter . '.' . $chapterized_id : $chapter . '.' . $entity_id; ?> (pagina <?php print $page; ?>, regel <?php print $line; ?>)</h3>
 <?php //print '<p>' . $meeting_title . ' van de SP, in vergadering bijeen op ' . $meeting_date . '.</p>'; ?>
 <?php if (!empty($owners_branch)) : ?>
   <?php $list = array(); ?>
@@ -23,7 +23,7 @@
     <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
   <?php endif; ?>
 <?php endif; ?>
-<h4 class="inline-title">Amendement tekst:</h4>
+<h4 class="inline-title">Wijzigingsvoorstel tekst:</h4>
 <p class="text-limit"><?php print $amendment_text; ?></p>
 <?php if (!empty($supplement)) : ?>
 <h4 class="inline-title">Toelichting:</h4>

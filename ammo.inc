@@ -546,10 +546,10 @@ function ammo_afdelingen_access() {
 }
 
 function ammo_checked_form(&$form, &$form_state, $type) {
-  $text1 = ($type == 'amendment') ? 'vergelijkbaar amendement' : 'vergelijkbare motie';
-  $text2 = ($type == 'amendment') ? 'amendementen' : 'moties';
-  $text3 = ($type == 'amendment') ? 'het amendement' : 'de motie';
-	$text4 = '<p><strong>Let op!</strong></p><p>Amendementen zijn wijzigingsvoorstellen op het verkiezingsprogramma.</p><p>Moties roepen het partijbestuur op om iets te ondernemen of na te laten.<p>Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingediend. Dit kun je vooraf controleren in het ' . $link2 . '. Als er al een ' . $text1 . ' is ingediend, kun je het in dat overzicht met een druk op de knop "mede-indienen". Wanneer de eerste indiener ' . $text3 . ' intrekt, dan blijft deze staan zolang er nog mede-indieners zijn.</p>';
+  $text1 = ($type == 'amendment') ? 'vergelijkbaar wijzigingsvoorstel' : 'vergelijkbare motie';
+  $text2 = ($type == 'amendment') ? 'wijzigingsvoorstellen' : 'moties';
+  $text3 = ($type == 'amendment') ? 'het wijzigingsvoorstel' : 'de motie';
+	$text4 = '<p><strong>Let op!</strong></p><p>Wijzigingsvoorstellen zijn wijzigingsvoorstellen op het verkiezingsprogramma.</p><p>Moties roepen het partijbestuur op om iets te ondernemen of na te laten.<p>Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingediend. Dit kun je vooraf controleren in het ' . $link2 . '. Als er al een ' . $text1 . ' is ingediend, kun je het in dat overzicht met een druk op de knop "mede-indienen". Wanneer de eerste indiener ' . $text3 . ' intrekt, dan blijft deze staan zolang er nog mede-indieners zijn.</p>';
   $link1 = l('gecontroleerd', 'ammo/' . $type . 's');
   $link2 = l('overzicht', 'ammo/' . $type . 's');
   $form['checked'] = array(
@@ -637,7 +637,7 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
  * @entity_id: document or meeting.
  */
 function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
-  $title = ($type == 'amendment') ? 'Amendement' : 'Motie';
+  $title = ($type == 'amendment') ? 'Wijzigingsvoorstel' : 'Motie';
   $entities = ammo_get_branch_amendments_or_motions($type, $form_state['storage']['branch_id'], $entity_id);
   if (!empty($entities)) $title .= ' indienen of bewerken';
   $form[$type] = array(
@@ -651,7 +651,7 @@ function ammo_select_ammo_form($type, &$form, &$form_state, $entity_id) {
 }
 
 function ammo_select_afdeling_form(&$form, &$form_state, $type, $options) {
-  $text1 = ($type == 'amendment') ? 'het amendement' : 'de motie';
+  $text1 = ($type == 'amendment') ? 'het wijzigingsvoorstel' : 'de motie';
   $form['branch_id'] = array(
     '#type' => 'select',
     '#title' => 'Afdeling',
@@ -670,7 +670,7 @@ function ammo_select_meeting_form(&$form, &$form_state, $options = array()) {
   $form['meeting'] = array(
     '#type' => 'select',
     '#title' => 'Bijeenkomst',
-    '#description' => 'Kies de bijeenkomst waar het amendement of de motie behandeld wordt.',
+    '#description' => 'Kies de bijeenkomst waar het wijzigingsvoorstel of de motie behandeld wordt.',
     '#options' => $options,
     '#default_value' => ammo_default($form_state, 'meeting'),
     '#required' => true,
@@ -1026,7 +1026,7 @@ function ammo_filter_fields($source) {
     'follow_up_opening' => 'Openingsregel vervolg',
     'follow_up_text' => 'Inhoud vervolg',
     'supplement' => 'Toelichting',
-    'amendment_text' => 'Amendement tekst',
+    'amendment_text' => 'Wijzigingsvoorstel tekst',
   );
   return (isset($translation[$source])) ? $translation[$source] : FALSE; 
 }

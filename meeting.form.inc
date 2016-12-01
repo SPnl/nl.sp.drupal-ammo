@@ -37,7 +37,7 @@ function ammo_meeting_form($form, &$form_state) {
 
   $form['submission_closing_date'] = array(
     '#title' => 'Uiterste inlever/wijzigingsdatum',
-    '#description' => 'Na deze datum kunnen er geen nieuwe amendementen en moties meer worden ingeleverd, en kunnen bestaande amendementen en moties niet meer worden gewijzigd.',
+    '#description' => 'Na deze datum kunnen er geen nieuwe wijzigingsvoorstellen en moties meer worden ingeleverd, en kunnen bestaande wijzigingsvoorstellen en moties niet meer worden gewijzigd.',
     '#type' => 'date_popup',
     '#date_format' => 'd-m-Y H:i',
   );

@@ -3,7 +3,7 @@
 <body>
 <?php foreach ($meeting['amendments'] as $amendment) : ?>
   <h2><?php print $amendment['document_title']; ?></h2>
-  <p><strong>Amendement nr. <?php print $amendment['id']; ?>, hoofdstuk <?php print $amendment['chapter']; ?>, pagina <?php print $amendment['page']; ?>, regel <?php print $amendment['line']; ?></strong></p>
+  <p><strong>Wijzigingsvoorstel nr. <?php print $amendment['id']; ?>, hoofdstuk <?php print $amendment['chapter']; ?>, pagina <?php print $amendment['page']; ?>, regel <?php print $amendment['line']; ?></strong></p>
   <?php if (!empty($amendment['owners_branch'])) : ?>
     <?php $list = array(); ?>
     <?php foreach ($amendment['owners_branch'] as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
@@ -27,7 +27,7 @@
     <?php endif; ?>
   <?php endif; ?>
   <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
-  <p><strong>Amendement tekst</strong></p>
+  <p><strong>Wijzigingsvoorstel tekst</strong></p>
   <p><?php print $amendment['amendment_text']; ?></p>
   <?php if ($variables['values']['notespace']) print $meeting['notespacetext'];?>
   <?php if (!empty($amendment['supplement'])) : ?>

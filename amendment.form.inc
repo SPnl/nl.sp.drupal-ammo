@@ -57,7 +57,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   else {
     $meetings = ammo_get_meetings();
     if (empty($meetings)) { 
-      drupal_set_message('De termijn voor het indienen van amendementen is verstreken.', 'warning');
+      drupal_set_message('De termijn voor het indienen van wijzigingsvoorstellen is verstreken.', 'warning');
       return;
     }
   }
@@ -93,12 +93,12 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
 
   // Depending on which step of the form we are on, we output different form fields
   if ($form_state['step'] == 1) {
-    $form['title']['#markup'] = '<h2>Amendement indienen</h2>';
+    $form['title']['#markup'] = '<h2>Wijzigingsvoorstel indienen</h2>';
     ammo_checked_form($form, $form_state, 'amendment');
   }
 
   if ($form_state['step'] == 2) {
-    $form['title']['#markup'] = '<h2>Amendement indienen</h2>';
+    $form['title']['#markup'] = '<h2>Wijzigingsvoorstel indienen</h2>';
     $options = ammo_get_meetings();
     if (count($options) == 1) {
       $form_state['step'] ++;
@@ -111,7 +111,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
 
   if ($form_state['step'] == 3) {
-    $form['title']['#markup'] = '<h2>Amendement indienen</h2>';
+    $form['title']['#markup'] = '<h2>Wijzigingsvoorstel indienen</h2>';
     $options = ammo_get_documents($form_state);
     if (count($options) == 1) {
       $form_state['step'] ++;
@@ -133,7 +133,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
 
   if ($form_state['step'] == 4) {
-    $form['title']['#markup'] = '<h2>Amendement indienen</h2>';
+    $form['title']['#markup'] = '<h2>Wijzigingsvoorstel indienen</h2>';
     $options = ammo_afdelingen_access();
     if (empty($options)) {
       $options = array();
@@ -161,7 +161,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
   
   if ($form_state['step'] == 5) {
-    $form['title']['#markup'] = '<h2>Amendement bewerken</h2>';
+    $form['title']['#markup'] = '<h2>Wijzigingsvoorstel bewerken</h2>';
     ammo_select_owner_form('amendment', $form, $form_state);
     $form['backed']['#prefix'] =
       '<p>Bijeenkomst: ' . check_plain($form_state['storage']['meeting_display_name']) . '<br/>' .
@@ -169,7 +169,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
 
   if ($form_state['step'] == 6) {
-    $form['title']['#markup'] = '<h2>Amendement bewerken</h2>';
+    $form['title']['#markup'] = '<h2>Wijzigingsvoorstel bewerken</h2>';
     $form['chapter'] = array(
       '#type' => 'textfield',
       '#title' => 'Hoofdstuk nr.',
@@ -188,7 +188,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     );
     $form['amendment_text'] = array(
       '#type' => 'textarea',
-      '#title' => 'Tekst amendement',
+      '#title' => 'Tekst wijzigingsvoorstel',
       '#default_value' => ammo_default($form_state, 'amendment_text'),
     );
     $form['supplement'] = array(
@@ -199,7 +199,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
 
   if ($form_state['step'] == 7) {
-    $form['title']['#markup'] = '<h2>Amendement advies</h2>';
+    $form['title']['#markup'] = '<h2>Wijzigingsvoorstel advies</h2>';
     $form['item'] = array(
       '#type' => 'item',
       '#markup' => theme('amendment', array('entity_id' => $form_state['storage']['amendment'], 'no_links' => TRUE)),
@@ -346,7 +346,7 @@ function ammo_amendment_form_validate($form, &$form_state) {
       }
     }
     if (empty($values['amendment_text'])) {
-      form_set_error('amendment_text', 'Vul de amendement tekst in.');
+      form_set_error('amendment_text', 'Vul de wijzigingsvoorstel tekst in.');
     }
     break;
   }

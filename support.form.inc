@@ -31,7 +31,7 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
     case 'add':
       switch ($target_type) {
       case 'amendment':
-        $text = 'Ik ondersteun dit amendement.';
+        $text = 'Ik ondersteun dit wijzigingsvoorstel.';
         break;
       case 'motion':
         $text = 'Ik ondersteun deze motie.';
@@ -41,7 +41,7 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
     case 'withdraw':
       switch ($target_type) {
       case 'amendment':
-        $text = 'Ik trek mijn steun voor dit amendement in.';
+        $text = 'Ik trek mijn steun voor dit wijzigingsvoorstel in.';
         break;
       case 'motion':
         $text = 'Ik trek mijn steun voor deze motie in.';
@@ -65,7 +65,7 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
     case 'add':
       switch ($target_type) {
       case 'amendment':
-        $text = 'De geselecteerde afdelingen dienen dit amendement mede in.';
+        $text = 'De geselecteerde afdelingen dienen dit wijzigingsvoorstel mede in.';
         break;
       case 'motion':
         $text = 'De geselecteerde afdelingen dienen deze motie mede in.';
@@ -75,7 +75,7 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
     case 'withdraw':
       switch ($target_type) {
       case 'amendment':
-        $text = 'De geselecteerd afdelingen dienen dit amendement niet langer (mede) in.';
+        $text = 'De geselecteerd afdelingen dienen dit wijzigingsvoorstel niet langer (mede) in.';
         break;
       case 'motion':
         $text = 'De geselecteerde afdelingen dienen deze motie niet langer (mede) in.';
@@ -121,7 +121,7 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
       }
       // Controleer of er leden zijn die hebben ingediend.
       if (!ammo_removable_member_owners($target_type, $entity_id)) {
-        form_set_error('support', 'U heeft geen rechten om een amendement of motie voor betreffende leden in te trekken.');
+        form_set_error('support', 'U heeft geen rechten om een wijzigingsvoorstel of motie voor betreffende leden in te trekken.');
         return array();
       }
       $contacts = ammo_get_related_contacts($entity_id, $target_type, 'owner', 'member');
@@ -133,7 +133,7 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
       $list .= '</ul>';
       switch ($target_type) {
       case 'amendment':
-        $text = 'Onderstaande leden dienen dit amendement niet langer in';
+        $text = 'Onderstaande leden dienen dit wijzigingsvoorstel niet langer in';
         break;
       case 'motion':
         $text = 'Onderstaande leden dienen deze motie niet langer in';
