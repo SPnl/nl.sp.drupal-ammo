@@ -546,12 +546,12 @@ function ammo_afdelingen_access() {
 }
 
 function ammo_checked_form(&$form, &$form_state, $type) {
+  $link1 = l('gecontroleerd', 'ammo/' . $type . 's');
+  $link2 = l('overzicht', 'ammo/' . $type . 's');
   $text1 = ($type == 'amendment') ? 'vergelijkbaar wijzigingsvoorstel' : 'vergelijkbare motie';
   $text2 = ($type == 'amendment') ? 'wijzigingsvoorstellen' : 'moties';
   $text3 = ($type == 'amendment') ? 'het wijzigingsvoorstel' : 'de motie';
 	$text4 = '<p><strong>Let op!</strong></p><p>Wijzigingsvoorstellen zijn wijzigingsvoorstellen op het verkiezingsprogramma.</p><p>Moties roepen het partijbestuur op om iets te ondernemen of na te laten.<p>Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingediend. Dit kun je vooraf controleren in het ' . $link2 . '. Als er al een ' . $text1 . ' is ingediend, kun je het in dat overzicht met een druk op de knop "mede-indienen". Wanneer de eerste indiener ' . $text3 . ' intrekt, dan blijft deze staan zolang er nog mede-indieners zijn.</p>';
-  $link1 = l('gecontroleerd', 'ammo/' . $type . 's');
-  $link2 = l('overzicht', 'ammo/' . $type . 's');
   $form['checked'] = array(
     '#type' => 'checkbox',
     '#title' => 'Ik heb ' . $link1 . ' dat er niet al een ' . $text1 . ' is ingediend.',
