@@ -8,7 +8,7 @@
           <ul class="chapters tab">
             <li class="chapter"><span>Hoofdstuk:</span></li>
             <?php foreach ($document['chapters'] as $chapter) : ?>
-              <?php if (empty($firstchapter)) $firstchapter = $chapter['nr']; ?>
+              <?php if (!isset($firstchapter)) $firstchapter = $chapter['nr']; ?>
               <li class="chapter">
                 <a href="#" class="tablinks <?php print ($firstchapter == $chapter['nr']) ? 'active' : ''; ?>" id="<?php print 'tab-'.$document['id'].'-'.$chapter['nr']; ?>"><?php print $chapter['nr']; ?></a>
               </li>
