@@ -315,3 +315,19 @@ function ammo_update_7002() {
   );
   db_add_field( 'ammo_meetings', 'hide_meeting', $spec);
 }
+
+/**
+ * Add chapterized_id to  {ammo_amendments} table.
+ */
+function ammo_update_7003() {
+  $spec = array(
+    'description' => 'Motion id by meeting.',
+    'type' => 'int',
+    'size' => 'big',
+  );
+  db_add_field( 'ammo_motions', 'motion_id', $spec);
+
+  // Add unique key for chapter and chapterized_id.
+  db_add_unique_key('ammo_motions', 'motion_id', array('meeting_id', 'motion_id'));  
+}
+
