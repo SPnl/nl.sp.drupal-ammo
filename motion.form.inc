@@ -457,20 +457,6 @@ function ammo_motion_form_submit($form, &$form_state)
       // Reset storage variable.
       $values = $form_state['values'];
       $storage = $form_state['storage'];
-      // Store motion id when not set yet.
-      $event_open = ammo_support_access($storage['meeting']); 
-      if (empty($motion->motion_id) && $event_open) {
-        $query = 'SELECT MAX(motion_id) FROM {ammo_motions} WHERE meeting_id = :meeting';
-        $result = db_query($query, array(':meeting' => $storage['meeting'])); 
-        $new_motion_id = $result->fetchField() + 1; 
-        $motion->motion_id = $new_motion_id;
-        $result = entity_save('motion', $motion);
-        // Create short url.
-        global $base_url;
-        $long_url = $base_url . '/ammo/support/add/member/motion/' . $storage['motion'];
-        $code = ammo_shurly('motion', $storage['motion']);
-        shurly_shorten($long_url, $code);
-      }
       drupal_set_message('<h3>Opgeslagen</h3>' . theme('motion', array('entity_id' => $storage['motion'], 'no_links' => TRUE)));
       break;
     case 6:
