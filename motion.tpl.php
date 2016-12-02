@@ -1,5 +1,5 @@
 <?php global $base_url; ?>
-<h3 id="motion<?php print $entity_id; ?>">Motie nr. <?php print $entity_id; ?></h3>
+<h3 id="motion<?php print $entity_id; ?>">Motie nr. <?php print (!empty($motion_id)) ? $motion_id : $entity_id; ?></h3>
 <?php //print '<p>' . $meeting_title . ' van de SP, in vergadering bijeen op ' . $meeting_date . '.</p>'; ?>
 <?php if (!empty($owners_branch)) : ?>
   <?php $list = array(); ?>

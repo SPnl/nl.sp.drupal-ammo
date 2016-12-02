@@ -315,6 +315,7 @@ function template_preprocess_motion(&$variables) {
     }
     $code = ammo_shurly('motion', $entity->id);
     $vars = array(
+      'motion_id' => $entity->motion_id,
       'meeting_id' => $entity->meeting_id,
       'consideration_opening' => $entity->consideration_opening,
       'consideration_body' => $entity->consideration_body,
@@ -421,24 +422,25 @@ function template_preprocess_overview_motions(&$variables) {
       'submission_closing_date' => $meeting->submission_closing_date,
       'hide' => $meeting->hide_meeting,
     );
-    $motions_results = db_query("SELECT id, state FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept' AND state != 'blocked'", array(":meeting_id" => $meeting->id));
+    $motions_results = db_query("SELECT id, state, motion_id FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept' AND state != 'blocked' ORDER BY motion_id", array(":meeting_id" => $meeting->id));
     foreach ($motions_results as $motion) {
       $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
       $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
       $first_owner = ammo_get_first_owner('motion', $motion->id);
-			if (!empty($first_owner)) {
-				$data['meeting']['branches'][$first_owner['branch_id']]['info'] = $first_owner;
-				$data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
-					'id' => $motion->id,
-					'owners_member' => $owners_member,
-					'owners_branch' => $owners_branch,
-					'state' => $motion->state,
-				);
-				$data['meeting']['branch_index'][$first_owner['branch_id']] = $first_owner['branch_display_name'];
-			}
+      if (!empty($first_owner)) {
+        $data['meeting']['branches'][$first_owner['branch_id']]['info'] = $first_owner;
+        $data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
+          'id' => $motion->id,
+          'owners_member' => $owners_member,
+          'owners_branch' => $owners_branch,
+          'state' => $motion->state,
+          'motion_id' => $motion->motion_id,
+        );
+        $data['meeting']['branch_index'][$first_owner['branch_id']] = $first_owner['branch_display_name'];
+      }
     }
-		// Reorder branch index alphabetically.
-		asort($data['meeting']['branch_index']);
+    // Reorder branch index alphabetically.
+    asort($data['meeting']['branch_index']);
     $variables = $variables + $data;
   }
 }

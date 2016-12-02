@@ -481,6 +481,7 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
           'advice' => 'advice',
           'advice_supplement' => 'advice_supplement',
           'state' => 'state',
+          'motion_id' => 'motion_id',
         ),
       );
       foreach ($mapping[$type] as $database_field => $form_field) {
@@ -920,7 +921,7 @@ function ammo_diffline($line1, $line2)
 
 function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeting_id) {
   $entity = entity_load_single($entity_type, $entity_id);
-  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity_id;
+  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
   $relations = ammo_get_related_contacts($entity_id, $entity_type); 
@@ -935,6 +936,7 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
     'markup' => theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
     'chapter' => $entity->chapter,
     'chapterized_id' => $entity->chapterized_id,
+    'motion_id' => $entity->motion_id,
   );
   //drupal_mail('ammo', 'change_message', 'webmaster@sp.nl', $language, $params, $sender_email, TRUE);
   drupal_mail('ammo', 'change_message', $sender_email, $language, $params, $sender_email, TRUE);
@@ -947,7 +949,7 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
 
 function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
   $entity = entity_load_single($entity_type, $entity_id);
-  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity_id;
+  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
   $relations = ammo_get_related_contacts($entity_id, $entity_type); 
@@ -965,6 +967,7 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
     'meeting_id' => $meeting_id,
     'branch_display_name' => $owner->branch_display_name,
     'rest' => $rest,
+    'motion_id' => $entity->motion_id,
   );
   //drupal_mail('ammo', 'withdraw_ownership', 'webmaster@sp.nl', $language, $params, $sender_email, TRUE);
   drupal_mail('ammo', 'withdraw_ownership', $sender_email, $language, $params, $sender_email, TRUE);
@@ -981,7 +984,7 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
 function ammo_delete_mail($entity_type, $entity_id, $meeting_id, $mail_text) {
   watchdog('test', $entity_type . '<br/>' . $entity_id . '<br/>' . $mail_text);
   $entity = entity_load_single($entity_type, $entity_id);
-  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity_id;
+  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
   $relations = ammo_get_related_contacts($entity_id, $entity_type); 
@@ -995,6 +998,7 @@ function ammo_delete_mail($entity_type, $entity_id, $meeting_id, $mail_text) {
     'id' => $id,
     'markup' => theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
     'mail_text' => '<p>' . check_plain($mail_text) . '</p>',
+    'motion_id' => $entity->motion_id,
   );
   drupal_mail('ammo', 'delete_message', $sender_email, $language, $params, $sender_email, TRUE);
   foreach ($relations as $relation) {

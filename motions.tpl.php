@@ -10,7 +10,7 @@
         <ul class="motions">
           <?php foreach ($branch['motions'] as $motion) : ?>
             <li>
-              <a href="#motion<?php print $motion['id']; ?>"><?php print $motion['id']; ?></a>
+              <a href="#motion<?php print $motion['id']; ?>"><?php print (!empty($motion['motion_id'])) ? $motion['motion_id'] : $motion_id; ?></a>
             </li>
           <?php endforeach; ?>
         </ul>

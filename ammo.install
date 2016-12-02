@@ -157,6 +157,11 @@ function ammo_schema() {
         'size' => 'big',
         'not null' => TRUE,
       ),
+      'motion_id' => array(
+        'description' => 'Motion id by meeting.',
+        'type' => 'int',
+        'size' => 'big',
+      ),
       'meeting_id' => array(
         'description' => 'Id of the meeting where the motion is placed.',
         'type' => 'int',
@@ -317,7 +322,7 @@ function ammo_update_7002() {
 }
 
 /**
- * Add chapterized_id to  {ammo_amendments} table.
+ * Add motion_id to  {ammo_motions} table.
  */
 function ammo_update_7003() {
   $spec = array(
@@ -327,7 +332,7 @@ function ammo_update_7003() {
   );
   db_add_field( 'ammo_motions', 'motion_id', $spec);
 
-  // Add unique key for chapter and chapterized_id.
+  // Add unique key for meeting and motion_id.
   db_add_unique_key('ammo_motions', 'motion_id', array('meeting_id', 'motion_id'));  
 }
 
