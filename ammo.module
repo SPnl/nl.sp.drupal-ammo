@@ -440,7 +440,9 @@ function template_preprocess_overview_motions(&$variables) {
       }
     }
     // Reorder branch index alphabetically.
-    asort($data['meeting']['branch_index']);
+    if (!empty($data['meeting']['branch_index'])) {
+      asort($data['meeting']['branch_index']);
+    }
     $variables = $variables + $data;
   }
 }
