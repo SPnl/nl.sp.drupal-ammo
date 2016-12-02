@@ -327,13 +327,13 @@ function ammo_amendment_form_validate($form, &$form_state) {
     }
     break;
   case 6:
-    if (!preg_match('/^[1-9][0-9]*$/', $values['chapter'])) {
+    if (!preg_match('/^[0-9][0-9]*$/', $values['chapter'])) {
       form_set_error('chapter', 'Hoofdstuk nr. moet een getal zijn.');
     }
-    if (!preg_match('/^[1-9][0-9]*$/', $values['page'])) {
+    if (!preg_match('/^[0-9][0-9]*$/', $values['page'])) {
       form_set_error('page', 'Pagina nr. moet een getal zijn.');
     }
-    if (!preg_match('/^[1-9][0-9]*$/', $values['line'])) {
+    if (!preg_match('/^[0-9][0-9]*$/', $values['line'])) {
       form_set_error('line', 'Regelnummer moet een getal zijn.');
     }
     // Extra validation for specific document!
