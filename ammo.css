@@ -151,6 +151,8 @@ h4.inline-title {
 .page-ammo-amendments .chapters li.chapter {
   padding-bottom: 0px;
   border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: -1px;
 }
 
 .page-ammo-amendments ul.tab li a, 
