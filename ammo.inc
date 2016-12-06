@@ -390,45 +390,16 @@ function ammo_save_entity($type, $values, $entity_id = NULL) {
 
 function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
   global $base_url;
-  $storage = $form_state['storage'];
   $values = $form_state['values'];
+
   if (!empty($entity_id)) {
     $original_entity = entity_load_single($entity_type, $entity_id);
-    // Store motion or amendment id.
-    if (!empty($original_entity)) {
-      if ($form_state['step'] == $form_state['storage']['changes_step']) {
-        switch ($entity_type) {
-        case 'amendment':
-          if (empty($original_entity->chapterized_id)) {
-            // Set chapterized id.
-            $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter';
-            $result = db_query($query, array(':chapter' => $storage['chapter'])); 
-            $new_id = $result->fetchField() + 1; 
-            $original_entity->chapterized_id = $new_id;
-          }
-          break;
-        case 'motion':
-          if (empty($original_entity->motion_id)) {
-            $query = 'SELECT MAX(motion_id) FROM {ammo_motions} WHERE meeting_id = :meeting';
-            $result = db_query($query, array(':meeting' => $storage['meeting'])); 
-            $new_id = $result->fetchField() + 1; 
-            $original_entity->motion_id = $new_id;
-          }
-          break;
-        }
-        entity_save($entity_type, $original_entity);
-        // Create short url.
-        $long_url = $base_url . '/ammo/support/add/member/' . $entity_type . '/' . $entity_id;
-        $code = ammo_shurly($entity_type, $entity_id);
-        shurly_shorten($long_url, $code);
-      }
-    }
   }
   $differences = array();
   foreach($mapping as $database_field => $form_field) {
-    if (isset($form_state['values'][$form_field])) {
+    if (isset($values[$form_field])) {
       // Store values.
-      $form_state['storage'][$form_field] = $form_state['values'][$form_field];
+      $form_state['storage'][$form_field] = $values[$form_field];
     }
     if (!empty($original_entity)) {
       // Existing entity, check if there are changes.
@@ -437,7 +408,7 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
         $fields[$database_field] = $form_state['storage'][$form_field];
         // Store only differences in current form step to mail to owners and backers.
         if ($form_state['step'] == $form_state['storage']['changes_step']) {
-          if (!empty($form_state['values'][$form_field])) {
+          if (!empty($values[$form_field])) {
             $fieldname = ammo_filter_fields($form_field);
             if ($fieldname !== FALSE) {
               // Store diffline.
@@ -453,6 +424,39 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
       $fields[$database_field] = $form_state['storage'][$form_field];
     }
   }
+
+  $storage = $form_state['storage'];
+
+  // Store motion or amendment id and create short url.
+  if (!empty($original_entity)) {
+    if ($form_state['step'] == $form_state['storage']['changes_step']) {
+      switch ($entity_type) {
+      case 'amendment':
+        if (empty($original_entity->chapterized_id)) {
+          // Set chapterized id.
+          $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter';
+          $result = db_query($query, array(':chapter' => $storage['chapter'])); 
+          $new_id = $result->fetchField() + 1; 
+          $fields['chapterized_id'] = $new_id;
+        }
+        break;
+      case 'motion':
+        if (empty($original_entity->motion_id)) {
+          $query = 'SELECT MAX(motion_id) FROM {ammo_motions} WHERE meeting_id = :meeting';
+          $result = db_query($query, array(':meeting' => $storage['meeting'])); 
+          $new_id = $result->fetchField() + 1; 
+          $fields['motion_id'] = $new_id;
+        }
+        break;
+      }
+
+      // Create short url.
+      $long_url = $base_url . '/ammo/support/add/member/' . $entity_type . '/' . $entity_id;
+      $code = ammo_shurly($entity_type, $entity_id);
+      shurly_shorten($long_url, $code);
+    }
+  }
+
   // Save entity.
   $entity = ammo_save_entity($entity_type, $fields, $entity_id);
   if (empty($entity)) {
