@@ -471,6 +471,7 @@ function template_preprocess_print_amendments_by_location(&$variables) {
       // Store amendment data.
       $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = array(
         'id' => $amendment->id,
+        'chapterized_id' => $amendment->chapterized_id,
         'chapter' => $amendment->chapter,
         'page' => $amendment->page,
         'line' => $amendment->line,
@@ -506,6 +507,7 @@ function template_preprocess_print_amendments_by_number(&$variables) {
     // Store amendment data.
     $data['meeting']['amendments'][$amendment->id] = array(
       'id' => $amendment->id,
+      'chapterized_id' => $amendment->chapterized_id,
       'document_id' => check_plain($amendment->document_id),
       'document_title' => check_plain($document->title),
       'chapter' => check_plain($amendment->chapter),
@@ -540,6 +542,7 @@ function template_preprocess_print_motions_by_branch(&$variables) {
     $data['meeting']['branches'][$first_owner['branch_id']]['first_owner'] = $first_owner;
     $data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
       'id' => $motion->id,
+      'motion_id' => $motion->motion_id,
       'consideration_opening' => $motion->consideration_opening,
       'consideration_body' => $motion->consideration_body,
       'follow_up_opening' => $motion->follow_up_opening,
@@ -570,6 +573,7 @@ function template_preprocess_print_motions_by_number(&$variables) {
     $backers = ammo_get_related_contacts($motion->id, 'motion', 'backer'); 
     $data['meeting']['motions'][$motion->id] = array(
       'id' => $motion->id,
+      'motion_id' => $motion->motion_id,
       'consideration_opening' => $motion->consideration_opening,
       'consideration_body' => $motion->consideration_body,
       'follow_up_opening' => $motion->follow_up_opening,

@@ -3,7 +3,7 @@
 <body>
   <?php foreach ($meeting['motions'] as $motion) : ?>
     <h1><?php print $meeting['title']; ?></h1>
-    <p><strong>Motie nr. <?php print $motion['id']; ?></strong></p>
+    <p><strong>Motie nr. <?php print $motion['motion_id']; ?></strong></p>
     <?php if (!empty($motion['owners_branch'])) : ?>
       <?php $list = array(); ?>
       <?php foreach ($motion['owners_branch'] as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
