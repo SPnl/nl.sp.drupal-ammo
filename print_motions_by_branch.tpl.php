@@ -1,7 +1,6 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html">
 <body>
-<?php dpm($meeting); ?>
 <?php foreach ($meeting['branches'] as $branch) : ?>
   <?php foreach ($branch['motions'] as $motion) : ?>
     <h1><?php print $meeting['title']; ?> (<?php print $branch['first_owner']['branch_display_name']; ?>)</h1>

@@ -496,35 +496,45 @@ function template_preprocess_print_amendments_by_location(&$variables) {
 
 function template_preprocess_print_amendments_by_number(&$variables) {
   $data = _ammo_preprocess_meeting_data($variables); 
-  $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE state != 'concept' ORDER BY id");
-  $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
-  foreach ($amendments_results as $amendment) {
-    // Get owners.
-    $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
-    $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
-    $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
-    $document = entity_load_single('document', $amendment->document_id);
-    // Store amendment data.
-    $data['meeting']['amendments'][$amendment->id] = array(
-      'id' => $amendment->id,
-      'chapterized_id' => $amendment->chapterized_id,
-      'document_id' => check_plain($amendment->document_id),
-      'document_title' => check_plain($document->title),
-      'chapter' => check_plain($amendment->chapter),
-      'page' => check_plain($amendment->page),
-      'line' => check_plain($amendment->line),
-      'amendment_text' => check_plain($amendment->amendment_text),
-      'supplement' => check_plain($amendment->supplement),
-      'advice' => check_plain($amendment->advice),
-      'advice_supplement' => check_plain($amendment->advice_supplement),
-      'state' => $amendment->state,
-      'owners_member' => $owners_member,
-      'owners_branch' => $owners_branch,
-      'backers' => $backers,
+  $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title", array(":meeting_id" => $variables['values']['meeting']));
+  foreach ($documents_results as $document) {
+    // Store document data.
+    $data['meeting']['documents'][$document->id] = array(
+      'id' => $document->id,
+      'title' => check_plain($document->title),
+      'description' => check_plain($document->description),
+      'meeting_id' => check_plain($document->meeting_id),
     );
-    foreach ($data['meeting']['amendments'][$amendment->id] as $key => &$value) {
-      if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
-      $value = nl2br($value);
+    $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
+    $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
+    foreach ($amendments_results as $amendment) {
+      // Get owners.
+      $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
+      $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
+      $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
+      $document = entity_load_single('document', $amendment->document_id);
+      // Store amendment data.
+      $data['meeting']['amendments'][$amendment->id] = array(
+        'id' => $amendment->id,
+        'chapterized_id' => $amendment->chapterized_id,
+        'document_id' => check_plain($amendment->document_id),
+        'document_title' => check_plain($document->title),
+        'chapter' => check_plain($amendment->chapter),
+        'page' => check_plain($amendment->page),
+        'line' => check_plain($amendment->line),
+        'amendment_text' => check_plain($amendment->amendment_text),
+        'supplement' => check_plain($amendment->supplement),
+        'advice' => check_plain($amendment->advice),
+        'advice_supplement' => check_plain($amendment->advice_supplement),
+        'state' => $amendment->state,
+        'owners_member' => $owners_member,
+        'owners_branch' => $owners_branch,
+        'backers' => $backers,
+      );
+      foreach ($data['meeting']['amendments'][$amendment->id] as $key => &$value) {
+        if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
+        $value = nl2br($value);
+      }
     }
   }
   $variables['meeting'] = $data['meeting'];
