@@ -1,0 +1,14 @@
+
+{
+  "name": "SPnl/nl.sp.drupal-ammo",
+  "description": "SP Wijzigingsvoorstellen en Moties",
+  "version": "1.0.0",
+  "type": "drupal-module",
+  "authors": [
+    {
+      "name": "Thomas de Graaff",
+      "email": "tdgraaff@sp.nl"
+    }
+  ],
+  "license": "GPL-2.0"
+}
