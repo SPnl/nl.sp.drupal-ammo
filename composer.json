@@ -1,7 +1,7 @@
 {
-  "name": "SPnl/nl.sp.drupal-ammo",
+  "name": "spnl/nl.sp.drupal-ammo",
   "description": "SP Wijzigingsvoorstellen en Moties",
-  "type": "drupal-module",
+  "type": "drupal-custom-module",
   "authors": [
     {
       "name": "Thomas de Graaff",
