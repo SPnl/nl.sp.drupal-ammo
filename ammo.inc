@@ -2,7 +2,7 @@
 
 function ammo_entity_check_title($type, $title) {
   // check if title is unique
-  $query = new EntityFieldQuery();                                                                  
+  $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', $type)
     ->propertyCondition('title', $title)
@@ -100,10 +100,10 @@ function ammo_get_afdelingen_helper($contact_id = NULL) {
     );
     $result = civicrm_api('Relationship', 'get', $params);
     if (isset($result['values'])) {
-      foreach ($result['values'] as $value) { 
+      foreach ($result['values'] as $value) {
         // Check if end_data of relation is not passed.
         if (!empty($value['end_date'])) {
-          if(new DateTime() > new DateTime($value['end_date'])){
+          if (new DateTime() > new DateTime($value['end_date'])) {
             // Relation not valid anymore.
             continue;
           }
@@ -118,7 +118,13 @@ function ammo_get_afdelingen_helper($contact_id = NULL) {
         );
         $afdelingresult = civicrm_api('Contact', 'get', $params);
         if (isset($afdelingresult['values'])) {
-          $afdelingen_data[$afdelingresult['values'][0]['id']] = substr($afdelingresult['values'][0]['display_name'], 12);
+          $afdelingsname = $afdelingresult['values'][0]['display_name'];
+          if (strpos($afdelingsname, 'SP ') === 0) {
+            $afdelingen_data[$afdelingresult['values'][0]['id']] = substr($afdelingsname, 3);
+          }
+          else {
+            $afdelingen_data[$afdelingresult['values'][0]['id']] = $afdelingsname;
+          }
         }
       }
     }
@@ -233,7 +239,7 @@ function ammo_contact_get_display_name($contact_id) {
   civicrm_initialize();
   $result = db_query("SELECT display_name FROM {civicrm_contact} WHERE id = :id", array(':id' => $contact_id));
   if (isset($result)) {
-    $row = $result->fetchAssoc(); 
+    $row = $result->fetchAssoc();
     return $row['display_name'];
   }
 }
@@ -316,7 +322,7 @@ function ammo_is_related($target_id, $target_type, $relation_type = NULL, $conta
   $result = $query->execute();
 
   if (!empty($result)) {
-    $tmp = array_pop(array_pop($result)); 
+    $tmp = array_pop(array_pop($result));
     return $tmp->id;
   }
   return FALSE;
@@ -435,16 +441,16 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
         if (empty($original_entity->chapterized_id)) {
           // Set chapterized id.
           $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter';
-          $result = db_query($query, array(':chapter' => $storage['chapter'])); 
-          $new_id = $result->fetchField() + 1; 
+          $result = db_query($query, array(':chapter' => $storage['chapter']));
+          $new_id = $result->fetchField() + 1;
           $fields['chapterized_id'] = $new_id;
         }
         break;
       case 'motion':
         if (empty($original_entity->motion_id)) {
           $query = 'SELECT MAX(motion_id) FROM {ammo_motions} WHERE meeting_id = :meeting';
-          $result = db_query($query, array(':meeting' => $storage['meeting'])); 
-          $new_id = $result->fetchField() + 1; 
+          $result = db_query($query, array(':meeting' => $storage['meeting']));
+          $new_id = $result->fetchField() + 1;
           $fields['motion_id'] = $new_id;
         }
         break;
@@ -482,7 +488,7 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
   // check if exists.
   $entity = entity_load_single($type, $entity_id);
   if ($entity) {
-    // Check access. 
+    // Check access.
     $afdelingen = ammo_afdelingen_access();
     // Get first owner.
     $first_owner = ammo_get_first_owner($type, $entity->id);
@@ -889,8 +895,8 @@ function ammo_diff($from, $to)
       {
         $diffValues[] = $to[$j];
         $diffMask[] = 1;
-        $j--;  
-        continue;              
+        $j--;
+        continue;
       }
     }
     if ($i > -1)
@@ -900,7 +906,7 @@ function ammo_diff($from, $to)
         $diffValues[] = $from[$i];
         $diffMask[] = -1;
         $i--;
-        continue;              
+        continue;
       }
     }
       {
@@ -909,7 +915,7 @@ function ammo_diff($from, $to)
         $i--;
         $j--;
       }
-  }    
+  }
 
   $diffValues = array_reverse($diffValues);
   $diffMask = array_reverse($diffMask);
@@ -960,7 +966,7 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
-  $relations = ammo_get_related_contacts($entity_id, $entity_type); 
+  $relations = ammo_get_related_contacts($entity_id, $entity_type);
   $params = array(
     'format'          => SWIFTMAILER_FORMAT_HTML,
     'reply_to' => $sender_email,
@@ -988,7 +994,7 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
-  $relations = ammo_get_related_contacts($entity_id, $entity_type); 
+  $relations = ammo_get_related_contacts($entity_id, $entity_type);
   $rest_owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch');
   $rest = (empty($rest_owners)) ? FALSE : TRUE;
   $params = array(
@@ -1023,7 +1029,7 @@ function ammo_delete_mail($entity_type, $entity_id, $meeting_id, $mail_text) {
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
-  $relations = ammo_get_related_contacts($entity_id, $entity_type); 
+  $relations = ammo_get_related_contacts($entity_id, $entity_type);
   $params = array(
     'format'          => SWIFTMAILER_FORMAT_HTML,
     'reply_to' => $sender_email,
@@ -1068,13 +1074,13 @@ function ammo_filter_fields($source) {
     'supplement' => 'Toelichting',
     'amendment_text' => 'Wijzigingsvoorstel tekst',
   );
-  return (isset($translation[$source])) ? $translation[$source] : FALSE; 
+  return (isset($translation[$source])) ? $translation[$source] : FALSE;
 }
 
 function ammo_get_first_owner($entity_type, $entity_id) {
-  $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'member'); 
+  $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'member');
   if (empty($owners)) {
-    $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch'); 
+    $owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch');
   }
   $first_owner = array_shift($owners);
   if (!empty($first_owner)) {
@@ -1135,7 +1141,7 @@ function ammo_get_meetings() {
   foreach ($meetings as $meeting) {
     if (
       (
-        ammo_edit_access($meeting->id) || 
+        ammo_edit_access($meeting->id) ||
         in_array(arg(1), array('amendments', 'motions'))
       ) &&
       empty($meeting->hide_meeting)
