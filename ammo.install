@@ -299,10 +299,10 @@ function ammo_update_7001() {
     'type' => 'int',
     'size' => 'big',
   );
-  db_add_field( 'ammo_amendments', 'chapterized_id', $spec);
+  db_add_field('ammo_amendments', 'chapterized_id', $spec);
 
   // Add unique key for chapter and chapterized_id.
-  db_add_unique_key('ammo_amendments', 'chapterized_id', array('chapter', 'chapterized_id'));  
+  db_add_unique_key('ammo_amendments', 'chapterized_id', array('chapter', 'chapterized_id'));
 
   // Enable shurly.
   if (!module_exists('shurly')) {
@@ -318,7 +318,7 @@ function ammo_update_7002() {
     'type' => 'int',
     'size' => 'tiny',
   );
-  db_add_field( 'ammo_meetings', 'hide_meeting', $spec);
+  db_add_field('ammo_meetings', 'hide_meeting', $spec);
 }
 
 /**
@@ -330,9 +330,18 @@ function ammo_update_7003() {
     'type' => 'int',
     'size' => 'big',
   );
-  db_add_field( 'ammo_motions', 'motion_id', $spec);
+  db_add_field('ammo_motions', 'motion_id', $spec);
 
   // Add unique key for meeting and motion_id.
-  db_add_unique_key('ammo_motions', 'motion_id', array('meeting_id', 'motion_id'));  
+  db_add_unique_key('ammo_motions', 'motion_id', array('meeting_id', 'motion_id'));
 }
 
+/**
+ * Fix chapterized_id key in {ammo_amendments} table.
+ */
+function ammo_update_7004() {
+  // Remove existing key.
+  db_drop_unique_key('ammo_amendments', 'chapterized_id');
+  // Add unique key for chapter and chapterized_id.
+  db_add_unique_key('ammo_amendments', 'chapterized_id', array('document_id', 'chapter', 'chapterized_id'));
+}

@@ -1,6 +1,5 @@
 name = Ammo
 description = SP Wijzigingsvoorstellen en Moties
-version 1.0.1
 core = 7.x
 package = sprbs
 

@@ -440,8 +440,8 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
       case 'amendment':
         if (empty($original_entity->chapterized_id)) {
           // Set chapterized id.
-          $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter';
-          $result = db_query($query, array(':chapter' => $storage['chapter']));
+          $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter AND document_id = :document_id';
+          $result = db_query($query, array(':chapter' => $storage['chapter'], ':document_id' => $storage['document']));
           $new_id = $result->fetchField() + 1;
           $fields['chapterized_id'] = $new_id;
         }
@@ -594,13 +594,14 @@ function ammo_checked_form(&$form, &$form_state, $type) {
   $text1 = ($type == 'amendment') ? 'vergelijkbaar wijzigingsvoorstel' : 'vergelijkbare motie';
   $text2 = ($type == 'amendment') ? 'wijzigingsvoorstellen' : 'moties';
   $text3 = ($type == 'amendment') ? 'het wijzigingsvoorstel' : 'de motie';
-  $text4 = '<p><strong>Let op!</strong></p><p>Wijzigingsvoorstellen kunnen betrekking hebben op de inhoud van voorstellen of op de formulering van voorstellen. De programmacommissie geeft geen advies m.b.t deze laatste categorie wijzigingsvoorstellen, maar neemt die mee bij de eindredactie.</p><p>Moties dienen betrekking te hebben op de actuele situatie. Zij dienen beschouwd te worden als een opdracht aan het partijbestuur om daar werk van te maken.</p><p>Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingediend. Daarom is het fijn als je vooraf even controleert of dit het geval is. Als er al een ' . $text1 . ' is ingediend, kun dat met één druk op de knop \'mede-indienen\'. Mocht de eerste indiener ' . $text3 . ' intrekken, dan blijft ' . $text3 . ' staan wanneer er mede-indieners zijn.</p>';
+  $text4 = ($type == 'amendment') ? '<p>Alleen de voorstellen binnen de hoofdstukken zijn amendeerbaar (dus niet de inleidende teksten).</p>' : '';
+  $text5 = '<p><strong>Let op!</strong></p>' . $text4 . '<p>Wijzigingsvoorstellen kunnen betrekking hebben op de inhoud van voorstellen of op de formulering van voorstellen. De programmacommissie geeft geen advies m.b.t deze laatste categorie wijzigingsvoorstellen, maar neemt die mee bij de eindredactie.</p><p>Moties dienen betrekking te hebben op de actuele situatie. Zij dienen beschouwd te worden als een opdracht aan het partijbestuur om daar werk van te maken.</p><p>Het is niet handig als er meerdere ' . $text2 . ' met dezelfde strekking worden ingediend. Daarom is het fijn als je vooraf controleert of dit het geval is. Als er al een ' . $text1 . ' is ingediend, kun dat met één druk op de knop \'mede-indienen\'. Mocht de eerste indiener ' . $text3 . ' intrekken, dan blijft ' . $text3 . ' staan wanneer er mede-indieners zijn.</p>';
   $form['checked'] = array(
     '#type' => 'checkbox',
     '#title' => 'Ik heb ' . $link1 . ' dat er niet al een ' . $text1 . ' is ingediend.',
     '#default_value' => FALSE,
     '#required' => TRUE,
-		'#prefix' => $text4,
+		'#prefix' => $text5,
   );
 }
 
