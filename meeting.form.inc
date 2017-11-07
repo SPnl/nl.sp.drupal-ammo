@@ -53,6 +53,11 @@ function ammo_meeting_form($form, &$form_state) {
     '#title' => 'Geen individuele indieners.',
   );
 
+  $form['hide_state'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Verberg status.',
+  );
+
   $form['hide_advice'] = array(
     '#type' => 'checkbox',
     '#title' => 'Verberg advies.',
@@ -132,6 +137,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
   $withdrawal_closing_date = $values['withdrawal_closing_date'];
   $submission_closing_date = $values['submission_closing_date'];
   $no_member_owners = $values['no_member_owners'];
+  $hide_state = $values['hide_state'];
   $hide_advice = $values['hide_advice'];
   $hide_meeting = $values['hide_meeting'];
   $email = $values['email'];
@@ -171,6 +177,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     $form['submission_closing_date']['date']['#value'] = $date->format('d-m-Y');
     $form['submission_closing_date']['time']['#value'] = $date->format('H:i');
     $form['no_member_owners']['#checked'] = $meeting->no_member_owners;
+    $form['hide_state']['#checked'] = $meeting->hide_state;
     $form['hide_advice']['#checked'] = $meeting->hide_advice;
     $form['hide_meeting']['#checked'] = $meeting->hide_meeting;
     return $form;
@@ -223,9 +230,10 @@ function ammo_meeting_form_ajax($form, &$form_state) {
         'withdrawal_closing_date' => $withdrawal_closing_date,
         'email' => $email,
         'no_member_owners' => $no_member_owners,
+        'hide_state' => $hide_state,
         'hide_advice' => $hide_advice,
         'hide_meeting' => $hide_meeting,
-      ), $meeting_id);    
+      ), $meeting_id);
     if ($saved) {
       drupal_set_message('Bijeenkomst is opgeslagen.');
       $form_state['input'] = array();
@@ -233,7 +241,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
       $form = drupal_rebuild_form('ammo_meeting_form', $form_state);
     }
     else {
-      drupal_set_message('Bijeenkomst is niet opgeslagen.' , 'error');
+      drupal_set_message('Bijeenkomst is niet opgeslagen.', 'error');
     }
     break;
   }

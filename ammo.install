@@ -46,6 +46,10 @@ function ammo_schema() {
         'type' => 'int',
         'size' => 'tiny',
       ),
+      'hide_state' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+      ),
       'hide_advice' => array(
         'type' => 'int',
         'size' => 'tiny',
@@ -344,4 +348,15 @@ function ammo_update_7004() {
   db_drop_unique_key('ammo_amendments', 'chapterized_id');
   // Add unique key for chapter and chapterized_id.
   db_add_unique_key('ammo_amendments', 'chapterized_id', array('document_id', 'chapter', 'chapterized_id'));
+}
+
+/**
+ * Add hide_state to  {ammo_meetings} table.
+ */
+function ammo_update_7005() {
+  $spec = array(
+    'type' => 'int',
+    'size' => 'tiny',
+  );
+  db_add_field('ammo_meetings', 'hide_state', $spec);
 }

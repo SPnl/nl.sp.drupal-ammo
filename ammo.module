@@ -216,11 +216,12 @@ function template_preprocess_amendment(&$variables) {
     $meeting = entity_load_single('meeting', $document->meeting_id);
     $meeting_date = new DateTime($meeting->date);
     $meeting_date_formatted = $meeting_date->format('d F Y');
+    $hide_state = $meeting->hide_state;
     $meeting_hide = $meeting->hide_meeting;
     $hide_advice = $meeting->hide_advice;
-    $owners_member = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'member'); 
-    $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch'); 
-    $backers = ammo_get_related_contacts($entity->id, 'amendment', 'backer', 'member'); 
+    $owners_member = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'member');
+    $owners_branch = ammo_get_related_contacts($entity->id, 'amendment', 'owner', 'branch');
+    $backers = ammo_get_related_contacts($entity->id, 'amendment', 'backer', 'member');
     $first_owner = ammo_get_first_owner('amendment', $entity->id);
     $owned_by_user = ammo_is_related($entity->id, 'amendment', 'owner', 'member');
     $backed_by_user = ammo_is_related($entity->id, 'amendment', 'backer', 'member');
@@ -268,8 +269,9 @@ function template_preprocess_amendment(&$variables) {
       'owned_by_user' => $owned_by_user,
       'supported_branches' => $supported_branches,
       'unsupported_branches' => $unsupported_branches,
-      'removable_member_owners' => ammo_removable_member_owners('amendment', $entity->id), 
+      'removable_member_owners' => ammo_removable_member_owners('amendment', $entity->id),
       'hide_advice' => $hide_advice,
+      'hide_state' => $hide_state,
       'shurly' => $base_url . '/' . $code,
     );
     foreach($vars as $key => &$value) {
@@ -291,10 +293,11 @@ function template_preprocess_motion(&$variables) {
     $meeting_date = new DateTime($meeting->date);
     $meeting_date_formatted = $meeting_date->format('d F Y');
     $meeting_hide = $meeting->hide_meeting;
+    $hide_state = $meeting->hide_state;
     $hide_advice = $meeting->hide_advice;
-    $owners_member = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'member'); 
-    $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch'); 
-    $backers = ammo_get_related_contacts($entity->id, 'motion', 'backer'); 
+    $owners_member = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'member');
+    $owners_branch = ammo_get_related_contacts($entity->id, 'motion', 'owner', 'branch');
+    $backers = ammo_get_related_contacts($entity->id, 'motion', 'backer');
     $backed_by_user = ammo_is_related($entity->id, 'motion', 'backer', 'member');
     $owned_by_user = ammo_is_related($entity->id, 'motion', 'owner', 'member');
     $first_owner = ammo_get_first_owner('motion', $entity->id);
@@ -345,7 +348,8 @@ function template_preprocess_motion(&$variables) {
       'owned_by_user' => $owned_by_user,
       'supported_branches' => $supported_branches,
       'unsupported_branches' => $unsupported_branches,
-      'removable_member_owners' => ammo_removable_member_owners('motion', $entity->id), 
+      'removable_member_owners' => ammo_removable_member_owners('motion', $entity->id),
+      'hide_state' => $hide_state,
       'hide_advice' => $hide_advice,
       'shurly' => $base_url . '/' . $code,
     );
@@ -381,8 +385,8 @@ function template_preprocess_overview_amendments(&$variables) {
       $amendments_results = db_query("SELECT id, chapter, page, state, chapterized_id FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' AND state != 'blocked' ORDER BY chapter, page, line, chapterized_id", array(":document_id" => $document->id));
       foreach ($amendments_results as $amendment) {
         // Get owners.
-        $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
-        $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
+        $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
+        $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch');
         // Store chapter data.
         $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['nr'] = $amendment->chapter;
         // Store page data.
@@ -424,8 +428,8 @@ function template_preprocess_overview_motions(&$variables) {
     );
     $motions_results = db_query("SELECT id, state, motion_id FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept' AND state != 'blocked' ORDER BY motion_id", array(":meeting_id" => $meeting->id));
     foreach ($motions_results as $motion) {
-      $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
-      $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
+      $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member');
+      $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch');
       $first_owner = ammo_get_first_owner('motion', $motion->id);
       if (!empty($first_owner)) {
         $data['meeting']['branches'][$first_owner['branch_id']]['info'] = $first_owner;
@@ -448,7 +452,7 @@ function template_preprocess_overview_motions(&$variables) {
 }
 
 function template_preprocess_print_amendments_by_location(&$variables) {
-  $data = _ammo_preprocess_meeting_data($variables); 
+  $data = _ammo_preprocess_meeting_data($variables);
   $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($documents_results as $document) {
     // Store document data.
@@ -461,9 +465,9 @@ function template_preprocess_print_amendments_by_location(&$variables) {
     $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, page, line, id", array(":document_id" => $document->id));
     foreach ($amendments_results as $amendment) {
       // Get owners.
-      $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
-      $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
-      $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
+      $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
+      $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch');
+      $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer');
       // Store chapter data.
       $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['nr'] = $amendment->chapter;
       // Store page data.
@@ -495,7 +499,7 @@ function template_preprocess_print_amendments_by_location(&$variables) {
 }
 
 function template_preprocess_print_amendments_by_number(&$variables) {
-  $data = _ammo_preprocess_meeting_data($variables); 
+  $data = _ammo_preprocess_meeting_data($variables);
   $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($documents_results as $document) {
     // Store document data.
@@ -506,12 +510,12 @@ function template_preprocess_print_amendments_by_number(&$variables) {
       'meeting_id' => check_plain($document->meeting_id),
     );
     $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
-    $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
+    $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer');
     foreach ($amendments_results as $amendment) {
       // Get owners.
-      $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member'); 
-      $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch'); 
-      $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer'); 
+      $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
+      $owners_branch = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'branch');
+      $backers = ammo_get_related_contacts($amendment->id, 'amendment', 'backer');
       $document = entity_load_single('document', $amendment->document_id);
       // Store amendment data.
       $data['meeting']['amendments'][$amendment->id] = array(
@@ -542,12 +546,12 @@ function template_preprocess_print_amendments_by_number(&$variables) {
 }
 
 function template_preprocess_print_motions_by_branch(&$variables) {
-  $data = _ammo_preprocess_meeting_data($variables); 
+  $data = _ammo_preprocess_meeting_data($variables);
   $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($motions_results as $motion) {
-    $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
-    $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
-    $backers = ammo_get_related_contacts($motion->id, 'motion', 'backer'); 
+    $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member');
+    $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch');
+    $backers = ammo_get_related_contacts($motion->id, 'motion', 'backer');
     $first_owner = ammo_get_first_owner('motion', $motion->id);
     $data['meeting']['branches'][$first_owner['branch_id']]['first_owner'] = $first_owner;
     $data['meeting']['branches'][$first_owner['branch_id']]['motions'][$motion->id] = array(
@@ -575,12 +579,12 @@ function template_preprocess_print_motions_by_branch(&$variables) {
 }
 
 function template_preprocess_print_motions_by_number(&$variables) {
-  $data = _ammo_preprocess_meeting_data($variables); 
+  $data = _ammo_preprocess_meeting_data($variables);
   $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($motions_results as $motion) {
-    $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member'); 
-    $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch'); 
-    $backers = ammo_get_related_contacts($motion->id, 'motion', 'backer'); 
+    $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member');
+    $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch');
+    $backers = ammo_get_related_contacts($motion->id, 'motion', 'backer');
     $data['meeting']['motions'][$motion->id] = array(
       'id' => $motion->id,
       'motion_id' => $motion->motion_id,

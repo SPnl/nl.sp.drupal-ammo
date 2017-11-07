@@ -32,8 +32,10 @@
 <?php if (!empty($state) || !empty($advice)) : ?>
   <p>
   <?php if (!empty($state)) : ?>
-    <?php $options = ammo_states(); ?>
-    <strong>Status:</strong> <?php print strtolower($options[$state]); ?>
+    <?php if (!$hide_state || $state === 'withdrawn' || $admin_access) : ?>
+      <?php $options = ammo_states(); ?>
+      <strong>Status:</strong> <?php print strtolower($options[$state]); ?>
+    <?php endif; ?>
   <?php endif; ?>
   <?php if (!empty($advice) && (!$hide_advice || $admin_access)) : ?>
     <?php if (!empty($state)) : ?>
