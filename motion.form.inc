@@ -51,7 +51,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       return $form;
       break;
     case 'delete':
-      if (ammo_admin_access()) {
+      if (ammo_superadmin_access()) {
         if (ammo_populate_form('motion', $path_id, $form_state)) {
           $form = ammo_delete_entity_form('motion', $path_id);
           return $form;
@@ -63,7 +63,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   }
   else {
     $meetings = ammo_get_meetings();
-    if (empty($meetings)) { 
+    if (empty($meetings)) {
       drupal_set_message('De termijn voor het indienen van moties is verstreken.', 'warning');
       return;
     }
@@ -140,7 +140,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     else {
       ammo_select_afdeling_form($form, $form_state, 'motion', $options);
       $form['branch_id']['#prefix'] =
-        '<p>Bijeenkomst: ' . check_plain($form_state['storage']['meeting_display_name']) . '</p>'; 
+        '<p>Bijeenkomst: ' . check_plain($form_state['storage']['meeting_display_name']) . '</p>';
     }
   }
 
@@ -499,7 +499,7 @@ function ammo_motion_form_submit($form, &$form_state)
       if ($owner) {
         drupal_set_message('Contact is toegevoegd.');
         // Verwijder afdelingseigenaar.
-        $contact_relation_id = ammo_is_related($storage['motion'], 'motion', 'owner', 'branch', $storage['branch_id']); 
+        $contact_relation_id = ammo_is_related($storage['motion'], 'motion', 'owner', 'branch', $storage['branch_id']);
         if ($contact_relation_id) {
           $result = entity_delete('contact_relation', $contact_relation_id);
           if (FALSE === $result) {
