@@ -372,6 +372,7 @@ function template_preprocess_overview_amendments(&$variables) {
       'date' => $meeting->date,
       'submission_closing_date' => $meeting->submission_closing_date,
       'hide' => $meeting->hide_meeting,
+      'admin_access' => ammo_admin_access(),
     );
     $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title DESC", array(":meeting_id" => $variables['meeting_id']));
     foreach ($documents_results as $document) {
@@ -403,6 +404,14 @@ function template_preprocess_overview_amendments(&$variables) {
         );
         // Store amendments in document structure.
         $data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['pages'][$amendment->page]['amendments'][$amendment->id] = $amendment->id;
+        // Store totals.
+        if (empty($data['meeting']['documents'][$document->id]['totals'])) {
+          $states = array_keys(ammo_states());
+          foreach ($states as $state) {
+            $data['meeting']['documents'][$document->id]['totals'][$state] = 0;
+          }
+        }
+        $data['meeting']['documents'][$document->id]['totals'][$amendment->state]++;
       }
       // Store amendment index by chapterized id.
       $amendments_index_results = db_query("SELECT id, chapter FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' AND state != 'blocked' ORDER BY chapter, chapterized_id, id", array(":document_id" => $document->id));
@@ -425,6 +434,7 @@ function template_preprocess_overview_motions(&$variables) {
       'date' => $meeting->date,
       'submission_closing_date' => $meeting->submission_closing_date,
       'hide' => $meeting->hide_meeting,
+      'admin_access' => ammo_admin_access(),
     );
     $motions_results = db_query("SELECT id, state, motion_id FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept' AND state != 'blocked' ORDER BY motion_id", array(":meeting_id" => $meeting->id));
     foreach ($motions_results as $motion) {
@@ -442,6 +452,14 @@ function template_preprocess_overview_motions(&$variables) {
         );
         $data['meeting']['branch_index'][$first_owner['branch_id']] = $first_owner['branch_display_name'];
       }
+      // Store totals.
+      if (empty($data['meeting']['motion_totals'])) {
+        $states = array_keys(ammo_states());
+        foreach ($states as $state) {
+          $data['meeting']['motion_totals'][$state] = 0;
+        }
+      }
+      $data['meeting']['motion_totals'][$motion->state]++;
     }
     // Reorder branch index alphabetically.
     if (!empty($data['meeting']['branch_index'])) {

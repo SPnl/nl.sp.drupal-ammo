@@ -73,17 +73,17 @@ li.ammo-element {
   text-decoration: none;
 }
 
-.navigation .amendments li, 
+.navigation .amendments li,
 .navigation .motions li {
   display: inline-block;
   background: #eee;
-  font-weight: bold; 
+  font-weight: bold;
   font-size: .8em;
   padding: 0;
   margin: 0 4px 10px 0;
 }
 
-.navigation .amendments li a, 
+.navigation .amendments li a,
 .navigation .motions li a {
   display: inline-block;
   padding: .4em .72em;
@@ -93,14 +93,14 @@ li.ammo-element {
   min-width: 54px;
 }
 
-.navigation .amendments li a:hover, 
+.navigation .amendments li a:hover,
 .navigation .motions li a:hover {
   background: #000;
   color: #fff;
-} 
+}
 
-a.text-limit-toggle, 
-a.text-limit-toggle:visited, 
+a.text-limit-toggle,
+a.text-limit-toggle:visited,
 a.text-limit-toggle:link {
 	text-decoration: none;
 	color: #f00;
@@ -108,8 +108,8 @@ a.text-limit-toggle:link {
 }
 
 
-.withdrawn a.text-limit-toggle, 
-.withdrawn a.text-limit-toggle:visited, 
+.withdrawn a.text-limit-toggle,
+.withdrawn a.text-limit-toggle:visited,
 .withdrawn a.text-limit-toggle:link {
 	text-decoration: none;
 	color: #aaa;
@@ -155,7 +155,7 @@ h4.inline-title {
   margin-bottom: -1px;
 }
 
-.page-ammo-amendments ul.tab li a, 
+.page-ammo-amendments ul.tab li a,
 .page-ammo-amendments ul.tab li span {
     display: inline-block;
     color: black;
@@ -186,3 +186,6 @@ h4.inline-title {
 	display: block;
 }
 
+.page-ammo td {
+  padding: 0 1em 0 0;
+}

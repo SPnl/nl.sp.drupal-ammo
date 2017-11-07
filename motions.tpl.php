@@ -1,4 +1,13 @@
 <h1 id="inhoud">Overzicht alle ingediende moties</h1>
+
+<?php if ($meeting['admin_access']) : ?>
+  <?php $states = ammo_states(); ?>
+  <?php foreach ($meeting['motion_totals'] as $key => $value) : ?>
+    <?php $rows[] = array($states[$key], $value); ?>
+  <?php endforeach; ?>
+  <?php print theme('table', array('rows' => $rows)); ?>
+<?php endif; ?>
+
 <?php if (!empty($meeting['branches']) && empty($meeting['hide'])) : ?>
   <h2 id="inhoud">Inhoud</h2>
 
@@ -35,6 +44,3 @@
   </ul>
 
 <?php endif; ?>
-
-
-

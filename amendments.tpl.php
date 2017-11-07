@@ -1,8 +1,11 @@
 <h2 id="inhoud">Overzicht alle ingediende wijzigingsvoorstelen</h2>
+
 <?php if (!empty($meeting['documents']) && empty($meeting['hide'])) : ?>
   <ul class="first navigation">
     <?php foreach ($meeting['documents'] as $document) : ?>
+
       <li class="document">
+
         <a href="#document<?php print $document['id']; ?>"><strong>Document: <?php print $document['title']; ?></strong></a>
         <?php if (!empty($document['chapters'])): ?>
           <ul class="chapters tab">
@@ -42,6 +45,14 @@
     <li>
         <h2 id="document<?php print $document['id']; ?>" class="document-title"><?php print $document['title']; ?></h2>
         <ul>
+          <?php if ($meeting['admin_access']) : ?>
+            <?php $states = ammo_states(); ?>
+            <?php foreach ($meeting['documents'][$document['id']]['totals'] as $key => $value) : ?>
+              <?php $rows[] = array($states[$key], $value); ?>
+            <?php endforeach; ?>
+            <?php print theme('table', array('rows' => $rows)); ?>
+          <?php endif; ?>
+
           <?php if (!empty($document['chapters'])): ?>
             <?php foreach ($document['chapters'] as $chapter) : ?>
               <li>
