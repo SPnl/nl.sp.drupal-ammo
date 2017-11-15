@@ -337,13 +337,13 @@ function ammo_amendment_form_validate($form, &$form_state) {
       form_set_error('line', 'Regelnummer moet een getal zijn.');
     }
     // Extra validation for specific document!
-    if ($storage['document'] == 2) {
-      if ($values['chapter'] < 4) {
-        form_set_error('chapter', 'De eerste drie hoofdstukken zijn niet amendeerbaar.');
+    if ($storage['document'] == 4) {
+      if ($values['chapter'] > 3) {
+        form_set_error('chapter', 'Alleen de voorstellen in de eerste drie hoofdstukken zijn amendeerbaar.');
       }
-      if ($values['page'] < 10) {
+      /*if ($values['page'] < 10) {
         form_set_error('page', 'Controleer het paginanummer, alleen hoofdstuk 4 en verder zijn amendeerbaar.');
-      }
+      }*/
     }
     if (empty($values['amendment_text'])) {
       form_set_error('amendment_text', 'Vul de wijzigingsvoorstel tekst in.');
