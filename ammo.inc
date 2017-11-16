@@ -1153,11 +1153,11 @@ function ammo_get_meetings() {
   return $options;
 }
 
-function ammo_get_documents($form_state) {
+function ammo_get_documents($form_state = array()) {
   $documents = entity_load('document');
   $options = array();
   foreach ($documents as $document) {
-    if ($document->meeting_id == $form_state['storage']['meeting']) {
+    if (empty($form_state) || $document->meeting_id == $form_state['storage']['meeting']) {
       $options[$document->id] = $document->title;
     }
   }
