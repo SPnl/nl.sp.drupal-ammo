@@ -648,9 +648,9 @@ function template_preprocess_export_meeting_xml(&$variables) {
     // Store document data.
     $data['meeting']['documents'][$document->id] = array(
       'id' => $document->id,
-      'title' => check_plain($document->title),
-      'description' => check_plain($document->description),
-      'meeting_id' => check_plain($document->meeting_id),
+      'title' => $document->title,
+      'description' => $document->description,
+      'meeting_id' => $document->meeting_id,
     );
     $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
     foreach ($amendments_results as $amendment) {
@@ -678,6 +678,7 @@ function template_preprocess_export_meeting_xml(&$variables) {
       );
       foreach ($data['meeting']['documents'][$document->id]['chapters'][$amendment->chapter]['amendments'][$amendment->id] as $key => &$value) {
         if (in_array($key, array('owners_member', 'owners_branch', 'backers'))) continue;
+        $value = ammo_strip_invalid_xml($value);
         $value = htmlspecialchars($value, ENT_QUOTES | ENT_XML1);
       }
     }
