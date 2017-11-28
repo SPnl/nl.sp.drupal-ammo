@@ -118,13 +118,8 @@ function ammo_get_afdelingen_helper($contact_id = NULL) {
         );
         $afdelingresult = civicrm_api('Contact', 'get', $params);
         if (isset($afdelingresult['values'])) {
-          $afdelingsname = $afdelingresult['values'][0]['display_name'];
-          if (strpos($afdelingsname, 'SP ') === 0) {
-            $afdelingen_data[$afdelingresult['values'][0]['id']] = substr($afdelingsname, 3);
-          }
-          else {
-            $afdelingen_data[$afdelingresult['values'][0]['id']] = $afdelingsname;
-          }
+          $afdelingsname = ammo_cleanup_branch_name($afdelingresult['values'][0]['display_name']);
+          $afdelingen_data[$afdelingresult['values'][0]['id']] = $afdelingsname;
         }
       }
     }
@@ -837,6 +832,8 @@ function ammo_get_destination() {
 }
 
 function ammo_save_relation($relation_type, $target_type, $target_id, $contact_id, $contact_type, $contact_display_name, $branch_id = NULL, $branch_display_name = NULL) {
+  $contact_display_name = ammo_cleanup_branch_name($contact_display_name);
+  $branch_display_name = ammo_cleanup_branch_name($branch_display_name);
   // Get contact email.
   $contact_email = ammo_get_contact_email($contact_id);
   $mapping = array(
@@ -1231,4 +1228,11 @@ function ammo_strip_invalid_xml($value) {
     }
   }
   return $ret;
+}
+
+function ammo_cleanup_branch_name($branch_name) {
+  if (strpos($branch_name, 'SP ') === 0) {
+    $branch_name = substr($branch_name, 3);
+  }
+  return $branch_name;
 }

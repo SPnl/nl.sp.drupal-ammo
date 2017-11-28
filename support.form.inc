@@ -87,7 +87,7 @@ function ammo_support_form($form, &$form_state, $action, $contact_type, $target_
     $branches = ammo_get_afdelingen($contact_id);
     // Filter branches that already support.
     foreach ($branches as $contact_id => $branch) {
-      $backed = ammo_is_related($entity_id, $target_type, 'owner', $contact_type, $contact_id); 
+      $backed = ammo_is_related($entity_id, $target_type, 'owner', $contact_type, $contact_id);
       switch ($action) {
       case 'add':
         if (empty($backed)) {
@@ -172,7 +172,7 @@ function ammo_support_form_validate($form, &$form_state) {
       form_set_error('support', 'Zet een vinkje');
     }
     if (FALSE !== $entity) {
-      $backed = ammo_is_related($entity_id, $target_type, NULL, $contact_type); 
+      $backed = ammo_is_related($entity_id, $target_type, NULL, $contact_type);
       switch ($action) {
       case 'add':
         if ($backed) {
@@ -239,7 +239,7 @@ function ammo_support_form_submit($form, &$form_state) {
     case 'add':
       $display_name = ammo_contact_get_display_name($contact_id);
       // Sla nieuwe backer op.
-      $backer = ammo_save_relation('backer', $target_type, $entity_id, $contact_id, $contact_type, $display_name); 
+      $backer = ammo_save_relation('backer', $target_type, $entity_id, $contact_id, $contact_type, $display_name);
       if ($backer) {
         drupal_set_message('Uw steun is opgeslagen.');
       }
@@ -265,9 +265,8 @@ function ammo_support_form_submit($form, &$form_state) {
       foreach ($values['branch_id'] as $key => $value) {
         if ($key == $value) {
           $display_name = ammo_contact_get_display_name($value);
-          $display_name = substr($display_name, 12);
           // Sla nieuwe owner op.
-          $owner = ammo_save_relation('owner', $target_type, $entity_id, $value, $contact_type, $display_name, $value, $display_name); 
+          $owner = ammo_save_relation('owner', $target_type, $entity_id, $value, $contact_type, $display_name, $value, $display_name);
           if ($owner) {
             drupal_set_message('Uw afdeling is (mede) indiener.');
           }
@@ -278,7 +277,7 @@ function ammo_support_form_submit($form, &$form_state) {
       }
       break;
     case 'withdraw':
-      $meeting_id = ammo_get_meeting_id($target_type, $entity_id); 
+      $meeting_id = ammo_get_meeting_id($target_type, $entity_id);
       foreach ($values['branch_id'] as $key => $value) {
         if ($key == $value) {
           $remove_id = ammo_is_related($entity_id, $target_type, 'owner', $contact_type, $value);
