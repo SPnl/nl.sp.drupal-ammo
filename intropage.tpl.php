@@ -1,5 +1,6 @@
 <div class="ammo-content">
   <h1>SP Wijzigingsvoorstellen en Moties</h1>
+  <p><strong>Let op!</strong><br/>Wijzigingsvoorstellen of moties van individuele leden kunnen uitsluiten worden ingediend via het landelijk secretariaat (secretariaat@sp.nl). Deze voorstellen dienen te worden ondersteund door ten minste 50 leden (handtekeningenlijst met naam en lidnummer bijvoegen).</p>
   <p><strong>U kunt in dit scherm:</strong></p>
   <ul>
     <li>Een overzicht van <?php print l('wijzigingsvoorstellen', 'ammo/amendments'); ?> of <?php print l('moties', 'ammo/motions'); ?> bekijken.</li>
@@ -25,7 +26,7 @@
       <?php endif; ?>
       <li>Uw ingediende wijzigingsvoorstellen en moties intrekken.</li>
     <?php endif; ?>
-    <li>Individueel ingediende wijzigingsvoorstellen en moties moties steunen.</li>
+    <!--<li>Individueel ingediende wijzigingsvoorstellen en moties moties steunen.</li>-->
   </ul>
   <p><strong>Klik op een van de grijze tabjes bovenaan voor de gewenste functies.</strong></p>
 </div>
