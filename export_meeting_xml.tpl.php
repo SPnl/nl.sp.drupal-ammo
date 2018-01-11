@@ -5,7 +5,7 @@
 <?php foreach ($document['chapters'] as $chapter): ?>
 <chapter_title>Hoofdstuk <?php print $chapter['chapter_nr']; ?></chapter_title>
 <?php foreach ($chapter['amendments'] as $amendment) : ?>
-<amendment_id_text>Wijzigingsvoorstel nr. <?php print $chapter['chapter_nr'] . '.' . $amendment['chapterized_id']; ?> (hoofdstuk <?php print $amendment['chapter']; ?> pagina <?php print $amendment['page']; ?> regel <?php print $amendment['line']; ?>)</amendment_id_text>
+<amendment_id_text>Wijzigingsvoorstel nr. <?php print $chapter['chapter_nr'] . '.' . $amendment['chapterized_id']; ?> (hoofdstuk <?php print $chapter['chapter_nr']; ?>, pagina <?php print $amendment['page']; ?>, regel <?php print $amendment['line']; ?>)</amendment_id_text>
 <?php $list = array(); ?>
 <?php foreach ($amendment['owners_branch'] as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
 <?php $last = array_pop($list); ?>

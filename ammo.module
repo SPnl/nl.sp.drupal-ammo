@@ -652,7 +652,7 @@ function template_preprocess_export_meeting_xml(&$variables) {
       'description' => $document->description,
       'meeting_id' => $document->meeting_id,
     );
-    $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE document_id = :document_id AND state != 'concept' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
+    $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE document_id = :document_id AND state = 'submitted' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
     foreach ($amendments_results as $amendment) {
       // Get owners.
       $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
@@ -683,7 +683,7 @@ function template_preprocess_export_meeting_xml(&$variables) {
       }
     }
   }
-  $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $variables['values']['meeting']));
+  $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state = 'submitted'", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($motions_results as $motion) {
     $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member');
     $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch');
