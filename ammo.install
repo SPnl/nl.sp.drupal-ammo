@@ -58,6 +58,10 @@ function ammo_schema() {
         'type' => 'int',
         'size' => 'tiny',
       ),
+      'no_motions' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+      ),
     ),
     'primary key' => array(
       'id',
@@ -359,4 +363,15 @@ function ammo_update_7005() {
     'size' => 'tiny',
   );
   db_add_field('ammo_meetings', 'hide_state', $spec);
+}
+
+/**
+ * Add no_motions to  {ammo_meetings} table.
+ */
+function ammo_update_7006() {
+  $spec = array(
+    'type' => 'int',
+    'size' => 'tiny',
+  );
+  db_add_field('ammo_meetings', 'no_motions', $spec);
 }

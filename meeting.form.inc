@@ -68,6 +68,11 @@ function ammo_meeting_form($form, &$form_state) {
     '#title' => 'Verberg bijeenkomst.',
   );
 
+  $form['no_motions'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Geen moties.',
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => 'submit',
@@ -140,6 +145,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
   $hide_state = $values['hide_state'];
   $hide_advice = $values['hide_advice'];
   $hide_meeting = $values['hide_meeting'];
+  $no_motions = $values['no_motions'];
   $email = $values['email'];
 
   // Check if delete meeting button was clicked.
@@ -180,6 +186,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     $form['hide_state']['#checked'] = $meeting->hide_state;
     $form['hide_advice']['#checked'] = $meeting->hide_advice;
     $form['hide_meeting']['#checked'] = $meeting->hide_meeting;
+    $form['no_motions']['#checked'] = $meeting->no_motions;
     return $form;
   }
 
@@ -233,6 +240,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
         'hide_state' => $hide_state,
         'hide_advice' => $hide_advice,
         'hide_meeting' => $hide_meeting,
+        'no_motions' => $no_motions,
       ), $meeting_id);
     if ($saved) {
       drupal_set_message('Bijeenkomst is opgeslagen.');
