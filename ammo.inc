@@ -584,7 +584,7 @@ function ammo_afdelingen_access() {
 }
 
 function ammo_checked_form(&$form, &$form_state, $type) {
-  $link1 = l('gecontroleerd', 'ammo/' . $type . 's');
+  $link1 = l('gecontroleerd', 'ammo/' . $type . 's', array('attributes' => array('target' => '_blank')));
   $link2 = l('overzicht', 'ammo/' . $type . 's');
   $text1 = ($type == 'amendment') ? 'vergelijkbaar wijzigingsvoorstel' : 'vergelijkbare motie';
   $text2 = ($type == 'amendment') ? 'wijzigingsvoorstellen' : 'moties';

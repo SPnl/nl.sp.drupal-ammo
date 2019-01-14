@@ -61,6 +61,10 @@ li.ammo-element {
   padding: 1em;
 }
 
+.page-ammo a, .page-ammo a:link, .page-ammo a:visited {
+  color: #f00000;
+}
+
 
 /* Overviews */
 
