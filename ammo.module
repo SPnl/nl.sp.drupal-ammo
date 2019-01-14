@@ -45,7 +45,7 @@ function ammo_menu() {
     'page arguments' => array('ammo_motion_form', 2, 3),
     'file' => 'motion.form.inc',
     'type' => MENU_LOCAL_TASK,
-    'access callback' => 'ammo_add_access',
+    'access callback' => 'ammo_add_motion_access',
     'weight' => -1,
   );
 
@@ -65,7 +65,7 @@ function ammo_menu() {
     'page arguments' => array('ammo_overview_motions_form', 2),
     'file' => 'motions.form.inc',
     'type' => MENU_LOCAL_TASK,
-    'access callback' => 'user_is_logged_in',
+    'access callback' => 'ammo_show_motions_access',
     'weight' => 1,
   );
 
@@ -151,8 +151,16 @@ function ammo_admin_access() {
   return user_access('administer ammo') || user_access('administer amendments and motions');
 }
 
-function ammo_add_access() {
+function ammo_add_access($type = NULL) {
   return user_access('administer ammo') || user_access('administer amendments and motions') || user_access('add amendments and motions');
+}
+
+function ammo_add_motion_access() {
+  return user_access('administer ammo') || user_access('administer amendments and motions') || (user_access('add amendments and motions') && ammo_show_motions());
+}
+
+function ammo_show_motions_access() {
+  return user_access('administer ammo') || user_access('administer amendments and motions') || ammo_show_motions();
 }
 
 function ammo_theme() {
@@ -217,6 +225,11 @@ function ammo_theme() {
     ),
   );
   return $theme;
+}
+
+function template_preprocess_intropage(&$variables) {
+  $vars['show_motions'] = ammo_show_motions();
+  $variables = $variables + $vars;
 }
 
 function template_preprocess_amendment(&$variables) {
@@ -838,4 +851,18 @@ function ammo_intropage() {
     'admin_access' => ammo_admin_access(),
     'superadmin_access' => ammo_superadmin_access(),
   ));
+}
+
+function ammo_show_motions() {
+  $value = &drupal_static(__FUNCTION__);
+  if (!isset($result)) {
+    $query = db_select('ammo_meetings', 'm')
+      ->fields('m', array('id'))
+      ->condition('m.hide_meeting', 0)
+      ->condition('m.no_motions', 0)
+      ->countQuery();
+    $result = $query->execute()->fetchField();
+    $value = ($result > 0) ? TRUE : FALSE;
+  }
+  return $value;
 }
