@@ -813,7 +813,7 @@ function ammo_mail($key, &$message, $params) {
   case 'change_message':
     // Create messeage
     $type = ($params['entity_type'] == 'amendment') ? 'Wijzigingsvoorstel' : 'Motie';
-    $message['subject'] = $type . ' nr. ' . $params['id'] . '.';
+    $message['subject'] = $type . ' nr. ' . $params['id'] . ' ' . $params['document_title'];
     $message['body'][] = $params['markup'];
     $message['body'][] = '<h3>Wijzigingen</h3>';
     foreach ($params['differences'] as $key => $difference) {
@@ -831,14 +831,14 @@ function ammo_mail($key, &$message, $params) {
       $text = 'ingetrokken door';
     }
     $type = ($params['entity_type'] == 'amendment') ? 'Wijzigingsvoorstel' : 'Motie';
-    $message['subject'] = $type . ' nr. ' . $params['id'] . ' ' . $text . ' afdeling ' . $params['branch_display_name'];
+    $message['subject'] = $type . ' nr. ' . $params['id'] . ' ' . $params['document_title'] . ' ' . $text . ' afdeling ' . $params['branch_display_name'];
     $message['body'][] = '<h3>' . ucfirst($text) . ' ' . $params['branch_display_name'] . '</h3>';
     $message['body'][] = $params['markup'];
     break;
   case 'delete_message':
     // Create messeage
     $type = ($params['entity_type'] == 'amendment') ? 'Wijzigingsvoorstel' : 'Motie';
-    $message['subject'] = $type . ' nr. ' . $params['id'] . ' is verwijderd.';
+    $message['subject'] = $type . ' nr. ' . $params['id'] . ' ' . $params['document_title'] . ' is verwijderd.';
     $message['body'][] = $params['mail_text'];
     $message['body'][] = $params['markup'];
     break;
