@@ -2,7 +2,6 @@
 <?php $ofmoties = ($show_motions) ? ' of moties ': ''; ?>
 <div class="ammo-content">
   <h1>SP Wijzigingsvoorstellen<?php print $enmoties; ?></h1>
-  <p><strong>Let op!</strong><br/>Wijzigingsvoorstellen<?php print $ofmoties; ?> van individuele leden kunnen uitsluitend worden ingediend via het landelijk secretariaat (secretariaat@sp.nl). Deze voorstellen dienen te worden ondersteund door ten minste 50 leden (handtekeningenlijst met naam en lidnummer bijvoegen).</p>
   <p><strong>U kunt in dit scherm:</strong></p>
   <ul>
     <li>Een overzicht van <?php print l('wijzigingsvoorstellen', 'ammo/amendments'); ?><? print ($show_motions) ? ' of ' . l('moties', 'ammo/motions') : ''; ?> bekijken.</li>
@@ -30,5 +29,6 @@
     <?php endif; ?>
     <!--<li>Individueel ingediende wijzigingsvoorstellen en moties moties steunen.</li>-->
   </ul>
+  <p><strong>Let op!</strong><br/>Wijzigingsvoorstellen<?php print $ofmoties; ?> van individuele leden kunnen uitsluitend worden ingediend via het landelijk secretariaat (secretariaat@sp.nl). Deze voorstellen dienen te worden ondersteund door ten minste 50 leden (handtekeningenlijst met naam en lidnummer bijvoegen).</p>
   <p><strong>Klik op een van de grijze tabjes bovenaan voor de gewenste functies.</strong></p>
 </div>
