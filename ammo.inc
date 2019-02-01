@@ -58,7 +58,8 @@ function ammo_motion_advice() {
 function ammo_get_afdelingen($contact_id = 'all') {
   $afdelingen = &drupal_static(__FUNCTION__);
   if (!isset($afdelingen[$contact_id])) {
-    if ($cache = cache_get('ammo_data')) {
+    $cache = cache_get('ammo_data');
+    if (!empty($cache->data)) {
       $data = $cache->data;
       if (isset($data['afdelingen'][$contact_id])) {
         $afdelingen[$contact_id] = $data['afdelingen'][$contact_id];
