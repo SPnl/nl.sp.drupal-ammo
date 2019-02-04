@@ -6,7 +6,7 @@
   <?php foreach ($document['chapters'] as $chapter) : ?>
     <?php foreach ($chapter['pages'] as $page) : ?>
       <?php foreach ($page['amendments'] as $amendment) : ?>
-        <?php if($amendment['state'] !== 'withdrawn') : /* Temporary check for 2018 export */.?>
+        <?php if($amendment['state'] !== 'withdrawn') : /* Temporary check for 2018 export */?>
         <p><strong>Wijzigingsvoorstel nr. <?php print $amendment['chapter'] . '.' . $amendment['chapterized_id']; ?>, hoofdstuk <?php print $amendment['chapter']; ?>, pagina <?php print $amendment['page']; ?>, regel <?php print $amendment['line']; ?></strong></p>
         <?php if (!empty($amendment['owners_branch'])) : ?>
           <?php $list = array(); ?>
