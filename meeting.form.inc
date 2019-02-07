@@ -43,7 +43,7 @@ function ammo_meeting_form($form, &$form_state) {
   );
 
   $form['withdrawal_closing_date'] = array(
-    '#title' => 'Uiterste intrekdatum',
+    '#title' => 'Uiterste intrek/ondersteundatum',
     '#type' => 'date_popup',
     '#date_format' => 'd-m-Y H:i',
   );
