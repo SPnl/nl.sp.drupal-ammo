@@ -31,6 +31,11 @@
                   <li class="amendment">
                     <a href="#amendment<?php print $amendment['id']; ?>"><?php print (!empty($amendment['chapterized_id'])) ? $amendment['chapter'] . '.' . $amendment['chapterized_id'] : $amendment['chapter'] . '.' . $amendment_id; ?></a>
                   </li>
+                  <?php if ($amendment['chapter'] == 9 && $amendment['chapterized_id'] == 1) : ?>
+                    <li class="amendment">
+                      <a href="#amendment9898">9.8</a>
+                    </li>
+                  <?php endif; ?>
                 <?php endforeach; ?>
               </ul>
             </div>
@@ -67,6 +72,29 @@
                           <li class="ammo-element <?php print $amendment['state']; ?>">
                             <?php print theme('amendment', array('entity_id' => $amendment['id'], 'destination' => $destination)); ?>
                           </li>
+                          <?php if ($amendment['chapter'] == 9 && $amendment['chapterized_id'] == 1) : ?>
+                                </li>
+                              </ul>
+                            </li>
+                            <li>
+                              <h3 id="page39" class="page-nr">Pagina 39</h2>
+                                <ul>
+                                  <li class="ammo-element submitted">
+                                    <h3 id="amendment9898">Wijzigingsvoorstel nr. 9.8 (pagina 39, regel 45)</h3>
+                                    <p>Ingediend door de programmacommissie.</p>
+                                    <h4 class="inline-title">Wijzigingsvoorstel tekst:</h4>
+                                    <p><span>Toevoegen:<br>
+                                      <br>
+                                      Toevoegen als punt 1 onder dit hoofdstuk: Er vindt voorlopig geen verdere uitbreiding van de Europese Unie plaats. Ook de Balkanlanden zijn nog lang niet klaar voor het lidmaatschap. Bij eventuele toekomstige uitbreiding zullen de toetredingscriteria strikt toegepast worden. Hierbij geldt: bij twijfel niet doen. Kandidaat-lidstaten die nog geen stabiele en goed functionerende democratische rechtsstaat zijn, zijn niet welkom. Met zulke landen zal ook geen verregaande vorm van associatieakkoorden gesloten worden zoals eerder wel het geval was met Oekraïne. Dit is noch goed voor het land zelf, noch voor de Europese Unie.
+                                    </span>
+                                  </p>
+                                  <h4 class="inline-title">Toelichting:</h4>
+                                  <p class="text-limit"><span>Per abuis is dit standpunt weggevallen. De programmacommissie stelt voor het alsnog toe te voegen, als eerste standpunt bij dit hoofdstuk.
+                                  </span>
+                                </p>
+                                <p><strong>Status:</strong> ingediend</p>
+                                <p><strong>Advies:</strong> overnemen</p>
+                          <?php endif; ?>
                         <?php endforeach; ?>
                       </ul>
                     </li>
