@@ -52,7 +52,8 @@ ul.ammo-list li a:hover {
   background-color: #000;
 }
 
-li.withdrawn {
+li.withdrawn,
+li.invalid {
   background-color: #eee;
   color: #888;
 }

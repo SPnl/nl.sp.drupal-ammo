@@ -25,6 +25,7 @@ function ammo_states() {
     'accepted_intention' => 'Strekking overgenomen',
     'rejected' => 'Afgewezen',
     'withdrawn' => 'Ingetrokken',
+    'invalid' => 'Ongeldig',
     'blocked' => 'Verwijderd',
   );
 }
