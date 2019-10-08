@@ -299,7 +299,7 @@ function ammo_get_related_contacts($target_id, $target_type, $relation_type = NU
  * @contact_type: either member or branch.
  */
 function ammo_is_related($target_id, $target_type, $relation_type = NULL, $contact_type, $contact_id = NULL) {
-  if (empty($contact_id)) {
+  if ($contact_id === NULL) {
     global $user;
     $user_wrapper = entity_metadata_wrapper('user', $user);
     $contact_id = $user_wrapper->field_contact_id->value();
@@ -578,6 +578,7 @@ function ammo_afdelingen_access() {
   // Afdelingen filteren op gebruikers id.
   if(ammo_admin_access()) {
     $afdelingen = ammo_get_afdelingen();
+    $afdelingen[0] = 'de Congrescommissie';
   }
   else {
     $afdelingen = ammo_get_afdelingen($contact_id);
@@ -605,7 +606,6 @@ function ammo_checked_form(&$form, &$form_state, $type) {
 function ammo_select_owner_form($type, &$form, &$form_state) {
   // Get meeting.
   $meeting = entity_load_single('meeting', $form_state['storage']['meeting']);
-  $description = 'Verwijder het vinkje om namens een individueel lid in te dienen.';
   // Backed by local branch?
   if (
     ammo_is_related($form_state['storage'][$type], $type, 'owner', 'branch', $form_state['storage']['branch_id']) ||
@@ -616,9 +616,11 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
   else {
     $default = FALSE;
   }
+  $title = 'Ingediend door ' . check_plain($form_state['storage']['branch_display_name']);
+  $description = 'Verwijder het vinkje om namens een individueel lid in te dienen.';
   $form['backed'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Ingediend door afdeling ' . check_plain($form_state['storage']['branch_display_name']),
+    '#title' => $title,
     '#description' => $description,
     '#default_value' => $default,
     '#name' => 'backed',
@@ -771,8 +773,11 @@ function ammo_support_access($meeting_id) {
 }
 
 function ammo_edit_access($meeting_id, $branch_id = NULL) {
+  if (ammo_admin_access()) {
+    return TRUE;
+  }
   $result = ammo_access($meeting_id, 'submit', $branch_id);
-  if ($result || ammo_admin_access()) {
+  if ($result) {
     return TRUE;
   }
   return FALSE;
@@ -1057,6 +1062,9 @@ function ammo_delete_mail($entity_type, $entity_id, $meeting_id, $mail_text) {
 }
 
 function ammo_get_contact_email($contact_id) {
+  if ($contact_id == 0) {
+    return 'congrescommissie@sp.nl';
+  }
   civicrm_initialize();
   $params = array(
     'version' => 3,

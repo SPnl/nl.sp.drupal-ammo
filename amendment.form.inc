@@ -56,7 +56,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
   else {
     $meetings = ammo_get_meetings();
-    if (empty($meetings)) { 
+    if (empty($meetings)) {
       drupal_set_message('De termijn voor het indienen van wijzigingsvoorstellen is verstreken.', 'warning');
       return;
     }
@@ -135,6 +135,9 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   if ($form_state['step'] == 4) {
     $form['title']['#markup'] = '<h2>Wijzigingsvoorstel indienen</h2>';
     $options = ammo_afdelingen_access();
+    if (ammo_admin_access()) {
+      $options = array('commission' => 'de Congrescommissie') + $options;
+    }
     if (empty($options)) {
       $options = array();
     }
@@ -159,13 +162,13 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
         'Document: ' . check_plain($form_state['storage']['document_display_name'])  . '</p>';
     }
   }
-  
+
   if ($form_state['step'] == 5) {
     $form['title']['#markup'] = '<h2>Wijzigingsvoorstel bewerken</h2>';
     ammo_select_owner_form('amendment', $form, $form_state);
     $form['backed']['#prefix'] =
       '<p>Bijeenkomst: ' . check_plain($form_state['storage']['meeting_display_name']) . '<br/>' .
-      'Document: ' . check_plain($form_state['storage']['document_display_name'])  . '</p>'; 
+      'Document: ' . check_plain($form_state['storage']['document_display_name'])  . '</p>';
   }
 
   if ($form_state['step'] == 6) {
@@ -399,7 +402,9 @@ function ammo_amendment_form_submit($form, &$form_state)
         // Check if already set owner.
         if (!ammo_is_related($storage['amendment'], 'amendment', 'owner', 'branch', $storage['branch_id'])) {
           // Set owner.
-          $entity = ammo_save_relation('owner', 'amendment', $storage['amendment'], $storage['branch_id'], 'branch', $storage['branch_display_name'], $storage['branch_id'], $storage['branch_display_name']);
+          $type = 'branch';
+          $display_name = $storage['branch_display_name'];
+          $entity = ammo_save_relation('owner', 'amendment', $storage['amendment'], $storage['branch_id'], $type, $display_name, $storage['branch_id'], $storage['branch_display_name']);
         }
       }
       $form_state['storage']['new'] = FALSE;
@@ -460,7 +465,7 @@ function ammo_amendment_form_submit($form, &$form_state)
       if ($owner) {
         drupal_set_message('Contact is toegevoegd.');
         // Verwijder afdelingseigenaar.
-        $contact_relation_id = ammo_is_related($storage['amendment'], 'amendment', 'owner', 'branch', $storage['branch_id']); 
+        $contact_relation_id = ammo_is_related($storage['amendment'], 'amendment', 'owner', 'branch', $storage['branch_id']);
         if ($contact_relation_id) {
           $result = entity_delete('contact_relation', $contact_relation_id);
           if (FALSE === $result) {
