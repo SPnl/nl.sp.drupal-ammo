@@ -435,7 +435,7 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
     if ($form_state['step'] == $form_state['storage']['changes_step']) {
       switch ($entity_type) {
       case 'amendment':
-        if (empty($original_entity->chapterized_id)) {
+        if (empty($original_entity->chapterized_id) || $storage['chapter'] != $original_entity->chapter) {
           // Set chapterized id.
           $query = 'SELECT MAX(chapterized_id) FROM {ammo_amendments} WHERE chapter = :chapter AND document_id = :document_id';
           $result = db_query($query, array(':chapter' => $storage['chapter'], ':document_id' => $storage['document']));
