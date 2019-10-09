@@ -15,12 +15,12 @@
   <p>Ingediend door <?php print $members_list; ?>.</p>
   <?php $number = count($backers) + count($owners_member); ?>
   <?php if (!empty($owners_branch)) : ?>
-    <p>Mede ingediend door afdeling <?php print $owners_list; ?>, dus voldoende steun.</p>
+    <p>Mede ingediend door <?php print $owners_list; ?>, dus voldoende steun.</p>
   <?php endif; ?>
 	<p>Ondersteund door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?><?php if (empty($owners_branch)) : print ' ('; print ($number >= 50) ? 'voldoende' : 'onvoldoende'; print ' steun)'; endif ?>.</p>
 <?php else: ?>
   <?php if (!empty($owners_branch)) : ?>
-    <p>Ingediend door afdeling <?php print $owners_list; ?>.</p>
+    <p>Ingediend door <?php print $owners_list; ?>.</p>
   <?php endif; ?>
 <?php endif; ?>
   <h4 class="inline-title"><?php print $consideration_opening; ?></h4>

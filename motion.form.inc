@@ -120,6 +120,9 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
   if ($form_state['step'] == 3) {
     $form['title']['#markup'] = '<h2>Motie indienen</h2>';
     $options = ammo_afdelingen_access();
+    if (ammo_admin_access()) {
+      $options = array('commission' => 'de Congrescommissie') + $options;
+    }
     if (empty($options)) {
       $options = array();
     }

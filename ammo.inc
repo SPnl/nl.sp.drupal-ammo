@@ -697,7 +697,7 @@ function ammo_select_afdeling_form(&$form, &$form_state, $type, $options) {
   $text1 = ($type == 'amendment') ? 'het wijzigingsvoorstel' : 'de motie';
   $form['branch_id'] = array(
     '#type' => 'select',
-    '#title' => 'Afdeling',
+    '#title' => 'Namens',
     '#description' => 'Kies namens welke afdeling u ' . $text1 . ' invoert.',
     '#options' => $options,
     '#default_value' => ammo_default($form_state, 'branch_id'),

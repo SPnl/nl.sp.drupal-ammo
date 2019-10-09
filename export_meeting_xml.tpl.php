@@ -10,7 +10,7 @@
 <?php foreach ($amendment['owners_branch'] as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
 <?php $last = array_pop($list); ?>
 <?php if (count($list) === 0) : $owners_list = $last; else : $owners_list = implode(', ', $list) . ' en ' . $last; endif; ?>
-<amendment_proposer_text>Ingediend door afdeling <?php print $owners_list; ?>.</amendment_proposer_text>
+<amendment_proposer_text>Ingediend door <?php print $owners_list; ?>.</amendment_proposer_text>
 <amendment_content_title>Wijzigingsvoorstel tekst:</amendment_content_title>
 <amendment_content_text><?php print $amendment['amendment_text']; ?></amendment_content_text>
 <?php if (!empty($amendment['supplement'])) : ?>
