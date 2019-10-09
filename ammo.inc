@@ -697,7 +697,7 @@ function ammo_select_afdeling_form(&$form, &$form_state, $type, $options) {
   $text1 = ($type == 'amendment') ? 'het wijzigingsvoorstel' : 'de motie';
   $form['branch_id'] = array(
     '#type' => 'select',
-    '#title' => 'Namens',
+    '#title' => 'Indienen namens',
     '#description' => 'Kies namens welke afdeling u ' . $text1 . ' invoert.',
     '#options' => $options,
     '#default_value' => ammo_default($form_state, 'branch_id'),
@@ -799,7 +799,7 @@ function ammo_withdraw_access($meeting_id, $branch_id = NULL) {
 function ammo_access($meeting_id, $date_type, $branch_id = NULL) {
   // Check if meeting submit date has passed.
   if (!ammo_passed_date($meeting_id, $date_type)) {
-    if (!empty($branch_id)) {
+    if ($branch_id !== NULL) {
       // Check if branch is set.
       $afdelingen = ammo_afdelingen_access();
       // Check if owns afdeling.
