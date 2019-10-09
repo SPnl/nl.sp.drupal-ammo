@@ -393,13 +393,15 @@ function ammo_save_entity($type, $values, $entity_id = NULL) {
 
 function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
   global $base_url;
+  $states = ammo_states();
+  $advices = $entity_type == 'amendment' ? ammo_amendment_advice() : ammo_motion_advice();
   $values = $form_state['values'];
 
   if (!empty($entity_id)) {
     $original_entity = entity_load_single($entity_type, $entity_id);
   }
   $differences = array();
-  foreach($mapping as $database_field => $form_field) {
+  foreach ($mapping as $database_field => $form_field) {
     if (isset($values[$form_field])) {
       // Store values.
       $form_state['storage'][$form_field] = $values[$form_field];
@@ -409,13 +411,32 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
       if ($original_entity->$database_field != $form_state['storage'][$form_field]) {
         // Store all changed fields to save in database.
         $fields[$database_field] = $form_state['storage'][$form_field];
-        // Store only differences in current form step to mail to owners and backers.
-        if ($form_state['step'] == $form_state['storage']['changes_step']) {
-          if (!empty($values[$form_field])) {
-            $fieldname = ammo_filter_fields($form_field);
-            if ($fieldname !== FALSE) {
-              // Store diffline.
-              $differences[$fieldname] = ammo_diffline($original_entity->$database_field, $form_state['values'][$form_field]);
+        // Check for differences.
+        if (!empty($values[$form_field])) {
+          $diff_data = ammo_diff_fields($form_field);
+          if (!empty($diff_data)) {
+            $fieldname = $diff_data['name'];
+            // Store diffline.
+            switch ($diff_data['type']) {
+              case 'text':
+                $differences[$fieldname] = ammo_diffline($original_entity->$database_field, $form_state['values'][$form_field]);
+                break;
+
+              case 'value':
+                switch ($form_field) {
+                  case 'state':
+                    $differences[$fieldname] = $states[$original_entity->$database_field] . ' → ' . $states[$form_state['values'][$form_field]];
+                    break;
+
+                  case 'advice':
+                    $differences[$fieldname] = $advices[$original_entity->$database_field] . ' → ' . $advices[$form_state['values'][$form_field]];
+                    break;
+
+                  default:
+                    $differences[$fieldname] = $original_entity->$database_field . ' → ' . $form_state['values'][$form_field];
+                    break;
+                }
+                break;
             }
           }
         }
@@ -432,8 +453,7 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
 
   // Store motion or amendment id and create short url.
   if (!empty($original_entity)) {
-    if ($form_state['step'] == $form_state['storage']['changes_step']) {
-      switch ($entity_type) {
+    switch ($entity_type) {
       case 'amendment':
         if (empty($original_entity->chapterized_id) || $storage['chapter'] != $original_entity->chapter) {
           // Set chapterized id.
@@ -443,6 +463,7 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
           $fields['chapterized_id'] = $new_id;
         }
         break;
+
       case 'motion':
         if (empty($original_entity->motion_id)) {
           $query = 'SELECT MAX(motion_id) FROM {ammo_motions} WHERE meeting_id = :meeting';
@@ -451,28 +472,25 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
           $fields['motion_id'] = $new_id;
         }
         break;
-      }
-
-      // Create short url.
-      $long_url = $base_url . '/ammo/support/add/member/' . $entity_type . '/' . $entity_id;
-      $code = ammo_shurly($entity_type, $entity_id);
-      shurly_shorten($long_url, $code);
     }
+
+    // Create short url.
+    $long_url = $base_url . '/ammo/support/add/member/' . $entity_type . '/' . $entity_id;
+    $code = ammo_shurly($entity_type, $entity_id);
+    shurly_shorten($long_url, $code);
   }
 
   // Save entity.
   $entity = ammo_save_entity($entity_type, $fields, $entity_id);
   if (empty($entity)) {
-    drupal_set_message('Waarden zijn niet opgeslagen.' , 'error');
+    drupal_set_message('Waarden zijn niet opgeslagen.', 'error');
   }
   if (!empty($differences) || empty($original_entity)) {
     global $language;
     // Send mails if ammo values where changed.
     if (!empty($differences)) {
-      if ($form_state['step'] == $form_state['storage']['changes_step']) {
-        drupal_set_message('Er wordt een e-mail met de wijzigingen verzonden.');
-        ammo_changes_update_mail($entity_type, $entity_id, $differences, $form_state['storage']['meeting']);
-      }
+      drupal_set_message('Er wordt een e-mail met de wijzigingen verzonden.');
+      ammo_changes_update_mail($entity_type, $entity_id, $differences, $form_state['storage']['meeting']);
     }
   }
   return $entity;
@@ -981,7 +999,7 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
     'entity_type' => $entity_type,
     'entity_id' => $entity_id,
     'id' => $id,
-    'markup' => '<h3>' . $document->title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
+    'markup' => '<h3>' . $document->title . '</h3><hr />' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
     'chapter' => $entity->chapter,
     'chapterized_id' => $entity->chapterized_id,
     'motion_id' => $entity->motion_id,
@@ -1079,17 +1097,56 @@ function ammo_get_contact_email($contact_id) {
   }
 }
 
-function ammo_filter_fields($source) {
+function ammo_diff_fields($source) {
   $translation = array(
-    'consideration_opening' => 'Openingsregel overweging',
-    'consideration_text' => 'Inhoud overweging',
-    'follow_up_opening' => 'Openingsregel vervolg',
-    'follow_up_text' => 'Inhoud vervolg',
-    'supplement' => 'Toelichting',
-    'amendment_text' => 'Wijzigingsvoorstel tekst',
-    'chapter' => 'Hoofdstuk',
-    'page' => 'Pagina',
-    'line' => 'Regel',
+    'chapter' => array(
+      'name' => 'Hoofdstuk',
+      'type' => 'value',
+    ),
+    'page' => array(
+      'name' => 'Pagina',
+      'type' => 'value',
+    ),
+    'line' => array(
+      'name' => 'Regel',
+      'type' => 'value',
+    ),
+    'consideration_opening' => array(
+      'name' => 'Openingsregel overweging',
+      'type' => 'text',
+    ),
+    'consideration_text' => array(
+      'name' => 'Inhoud overweging',
+      'type' => 'text',
+    ),
+    'follow_up_opening' => array(
+      'name' => 'Openingsregel vervolg',
+      'type' => 'text',
+    ),
+    'follow_up_text' => array(
+      'name' => 'Inhoud vervolg',
+      'type' => 'text',
+    ),
+    'supplement' => array(
+      'name' => 'Toelichting',
+      'type' => 'text',
+    ),
+    'amendment_text' => array(
+      'name' => 'Wijzigingsvoorstel tekst',
+      'type' => 'text',
+    ),
+    'advice' => array(
+      'name' => 'Advies',
+      'type' => 'value',
+    ),
+    'advice_supplement' => array(
+      'name' => 'Toelichting op advies',
+      'type' => 'text',
+    ),
+    'state' => array(
+      'name' => 'Status',
+      'type' => 'value',
+    ),
   );
   return (isset($translation[$source])) ? $translation[$source] : FALSE;
 }

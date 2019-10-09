@@ -67,9 +67,6 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     $form_state['storage']['first_step'] = 1;
   }
 
-  // Set data input step for changes check.
-  $form_state['storage']['changes_step'] = 6;
-
   // Set laste page depending on permissions.
   if (empty($form_state['storage']['last_step'])) {
     if (ammo_admin_access()) {
