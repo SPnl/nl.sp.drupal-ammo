@@ -1087,6 +1087,9 @@ function ammo_filter_fields($source) {
     'follow_up_text' => 'Inhoud vervolg',
     'supplement' => 'Toelichting',
     'amendment_text' => 'Wijzigingsvoorstel tekst',
+    'chapter' => 'Hoofdstuk',
+    'page' => 'Pagina',
+    'line' => 'Regel',
   );
   return (isset($translation[$source])) ? $translation[$source] : FALSE;
 }
