@@ -150,6 +150,10 @@ function ammo_schema() {
         'description' => 'Supplementary information about the advice.',
         'type' => 'text',
       ),
+      'state_supplement' => array(
+        'description' => 'Supplementary information about the state change.',
+        'type' => 'text',
+      ),
     ),
     'primary key' => array(
       'id',
@@ -227,6 +231,10 @@ function ammo_schema() {
       ),
       'advice_follow_up_body' => array(
         'description' => 'Advice body text of the advice follow up.',
+        'type' => 'text',
+      ),
+      'state_supplement' => array(
+        'description' => 'Supplementary information about the state change.',
         'type' => 'text',
       ),
     ),
@@ -374,4 +382,19 @@ function ammo_update_7006() {
     'size' => 'tiny',
   );
   db_add_field('ammo_meetings', 'no_motions', $spec);
+}
+
+/**
+ * Add state change field to  {ammo_motions} and {ammo_amendments} tables.
+ */
+function ammo_update_7007() {
+  $schema = ammo_schema();
+  if (!db_field_exists('ammo_amendments', 'state_supplement')) {
+    $spec = $schema['ammo_amendments']['fields']['state_supplement'];
+    db_add_field('ammo_amendments', 'state_supplement', $spec);
+  }
+  if (!db_field_exists('ammo_motions', 'state_supplement')) {
+    $spec = $schema['ammo_motions']['fields']['state_supplement'];
+    db_add_field('ammo_motions', 'state_supplement', $spec);
+  }
 }

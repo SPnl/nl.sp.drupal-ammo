@@ -37,6 +37,9 @@
     <?php if (!$hide_state || $state === 'withdrawn' || $admin_access) : ?>
       <?php $options = ammo_states(); ?>
       <strong>Status:</strong> <?php print strtolower($options[$state]); ?>
+      <?php if (!empty($state_supplement)) : ?>
+        <br/><?php print $state_supplement; ?>
+      <?php endif; ?>
     <?php endif; ?>
   <?php endif; ?>
   <?php if (!empty($advice) && (!$hide_advice || $admin_access)) : ?>

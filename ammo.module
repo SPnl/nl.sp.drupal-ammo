@@ -277,6 +277,7 @@ function template_preprocess_amendment(&$variables) {
       'advice' => $entity->advice,
       'advice_supplement' => $entity->advice_supplement,
       'state' => $entity->state,
+      'state_supplement' => $entity->state_supplement,
       'document_title' => $document->title,
       'document_description' => $document->description,
       'meeting_id' => $meeting->id,
@@ -359,6 +360,7 @@ function template_preprocess_motion(&$variables) {
       'advice_follow_up_body' => $entity->advice_follow_up_body,
       'advice_supplement' => $entity->advice_supplement,
       'state' => $entity->state,
+      'state_supplement' => $entity->state_supplement,
       'meeting_title' => $meeting->title,
       'meeting_description' => $meeting->description,
       'meeting_date' => $meeting_date_formatted,
@@ -491,6 +493,11 @@ function template_preprocess_overview_motions(&$variables) {
     // Reorder branch index alphabetically.
     if (!empty($data['meeting']['branch_index'])) {
       asort($data['meeting']['branch_index']);
+      if (isset($data['meeting']['branch_index'][0])) {
+        $commission = $data['meeting']['branch_index'][0];
+        unset($data['meeting']['branch_index'][0]);
+        $data['meeting']['branch_index'] = array(0 => $commission) + $data['meeting']['branch_index'];
+      }
     }
     $variables = $variables + $data;
   }

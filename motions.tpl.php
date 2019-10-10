@@ -15,7 +15,7 @@
     <?php foreach ($meeting['branch_index'] as $branch_id => $branch_name) : ?>
 		  <?php $branch = $meeting['branches'][$branch_id]; ?>
       <li>
-        <a href="#branch<?php print $branch['info']['contact_id']; ?>"><strong><?php print $branch['info']['branch_display_name']; ?></strong></a>
+        <a href="#branch<?php print $branch['info']['contact_id']; ?>"><strong><?php print ucfirst($branch['info']['branch_display_name']); ?></strong></a>
         <ul class="motions">
           <?php foreach ($branch['motions'] as $motion) : ?>
             <li>
@@ -31,7 +31,7 @@
     <?php foreach ($meeting['branch_index'] as $branch_id => $branch_name) : ?>
 		  <?php $branch = $meeting['branches'][$branch_id]; ?>
       <li>
-        <h2 id="branch<?php print $branch['info']['contact_id']; ?>"><?php print $branch['info']['branch_display_name']; ?></h2>
+        <h2 id="branch<?php print $branch['info']['contact_id']; ?>"><?php print ucfirst($branch['info']['branch_display_name']); ?></h2>
         <ul>
           <?php foreach ($branch['motions'] as $motion) : ?>
             <li class="ammo-element <?php print $motion['state']; ?>">

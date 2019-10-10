@@ -366,11 +366,9 @@ function ammo_default($form_state, $field) {
   {
     $default_value = $form_state['values'][$field];
   }
-  elseif(isset($form_state['storage'][$field]))
+  elseif (isset($form_state['storage'][$field]))
   {
     $default_value = $form_state['storage'][$field];
-  }
-  else {
   }
   return $default_value;
 }
@@ -530,6 +528,7 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
           'advice' => 'advice',
           'advice_supplement' => 'advice_supplement',
           'state' => 'state',
+          'state_supplement' => 'state_supplement',
           'chapterized_id' => 'chapterized_id',
         ),
         'motion' => array(
@@ -538,6 +537,7 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
           'advice' => 'advice',
           'advice_supplement' => 'advice_supplement',
           'state' => 'state',
+          'state_supplement' => 'state_supplement',
           'motion_id' => 'motion_id',
         ),
       );
@@ -596,7 +596,7 @@ function ammo_afdelingen_access() {
   // Afdelingen filteren op gebruikers id.
   if(ammo_admin_access()) {
     $afdelingen = ammo_get_afdelingen();
-    $afdelingen[0] = 'de Congrescommissie';
+    $afdelingen[0] = 'de congrescommissie';
   }
   else {
     $afdelingen = ammo_get_afdelingen($contact_id);
@@ -990,7 +990,7 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   if (ammo_admin_access()) {
-    $first_owner = 'Congrescommissie';
+    $first_owner = 'de congrescommissie';
   }
   else {
     $first_owner_data = ammo_get_first_owner($entity_type, $entity_id);
@@ -1154,6 +1154,10 @@ function ammo_diff_fields($source) {
     'state' => array(
       'name' => 'Status',
       'type' => 'value',
+    ),
+    'state_supplement' => array(
+      'name' => 'Toelichting op statuswijziging',
+      'type' => 'text',
     ),
   );
   return (isset($translation[$source])) ? $translation[$source] : FALSE;

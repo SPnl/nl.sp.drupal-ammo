@@ -121,7 +121,7 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
     $form['title']['#markup'] = '<h2>Motie indienen</h2>';
     $options = ammo_afdelingen_access();
     if (ammo_admin_access()) {
-      $options = array('commission' => 'de Congrescommissie') + $options;
+      $options = array('commission' => 'de congrescommissie') + $options;
     }
     if (empty($options)) {
       $options = array();
@@ -276,6 +276,11 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
       '#options' => ammo_states(),
       '#empty_option' => 'kies:',
       '#default_value' => ammo_default($form_state, 'state'),
+    );
+    $form['state_supplement'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Toelichting statuswijziging',
+      '#default_value' => ammo_default($form_state, 'state_supplement'),
     );
   }
 
@@ -471,6 +476,7 @@ function ammo_motion_form_submit($form, &$form_state)
         'advice_follow_up_opening' => 'advice_follow_up_opening',
         'advice_follow_up_body' => 'advice_follow_up_text',
         'state' => 'state',
+        'state_supplement' => 'state_supplement',
       );
       ammo_store('motion', $storage['motion'], $mapping, $form, $form_state);
       drupal_set_message('Het advies is opgeslagen.');
