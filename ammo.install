@@ -62,6 +62,11 @@ function ammo_schema() {
         'type' => 'int',
         'size' => 'tiny',
       ),
+      'admin_owner' => array(
+        'description' => 'Owner name of amendments, motions and changes made by admin user.',
+        'type' => 'varchar',
+        'length' => '255',
+      ),
     ),
     'primary key' => array(
       'id',
@@ -396,5 +401,16 @@ function ammo_update_7007() {
   if (!db_field_exists('ammo_motions', 'state_supplement')) {
     $spec = $schema['ammo_motions']['fields']['state_supplement'];
     db_add_field('ammo_motions', 'state_supplement', $spec);
+  }
+}
+
+/**
+ * Add state admin owner field to  {ammo_meetings} table.
+ */
+function ammo_update_7008() {
+  $schema = ammo_schema();
+  if (!db_field_exists('ammo_meetings', 'admin_owner')) {
+    $spec = $schema['ammo_meetings']['fields']['admin_owner'];
+    db_add_field('ammo_meetings', 'admin_owner', $spec);
   }
 }

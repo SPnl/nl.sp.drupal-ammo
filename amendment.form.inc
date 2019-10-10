@@ -131,10 +131,8 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
 
   if ($form_state['step'] == 4) {
     $form['title']['#markup'] = '<h2>Wijzigingsvoorstel indienen</h2>';
-    $options = ammo_afdelingen_access();
-    if (ammo_admin_access()) {
-      $options = array('commission' => 'de congrescommissie') + $options;
-    }
+    $meeting = entity_load_single('meeting', $form_state['storage']['meeting']);
+    $options = ammo_afdelingen_access($meeting->admin_owner);
     if (empty($options)) {
       $options = array();
     }

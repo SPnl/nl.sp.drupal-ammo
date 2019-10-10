@@ -494,9 +494,9 @@ function template_preprocess_overview_motions(&$variables) {
     if (!empty($data['meeting']['branch_index'])) {
       asort($data['meeting']['branch_index']);
       if (isset($data['meeting']['branch_index'][0])) {
-        $commission = $data['meeting']['branch_index'][0];
+        $admin_owner = $data['meeting']['branch_index'][0];
         unset($data['meeting']['branch_index'][0]);
-        $data['meeting']['branch_index'] = array(0 => $commission) + $data['meeting']['branch_index'];
+        $data['meeting']['branch_index'] = array(0 => $admin_owner) + $data['meeting']['branch_index'];
       }
     }
     $variables = $variables + $data;

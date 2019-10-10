@@ -73,6 +73,16 @@ function ammo_meeting_form($form, &$form_state) {
     '#title' => 'Geen moties.',
   );
 
+  $form['admin_owner'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Indienen amendementen, moties en wijzigingen door beheerders namens',
+    '#default_value' => 'de congrescommissie',
+    '#required' => TRUE,
+  );
+  if (!empty($form_state['values']['admin_owner'])) {
+    $form['admin_owner']['#disabled'] = TRUE;
+  }
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => 'submit',
@@ -147,6 +157,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
   $hide_meeting = $values['hide_meeting'];
   $no_motions = $values['no_motions'];
   $email = $values['email'];
+  $admin_owner = $values['admin_owner'];
 
   // Check if delete meeting button was clicked.
   $pattern = '/^del_(\d+)$/';
@@ -187,6 +198,8 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     $form['hide_advice']['#checked'] = $meeting->hide_advice;
     $form['hide_meeting']['#checked'] = $meeting->hide_meeting;
     $form['no_motions']['#checked'] = $meeting->no_motions;
+    $form['admin_owner']['#value'] = $meeting->admin_owner;
+    $form['admin_owner']['#disabled'] = TRUE;
     return $form;
   }
 
@@ -241,6 +254,7 @@ function ammo_meeting_form_ajax($form, &$form_state) {
         'hide_advice' => $hide_advice,
         'hide_meeting' => $hide_meeting,
         'no_motions' => $no_motions,
+        'admin_owner' => $admin_owner,
       ), $meeting_id);
     if ($saved) {
       drupal_set_message('Bijeenkomst is opgeslagen.');

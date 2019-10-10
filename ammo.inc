@@ -497,12 +497,14 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
 function ammo_populate_form($type, $entity_id, &$form_state) {
   $values = $form_state['values'];
   $storage = &$form_state['storage'];
+  $meeting_id = ammo_get_meeting_id($type, $entity_id);
+  $meeting = entity_load_single('meeting', $meeting_id);
 
   // check if exists.
   $entity = entity_load_single($type, $entity_id);
   if ($entity) {
     // Check access.
-    $afdelingen = ammo_afdelingen_access();
+    $afdelingen = ammo_afdelingen_access($meeting->admin_owner);
     // Get first owner.
     $first_owner = ammo_get_first_owner($type, $entity->id);
     if (array_key_exists($first_owner['branch_id'], $afdelingen)) {
@@ -510,8 +512,6 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
       $storage['branch_display_name'] = $first_owner['branch_display_name'];
       $storage[$type] = $path_id;
 
-      $meeting_id = ammo_get_meeting_id($type, $entity_id);
-      $meeting = entity_load_single('meeting', $meeting_id);
       $storage['meeting'] = $meeting_id;
       $storage['meeting_display_name'] = $meeting->title;
 
@@ -588,15 +588,15 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
   return FALSE;
 }
 
-function ammo_afdelingen_access() {
+function ammo_afdelingen_access($admin_owner = NULL) {
   global $user;
   $user_wrapper = entity_metadata_wrapper('user', $user);
   $contact_id = $user_wrapper->field_contact_id->value();
 
   // Afdelingen filteren op gebruikers id.
-  if(ammo_admin_access()) {
+  if (ammo_admin_access() && !empty($admin_owner)) {
     $afdelingen = ammo_get_afdelingen();
-    $afdelingen[0] = 'de congrescommissie';
+    $afdelingen = array(0 => $admin_owner) + $afdelingen;
   }
   else {
     $afdelingen = ammo_get_afdelingen($contact_id);
@@ -819,7 +819,8 @@ function ammo_access($meeting_id, $date_type, $branch_id = NULL) {
   if (!ammo_passed_date($meeting_id, $date_type)) {
     if ($branch_id !== NULL) {
       // Check if branch is set.
-      $afdelingen = ammo_afdelingen_access();
+      $meeting = entity_load_single('meeting', $meeting_id);
+      $afdelingen = ammo_afdelingen_access($meeting->admin_owner);
       // Check if owns afdeling.
       if (is_array($afdelingen)) {
         if (array_key_exists($branch_id, $afdelingen)) {
@@ -860,7 +861,12 @@ function ammo_save_relation($relation_type, $target_type, $target_id, $contact_i
   $contact_display_name = ammo_cleanup_branch_name($contact_display_name);
   $branch_display_name = ammo_cleanup_branch_name($branch_display_name);
   // Get contact email.
-  $contact_email = ammo_get_contact_email($contact_id);
+  if ($contact_id == 0) {
+    $contact_email = $meeting->email;
+  }
+  else {
+    $contact_email = ammo_get_contact_email($contact_id);
+  }
   $mapping = array(
     'target_type' => $target_type,
     'target_id' => $target_id,
@@ -987,10 +993,11 @@ function ammo_diffline($line1, $line2)
 function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeting_id) {
   $entity = entity_load_single($entity_type, $entity_id);
   $document = entity_load_single('document', $entity->document_id);
+  $meeting = entity_load_single('meeting', $meeting_id);
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
-  if (ammo_admin_access()) {
-    $first_owner = 'de congrescommissie';
+  if (ammo_admin_access() && !empty($meeting->admin_owner)) {
+    $first_owner = $meeting->admin_owner;
   }
   else {
     $first_owner_data = ammo_get_first_owner($entity_type, $entity_id);
