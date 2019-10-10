@@ -989,6 +989,13 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
   $document = entity_load_single('document', $entity->document_id);
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
+  if (ammo_admin_access()) {
+    $first_owner = 'Congrescommissie';
+  }
+  else {
+    $first_owner_data = ammo_get_first_owner($entity_type, $entity_id);
+    $first_owner = $first_owner_data['contact_display_name'];
+  }
   // Get recipients.
   $relations = ammo_get_related_contacts($entity_id, $entity_type);
   $params = array(
@@ -998,6 +1005,7 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
     'meeting_id' => $meeting_id,
     'entity_type' => $entity_type,
     'entity_id' => $entity_id,
+    'first_owner' => $first_owner,
     'id' => $id,
     'markup' => '<h3>' . $document->title . '</h3><hr />' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
     'chapter' => $entity->chapter,

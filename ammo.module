@@ -816,6 +816,7 @@ function ammo_mail($key, &$message, $params) {
     $message['subject'] = $type . ' nr. ' . $params['id'] . ' ' . $params['document_title'];
     $message['body'][] = $params['markup'];
     $message['body'][] = '<hr /><h3>Wijzigingen</h3>';
+    $message['body'][] = '<p>Gewijzigd door ' . $params['first_owner'] . '.</p>';
     foreach ($params['differences'] as $key => $difference) {
       $message['body'][] = '<p>' . $key . ': ' . $difference . '</p>';
     }
