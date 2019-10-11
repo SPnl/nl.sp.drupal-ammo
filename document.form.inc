@@ -1,9 +1,12 @@
 <?php
 
 function ammo_document_form($form, &$form_state) {
+  if (empty($form_state['storage'])) {
+    $form_state['storage'] = array();
+  }
+  $storage = $form_state['storage'];
   $form = array();
 
-  $form['#theme'] = 'document_form';
   $form['#prefix'] = '<div id="ammo-document-ajax">';
   $form['#suffix'] = '</div>';
 
@@ -14,27 +17,39 @@ function ammo_document_form($form, &$form_state) {
     '#suffix' => '</h2>',
   );
 
-  $meetings = entity_load('meeting');
-  foreach ($meetings as $meeting) {
-    $options[$meeting->id] = $meeting->title;
+  if (empty($storage['document_id'])) {
+    $form['form_title']['#markup'] = 'Voeg een document toe';
   }
-  if (!empty($options)) {
-    $form['meeting'] = array(
-      '#type' => 'select',
-      '#title' => 'Meeting',
-      '#options' => $options,
-      '#empty_option' => 'kies:',
-      '#ajax' => array(
-        'callback' => 'ammo_document_form_ajax',
-        'wrapper' => 'ammo-document-ajax',
-        'method' => 'replace',
-        'effect' => 'fade',
-        'event' => 'change',
-      ),
-    );
+  else {
+    $form['form_title']['#markup'] = 'Bewerk document';
   }
 
-  if (!empty($form_state['values']['meeting'])) {
+  if (empty($storage['meeting_id'])) {
+    $meetings = entity_load('meeting');
+    foreach ($meetings as $meeting) {
+      $options[$meeting->id] = $meeting->title;
+    }
+    if (!empty($options)) {
+      $form['meeting'] = array(
+        '#type' => 'select',
+        '#title' => 'Bijeenkomst',
+        '#options' => $options,
+        '#empty_option' => 'Kies',
+      );
+
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Verder',
+        '#name' => 'submit_meeting',
+        '#ajax' => array(
+          'callback' => 'ammo_document_form_ajax',
+          'wrapper' => 'ammo-document-ajax',
+        ),
+      );
+    }
+  }
+  else {
+
     $form['title'] = array(
       '#type' => 'textfield',
       '#title' => 'Title',
@@ -47,20 +62,17 @@ function ammo_document_form($form, &$form_state) {
 
     $form['submit'] = array(
       '#type' => 'submit',
-      '#value' => 'submit',
+      '#value' => 'Indienen',
       '#name' => 'submit',
       '#ajax' => array(
         'callback' => 'ammo_document_form_ajax',
         'wrapper' => 'ammo-document-ajax',
-        'method' => 'replace',
-        'effect' => 'fade',
-        'event' => 'click',
       ),
     );
 
-    if (empty($form_state['document_id'])) {
+    if (empty($storage['document_id'])) {
 
-      // Editing existing document.
+      // New document.
       $documents = entity_load('document');
       $count = 0;
       foreach ($documents as $key => $document) {
@@ -86,15 +98,12 @@ function ammo_document_form($form, &$form_state) {
             '#ajax' => array(
               'callback' => 'ammo_document_form_ajax',
               'wrapper' => 'ammo-document-ajax',
-              'method' => 'replace',
-              'effect' => 'fade',
-              'event' => 'click',
             ),
             '#prefix' => '<p>',
           );
           $form['documents'][$key]['edit'] = array(
             '#type' => 'submit',
-            '#value' => 'edit',
+            '#value' => 'Bewerk',
             '#name' => 'edit_' . $key,
             '#ajax' => array(
               'callback' => 'ammo_document_form_ajax',
@@ -108,22 +117,50 @@ function ammo_document_form($form, &$form_state) {
         }
       }
     }
+    else {
+      // Editing existing document, set defaults.
+      unset($form_state['input']);
+      $form['title']['#default_value'] = $storage['document']->title;
+      $form['description']['#default_value'] = $storage['document']->description;
+    }
   }
 
   return $form;
 }
 
 function ammo_document_form_validate($form, &$form_state) {
-}
-
-function ammo_document_form_ajax($form, &$form_state) {
+  $storage = &$form_state['storage'];
   $values = $form_state['values'];
   $trigger = $form_state['triggering_element']['#name'];
 
-  $meeting_id = $values['meeting'];
-  $document = $values['document'];
-  $title = $values['title'];
-  $description = $values['description'];
+  switch ($trigger) {
+    case 'submit':
+      if (empty($values['title'])) {
+        form_set_error('title', 'Vul een titel in.');
+      }
+      if (empty($storage['document_id'])) {
+        // New document.
+        $unique_title = ammo_entity_check_title('document', $title);
+        if ($unique_title === FALSE) {
+          form_set_error('title', 'Titel is reeds in gebruik.');
+        }
+      }
+
+    case 'submit_meeting':
+      if (!empty($values['meeting'])) {
+        $meeting = entity_load_single('meeting', $values['meeting']);
+        $storage['meeting'] = $meeting;
+        $storage['meeting_id'] = $meeting->id;
+      }
+      break;
+
+  }
+}
+
+function ammo_document_form_submit($form, &$form_state) {
+  $storage = &$form_state['storage'];
+  $values = $form_state['values'];
+  $trigger = $form_state['triggering_element']['#name'];
 
   // Check if delete document button was clicked.
   $pattern = '/^del_(\d+)$/';
@@ -134,7 +171,6 @@ function ammo_document_form_ajax($form, &$form_state) {
     }
     else {
       drupal_set_message('Document is verwijderd');
-      $form = _document_clear($form, $form_state);
     }
     return $form;
   }
@@ -144,59 +180,34 @@ function ammo_document_form_ajax($form, &$form_state) {
   if (preg_match($pattern, $trigger, $matches)) {
     $document = entity_load_single('document', $matches[1]);
     // Store document id.
-    $form_state['document_id'] = $document->id;
-    $form = drupal_rebuild_form('ammo_document_form', $form_state);
-    $form['form_title']['#markup'] = 'Bewerk document';
-    $form['title']['#value'] = $document->title;
-    $form['description']['#value'] = $document->description;
-    return $form;
+    $storage['document_id'] = $document->id;
+    $storage['document'] = $document;
   }
 
   switch ($trigger) {
-  // Save document.
-  case 'submit':
-    // Validate form values.
-    $error = FALSE;
-    if (empty($values['title'])) {
-      $form['title']['#prefix'] = ammo_error('Vul een titel in.');
-      $error = TRUE;
-    }
-    if (empty($form_state['document_id'])) {
-      // New document.
-      $unique_title = ammo_entity_check_title('document', $title);
-      if ($unique_title === FALSE) {
-        $form['title']['#prefix'] = ammo_error('Titel is reeds in gebruik.');
-        $error = TRUE;
+    case 'submit':
+      // Save document.
+      $document_id = isset($storage['document_id']) ? $storage['document_id'] : NULL;
+      $saved = ammo_save_entity('document', array(
+        'meeting_id' => $storage['meeting_id'],
+        'title' => $values['title'],
+        'description' => $values['description'],
+      ), $document_id);
+      if ($saved) {
+        $storage['document'] = $saved;
+        $storage['document_id'] = $saved->id;
+        drupal_set_message('Document is opgeslagen.');
+        unset($form_state['input']);
+        unset($form_state['storage']);
       }
-    }
-    if ($error) {
-      return $form;
-    }
-
-    // Save document.
-    $document_id = isset($form_state['document_id']) ? $form_state['document_id'] : NULL;
-    $saved = ammo_save_entity('document', array(
-        'meeting_id' => $meeting_id,
-        'title' => $title,
-        'description' => $description,
-      ), $document_id);    
-    if ($saved) {
-      drupal_set_message('Document is opgeslagen.');
-      $form = _document_clear($form, $form_state);
-    }
-    else {
-      drupal_set_message('Document is niet opgeslagen.' , 'error');
-    }
-    break;
+      else {
+        drupal_set_message('Document is niet opgeslagen.' , 'error');
+      }
+      break;
   }
-  return $form;
+  $form_state['rebuild'] = TRUE;
 }
 
-function _document_clear($form, &$form_state) {
-  unset($form_state['input']['title']);
-  unset($form_state['input']['description']);
-  unset($form_state['values']['title']);
-  unset($form_state['values']['description']);
-  unset($form_state['document_id']);
-  return drupal_rebuild_form('ammo_document_form', $form_state);
+function ammo_document_form_ajax($form, &$form_state) {
+  return $form;
 }

@@ -1,9 +1,12 @@
 <?php
 
 function ammo_meeting_form($form, &$form_state) {
+  if (empty($form_state['storage'])) {
+    $form_state['storage'] = array();
+  }
+  $storage = $form_state['storage'];
   $form = array();
 
-  $form['#theme'] = 'meeting_form';
   $form['#prefix'] = '<div id="ammo-meeting-ajax">';
   $form['#suffix'] = '</div>';
 
@@ -85,7 +88,7 @@ function ammo_meeting_form($form, &$form_state) {
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => 'submit',
+    '#value' => 'Indienen',
     '#name' => 'submit',
     '#ajax' => array(
       'callback' => 'ammo_meeting_form_ajax',
@@ -96,7 +99,7 @@ function ammo_meeting_form($form, &$form_state) {
     ),
   );
 
-  if (empty($form_state['meeting_id'])) {
+  if (empty($storage['meeting_id'])) {
     $form['form_title2'] = array(
       '#type' => 'item',
       '#markup' => 'Bestaande bijeenkomsten',
@@ -122,7 +125,7 @@ function ammo_meeting_form($form, &$form_state) {
       );
       $form['meetings'][$key]['edit'] = array(
         '#type' => 'submit',
-        '#value' => 'edit',
+        '#value' => 'Bewerk',
         '#name' => 'edit_' . $key,
         '#ajax' => array(
           'callback' => 'ammo_meeting_form_ajax',
@@ -136,28 +139,78 @@ function ammo_meeting_form($form, &$form_state) {
     }
   }
 
+  // Set defaults.
+  if (!empty($storage['meeting'])) {
+    unset($form_state['input']);
+    $meeting = $storage['meeting'];
+    $form['form_title']['#markup'] = 'Bewerk bijeenkomst';
+    $form['title']['#default_value'] = $meeting->title;
+    $form['description']['#default_value'] = $meeting->description;
+    $form['email']['#default_value'] = $meeting->email;
+    $date = new DateTime($meeting->date);
+    $form['date']['#default_value'] = $date->format('Y-m-d');;
+    $date = new DateTime($meeting->withdrawal_closing_date);
+    $form['withdrawal_closing_date']['#default_value'] = $date->format('Y-m-d H:i');
+    $date = new DateTime($meeting->submission_closing_date);
+    $form['submission_closing_date']['#default_value'] = $date->format('Y-m-d H:i');
+    $form['no_member_owners']['#default_value'] = $meeting->no_member_owners;
+    $form['hide_state']['#default_value'] = $meeting->hide_state;
+    $form['hide_advice']['#default_value'] = $meeting->hide_advice;
+    $form['hide_meeting']['#default_value'] = $meeting->hide_meeting;
+    $form['no_motions']['#default_value'] = $meeting->no_motions;
+    $form['admin_owner']['#default_value'] = $meeting->admin_owner;
+    $form['admin_owner']['#disabled'] = TRUE;
+  }
   return $form;
 }
 
 function ammo_meeting_form_validate($form, &$form_state) {
-}
-
-function ammo_meeting_form_ajax($form, &$form_state) {
   $values = $form_state['values'];
+  $storage = &$form_state['storage'];
   $trigger = $form_state['triggering_element']['#name'];
 
-  $title = $values['title'];
-  $description = $values['description'];
-  $date = $values['date'];
-  $withdrawal_closing_date = $values['withdrawal_closing_date'];
-  $submission_closing_date = $values['submission_closing_date'];
-  $no_member_owners = $values['no_member_owners'];
-  $hide_state = $values['hide_state'];
-  $hide_advice = $values['hide_advice'];
-  $hide_meeting = $values['hide_meeting'];
-  $no_motions = $values['no_motions'];
-  $email = $values['email'];
-  $admin_owner = $values['admin_owner'];
+  $form_state['storage']['validated'] = 'YES';
+
+  switch ($trigger) {
+    // Save meeting.
+    case 'submit':
+      // Validate form values.
+      $error = FALSE;
+      if (empty($values['title'])) {
+        $form['title']['#prefix'] = ammo_error('Vul een titel in.');
+        $error = TRUE;
+      }
+      if (empty($values['date'])) {
+        form_set_error('date', 'Kies een datum.');
+      }
+      if (empty($values['submission_closing_date'])) {
+        form_set_error('submission_closing_date', 'Kies een laatste inleverdatum.');
+        $error = TRUE;
+      }
+      if (empty($values['withdrawal_closing_date'])) {
+        form_set_error('withdrawal_closing_date', 'Kies een laatste intrekdatum.');
+        $error = TRUE;
+      }
+      if (empty($values['email']) || !valid_email_address($values['email'])) {
+        form_set_error('email', 'Vul een geldig e-mailadres in.');
+        $error = TRUE;
+      }
+      if (empty($form_state['meeting_id'])) {
+        // New meeting.
+        $unique_title = ammo_entity_check_title('meeting', $title);
+        if ($unique_title === FALSE) {
+          form_set_error('title', 'Titel is reeds in gebruik.');
+          $error = TRUE;
+        }
+      }
+      break;
+  }
+}
+
+function ammo_meeting_form_submit($form, &$form_state) {
+  $storage = &$form_state['storage'];
+  $values = $form_state['values'];
+  $trigger = $form_state['triggering_element']['#name'];
 
   // Check if delete meeting button was clicked.
   $pattern = '/^del_(\d+)$/';
@@ -169,103 +222,49 @@ function ammo_meeting_form_ajax($form, &$form_state) {
     else {
       drupal_set_message('Bijeenkomst is verwijderd');
       $form_state['input'] = array();
-      $form = drupal_rebuild_form('ammo_meeting_form', $form_state);
     }
-    return $form;
   }
 
   // Check if edit meeting button was clicked.
   $pattern = '/^edit_(\d+)$/';
   if (preg_match($pattern, $trigger, $matches)) {
     $meeting = entity_load_single('meeting', $matches[1]);
-    // Store meeting id.
-    $form_state['meeting_id'] = $meeting->id;
-    $form = drupal_rebuild_form('ammo_meeting_form', $form_state);
-    $form['form_title']['#markup'] = 'Bewerk bijeenkomst';
-    $form['title']['#value'] = $meeting->title;
-    $form['description']['#value'] = $meeting->description;
-    $form['email']['#value'] = $meeting->email;
-    $date = new DateTime($meeting->date);
-    $form['date']['date']['#value'] = $date->format('d-m-Y');;
-    $date = new DateTime($meeting->withdrawal_closing_date);
-    $form['withdrawal_closing_date']['date']['#value'] = $date->format('d-m-Y');
-    $form['withdrawal_closing_date']['time']['#value'] = $date->format('H:i');
-    $date = new DateTime($meeting->submission_closing_date);
-    $form['submission_closing_date']['date']['#value'] = $date->format('d-m-Y');
-    $form['submission_closing_date']['time']['#value'] = $date->format('H:i');
-    $form['no_member_owners']['#checked'] = $meeting->no_member_owners;
-    $form['hide_state']['#checked'] = $meeting->hide_state;
-    $form['hide_advice']['#checked'] = $meeting->hide_advice;
-    $form['hide_meeting']['#checked'] = $meeting->hide_meeting;
-    $form['no_motions']['#checked'] = $meeting->no_motions;
-    $form['admin_owner']['#value'] = $meeting->admin_owner;
-    $form['admin_owner']['#disabled'] = TRUE;
-    return $form;
+    $storage['meeting'] = $meeting;
+    $storage['meeting_id'] = $meeting->id;
   }
 
   switch ($trigger) {
-  // Save meeting.
-  case 'submit':
-    // Validate form values.
-    $error = FALSE;
-    if (empty($values['title'])) {
-      $form['title']['#prefix'] = ammo_error('Vul een titel in.');
-      $error = TRUE;
-    }
-    if (empty($values['date'])) {
-      $form['date']['#prefix'] = ammo_error('Kies een datum.');
-      $error = TRUE;
-    }
-    if (empty($values['submission_closing_date'])) {
-      $form['date']['#prefix'] = ammo_error('Kies een laatste inleverdatum.');
-      $error = TRUE;
-    }
-    if (empty($values['withdrawal_closing_date'])) {
-      $form['date']['#prefix'] = ammo_error('Kies een laatste intrekdatum.');
-      $error = TRUE;
-    }
-    if (empty($values['email']) || !valid_email_address($values['email'])) {
-      $form['email']['#prefix'] = ammo_error('Vul een geldig e-mailadres in.');
-      $error = TRUE;
-    }
-    if (empty($form_state['meeting_id'])) {
-      // New meeting.
-      $unique_title = ammo_entity_check_title('meeting', $title);
-      if ($unique_title === FALSE) {
-        $form['title']['#prefix'] = ammo_error('Titel is reeds in gebruik.');
-        $error = TRUE;
-      }
-    }
-    if ($error) {
-      return $form;
-    }
-
     // Save meeting.
-    $meeting_id = isset($form_state['meeting_id']) ? $form_state['meeting_id'] : NULL;
-    $saved = ammo_save_entity('meeting', array(
-        'title' => $title,
-        'description' => $description,
-        'date' => $date,
-        'submission_closing_date' => $submission_closing_date,
-        'withdrawal_closing_date' => $withdrawal_closing_date,
-        'email' => $email,
-        'no_member_owners' => $no_member_owners,
-        'hide_state' => $hide_state,
-        'hide_advice' => $hide_advice,
-        'hide_meeting' => $hide_meeting,
-        'no_motions' => $no_motions,
-        'admin_owner' => $admin_owner,
+    case 'submit':
+      // Save meeting.
+      $meeting_id = isset($storage['meeting_id']) ? $storage['meeting_id'] : NULL;
+      $saved = ammo_save_entity('meeting', array(
+        'title' => $values['title'],
+        'description' => $values['description'],
+        'date' => $values['date'],
+        'submission_closing_date' => $values['submission_closing_date'],
+        'withdrawal_closing_date' => $values['withdrawal_closing_date'],
+        'email' => $values['email'],
+        'no_member_owners' => $values['no_member_owners'],
+        'hide_state' => $values['hide_state'],
+        'hide_advice' => $values['hide_advice'],
+        'hide_meeting' => $values['hide_meeting'],
+        'no_motions' => $values['no_motions'],
+        'admin_owner' => $values['admin_owner'],
       ), $meeting_id);
-    if ($saved) {
-      drupal_set_message('Bijeenkomst is opgeslagen.');
-      $form_state['input'] = array();
-      unset($form_state['meeting_id']);
-      $form = drupal_rebuild_form('ammo_meeting_form', $form_state);
-    }
-    else {
-      drupal_set_message('Bijeenkomst is niet opgeslagen.', 'error');
-    }
-    break;
+      if ($saved) {
+        drupal_set_message('Bijeenkomst is opgeslagen.');
+        unset($form_state['input']);
+        unset($form_state['storage']);
+      }
+      else {
+        drupal_set_message('Bijeenkomst is niet opgeslagen.', 'error');
+      }
+      break;
   }
+  $form_state['rebuild'] = TRUE;
+}
+
+function ammo_meeting_form_ajax($form, &$form_state) {
   return $form;
 }

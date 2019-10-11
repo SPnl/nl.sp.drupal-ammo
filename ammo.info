@@ -6,7 +6,6 @@ version = 1.0.2
 
 dependencies[] = number
 dependencies[] = entity
-dependencies[] = entity_api
 dependencies[] = date
 dependencies[] = date_popup
 dependencies[] = shurly
