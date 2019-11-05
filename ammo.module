@@ -253,9 +253,9 @@ function template_preprocess_amendment(&$variables) {
     $owned_by_user = ammo_is_related($entity->id, 'amendment', 'owner', 'member');
     $backed_by_user = ammo_is_related($entity->id, 'amendment', 'backer', 'member');
     $branches = ammo_get_afdelingen($contact_id);
+    $supported_branches = FALSE;
+    $unsupported_branches = FALSE;
     if (!empty($branches)) {
-      $supported_branches = FALSE;
-      $unsupported_branches = FALSE;
       foreach ($branches as $contact_id => $contact_display_name) {
         if (array_key_exists($contact_id, $owners_branch)) {
           $supported_branches = TRUE;
