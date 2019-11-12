@@ -29,6 +29,5 @@
     <?php endif; ?>
     <!--<li>Individueel ingediende wijzigingsvoorstellen en moties moties steunen.</li>-->
   </ul>
-  <p><strong>Let op!</strong><br/>Wijzigingsvoorstellen<?php print $ofmoties; ?> van individuele leden kunnen uitsluitend worden ingediend via het landelijk secretariaat (secretariaat@sp.nl). Deze voorstellen dienen te worden ondersteund door ten minste 50 leden (handtekeningenlijst met naam en lidnummer bijvoegen).</p>
   <p><strong>Klik op een van de grijze tabjes bovenaan voor de gewenste functies.</strong></p>
 </div>
