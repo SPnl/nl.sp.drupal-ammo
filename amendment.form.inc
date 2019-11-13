@@ -341,6 +341,9 @@ function ammo_amendment_form_validate($form, &$form_state) {
     if (!preg_match('/^[0-9][0-9]*$/', $values['page'])) {
       form_set_error('page', 'Pagina nr. moet een getal zijn.');
     }
+    if (!in_array($values['page'], array(43, 44, 45))) {
+      form_set_error('page', 'Er kunnen alleen wijzigingsvoorstellen op pagina 43, 44 en 45 gedaan worden.');
+    }
     if (!preg_match('/^[0-9][0-9]*$/', $values['line'])) {
       form_set_error('line', 'Regelnummer moet een getal zijn.');
     }
