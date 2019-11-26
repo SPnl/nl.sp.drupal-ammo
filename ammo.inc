@@ -21,8 +21,8 @@ function ammo_states() {
     'concept' => 'Concept',
     'submitted' => 'Ingediend',
     'accepted' => 'Overgenomen',
-    //'accepted_amended' => 'Aangepast overgenomen',
     'accepted_intention' => 'Strekking overgenomen',
+    'accepted_partially' => 'Gedeeltelijk overgenomen',
     'rejected' => 'Afgewezen',
     'withdrawn' => 'Ingetrokken',
     'invalid' => 'Ongeldig',
@@ -43,6 +43,7 @@ function ammo_amendment_advice() {
     'accept' => 'Overnemen',
     //'accept_amended' => 'Gewijzigd overnemen',
     'accept_intention' => 'Strekking overnemen',
+    'accept_partially' => 'Gedeeltelijk overnemen',
     'reject' => 'Afwijzen',
   );
 }
@@ -52,6 +53,7 @@ function ammo_motion_advice() {
     'accept' => 'Overnemen',
     //'accept_amended' => 'Gewijzigd overnemen',
     'accept_intention' => 'Strekking overnemen',
+    'accept_partially' => 'Gedeeltelijk overnemen',
     'reject' => 'Afwijzen',
   );
 }
