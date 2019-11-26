@@ -1,10 +1,10 @@
 <?php $enmoties = ($show_motions) ? ' en moties ': ''; ?>
 <?php $ofmoties = ($show_motions) ? ' of moties ': ''; ?>
 <div class="ammo-content">
-  <h1>SP Wijzigingsvoorstellen<?php print $enmoties; ?></h1>
+  <h1>Wijzigingsvoorstellen<?php print $enmoties; ?></h1>
   <p><strong>U kunt in dit scherm:</strong></p>
   <ul>
-    <li>Een overzicht van <?php print l('wijzigingsvoorstellen', 'ammo/amendments'); ?><? print ($show_motions) ? ' of ' . l('moties', 'ammo/motions') : ''; ?> bekijken.</li>
+    <li>Een overzicht van <?php print l('wijzigingsvoorstellen bekijken', 'ammo/amendments'); ?><? print ($show_motions) ? ' of ' . l('moties', 'ammo/motions') : ''; ?> .</li>
     <?php if ($add_access): ?>
       <li>Nieuwe <?php print l('wijzigingsvoorstellen', 'ammo/amendment'); ?><?php print ($show_motions) ? ' en ' . l('moties', 'ammo/motion') : ''; ?> indienen.</li>
     <?php endif; ?>

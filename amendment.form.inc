@@ -170,19 +170,20 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     $form['title']['#markup'] = '<h2>Wijzigingsvoorstel bewerken</h2>';
     $form['chapter'] = array(
       '#type' => 'textfield',
-      '#title' => 'Hoofdstuk nr.',
+      '#title' => 'Hoofdstuk nummer',
       '#default_value' => 8,
+      '#description' => 'Het is voor dit document alleen mogelijk om wijzigingen in te dienen op hoofdstuk 8',
       '#disabled' => true,
     );
     $form['page'] = array(
       '#type' => 'textfield',
-      '#title' => 'Pagina nr.',
+      '#title' => 'Pagina nummer',
       '#default_value' => ammo_default($form_state, 'page'),
     );
     $form['line'] = array(
       '#type' => 'textfield',
-      '#title' => 'Regelnr.',
-      '#description' => 'Het regelnummer waar de bestaande tekst die geamendeerd wordt begint, of het regelnummer waar tekst moet worden toegevoegd.',
+      '#title' => 'Regel nummer (begin)',
+      '#description' => 'Het regelnummer waar de tekst die geamendeerd wordt begint, of het regelnummer vanaf waar tekst moet worden toegevoegd.',
       '#default_value' => ammo_default($form_state, 'line'),
     );
     $form['amendment_text'] = array(
