@@ -646,53 +646,54 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
     '#name' => 'backed',
     '#disabled' => $meeting->no_member_owners,
   );
-  $form['owners'] = array(
-    '#type' => 'fieldset',
-    '#states' => array(
-      'invisible' => array(
-        ':input[name="backed"]' => array('checked' => TRUE),
+  if (!$meeting->no_member_owners) {
+    $form['owners'] = array(
+      '#type' => 'fieldset',
+      '#states' => array(
+        'invisible' => array(
+          ':input[name="backed"]' => array('checked' => TRUE),
+        ),
       ),
-    ),
-  );
-  $owners = ammo_get_related_contacts($form_state['storage'][$type], $type, 'owner', 'member');
-  // Show owners.
-  $form['owners']['intro'] = array(
-    '#type' => 'item',
-    '#markup' => '<p><strong>Ingediend door:</strong></p>',
-  );
-  foreach ($owners as $owner_id => $data) {
-    $form['owners']['del_owner_' . $owner_id] = array(
+    );
+    $owners = ammo_get_related_contacts($form_state['storage'][$type], $type, 'owner', 'member');
+    // Show owners.
+    $form['owners']['intro'] = array(
+      '#type' => 'item',
+      '#markup' => '<p><strong>Ingediend door:</strong></p>',
+    );
+    foreach ($owners as $owner_id => $data) {
+      $form['owners']['del_owner_' . $owner_id] = array(
+        '#type' => 'submit',
+        '#value' => 'x',
+        '#name' => 'del-' . $data['id'],
+        '#prefix' => '<p>',
+        '#suffix' =>  $data['contact_display_name'] . ' - ' . $owner_id . '</p> ',
+        '#ajax' => array(
+          'callback' => 'ammo_'.$type.'_form_ajax_callback',
+          'wrapper' => 'ajax_form_multistep_form',
+        ),
+        '#attributes' => array('class' => array('ammo_owner_del_button')),
+      );
+    }
+    // create add participant button.
+    $scope = (ammo_admin_access()) ? 'all' : $form_state['storage']['branch_id'];
+    $form['owners']['owner'] = array(
+      '#type' => 'textfield',
+      '#title' => 'naam / lidnummer',
+      '#autocomplete_path' => 'ammo/autocomplete_members/' . $scope,
+    );
+    $form['owners']['add_owner'] = array(
       '#type' => 'submit',
-      '#value' => 'x',
-      '#name' => 'del-' . $data['id'],
-      '#prefix' => '<p>',
-      '#suffix' =>  $data['contact_display_name'] . ' - ' . $owner_id . '</p> ',
+      '#value' => 'Voeg toe',
+      '#name' => 'add_owner',
+      '#validate' => array('ammo_'.$type.'_form_validate'),
+      '#submit' => array('ammo_'.$type.'_form_submit'),
       '#ajax' => array(
-        'callback' => 'ammo_'.$type.'_form_ajax_callback',
         'wrapper' => 'ajax_form_multistep_form',
+        'callback' => 'ammo_'.$type.'_form_ajax_callback',
       ),
-      '#attributes' => array('class' => array('ammo_owner_del_button')),
     );
   }
-  // create add participant button.
-  $scope = (ammo_admin_access()) ? 'all' : $form_state['storage']['branch_id'];
-  $form['owners']['owner'] = array(
-    '#type' => 'textfield',
-    '#title' => 'naam / lidnummer',
-    '#autocomplete_path' => 'ammo/autocomplete_members/' . $scope,
-  );
-  $form['owners']['add_owner'] = array(
-    '#type' => 'submit',
-    '#value' => 'Voeg toe',
-    '#name' => 'add_owner',
-    '#validate' => array('ammo_'.$type.'_form_validate'),
-    '#submit' => array('ammo_'.$type.'_form_submit'),
-    '#ajax' => array
-    (
-      'wrapper' => 'ajax_form_multistep_form',
-      'callback' => 'ammo_'.$type.'_form_ajax_callback',
-    ),
-  );
 }
 
 /*
