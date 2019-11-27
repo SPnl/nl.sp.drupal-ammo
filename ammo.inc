@@ -637,7 +637,7 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
     $default = FALSE;
   }
   $title = 'Ingediend door ' . check_plain($form_state['storage']['branch_display_name']);
-  $description = 'Je dient in namens bovenstaande afdeling. Controleer of dit klopt.';
+  $description = $meeting->no_member_owners ? '' : 'Haal het vinkje weg om namens een of meerdere leden in te voeren.';
   $form['backed'] = array(
     '#type' => 'checkbox',
     '#title' => $title,
