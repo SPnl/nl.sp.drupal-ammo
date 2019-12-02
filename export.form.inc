@@ -29,7 +29,7 @@ function ammo_export_form_submit($form, &$form_state) {
   // open the "output" stream
   $f = fopen('php://output', 'w');
 
-  $content = theme('export_vote_list_xml', array('values' => $form_state['values']));
+  $content = theme('export_meeting_xml', array('values' => $form_state['values']));
 
   fputs($f, $content);
   fclose($f);
