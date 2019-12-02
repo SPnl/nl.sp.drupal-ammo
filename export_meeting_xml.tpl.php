@@ -26,7 +26,7 @@
 <?php foreach ($meeting['motions'] as $motion) : ?>
 <motion_id_text>Nr. <?php print $motion['motion_id']; ?></motion_id_text>
 <?php $list = array(); ?>
-<?php foreach ($owners_branch as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
+<?php foreach ($motion['owners_branch'] as $owner_branch) : $list[] = $owner_branch['contact_display_name']; endforeach; ?>
 <?php $last = array_pop($list); ?>
 <?php if (count($list) === 0) : $owners_list = $last; else : $owners_list = implode(', ', $list) . ' en ' . $last; endif; ?>
 <motion_proposer_text><?php print $owners_list; ?></motion_proposer_text>
