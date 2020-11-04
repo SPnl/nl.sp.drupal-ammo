@@ -824,8 +824,8 @@ function ammo_mail($key, &$message, $params) {
     $message['body'][] = $params['markup'];
     $message['body'][] = '<hr /><h3>Wijzigingen</h3>';
     $message['body'][] = '<p>Gewijzigd door ' . $params['first_owner'] . '.</p>';
-    foreach ($params['differences'] as $key => $difference) {
-      $message['body'][] = '<p>' . $key . ': ' . $difference . '</p>';
+    foreach ($params['differences'] as $db_key => $values) {
+      $message['body'][] = '<p>' . $values['fieldname'] . ': ' . $values['diff'] . '</p>';
     }
     $path = $base_url . '/ammo/' . $params['entity_type'] . 's/' . $params['meeting_id'] . '#' . $params['entity_type'] . $params['entity_id'];
     $message['body'][] = '<hr /><p><a href="' . $path . '">Bekijk online</a></p>';

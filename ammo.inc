@@ -421,21 +421,33 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
             // Store diffline.
             switch ($diff_data['type']) {
               case 'text':
-                $differences[$fieldname] = ammo_diffline($original_entity->$database_field, $form_state['values'][$form_field]);
+                $differences[$database_field] = array(
+                  'fieldname' => $fieldname,
+                  'diff' => ammo_diffline($original_entity->$database_field, $form_state['values'][$form_field]),
+                );
                 break;
 
               case 'value':
                 switch ($form_field) {
                   case 'state':
-                    $differences[$fieldname] = $states[$original_entity->$database_field] . ' → ' . $states[$form_state['values'][$form_field]];
+                    $differences[$database_field] = array(
+                      'fieldname' => $fieldname,
+                      'diff' => $states[$original_entity->$database_field] . ' → ' . $states[$form_state['values'][$form_field]],
+                    );
                     break;
 
                   case 'advice':
-                    $differences[$fieldname] = $advices[$original_entity->$database_field] . ' → ' . $advices[$form_state['values'][$form_field]];
+                    $differences[$database_field] = array(
+                      'fieldname' => $fieldname,
+                      'diff' => $advices[$original_entity->$database_field] . ' → ' . $advices[$form_state['values'][$form_field]],
+                    );
                     break;
 
                   default:
-                    $differences[$fieldname] = $original_entity->$database_field . ' → ' . $form_state['values'][$form_field];
+                    $differences[$database_field] = array(
+                      'fieldname' => $fieldname,
+                      'diff' => $original_entity->$database_field . ' → ' . $form_state['values'][$form_field],
+                    );
                     break;
                 }
                 break;
@@ -491,7 +503,6 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
     global $language;
     // Send mails if ammo values where changed.
     if (!empty($differences)) {
-      drupal_set_message('Er wordt een e-mail met de wijzigingen verzonden.');
       ammo_changes_update_mail($entity_type, $entity_id, $differences, $form_state['storage']['meeting']);
     }
   }
@@ -999,6 +1010,16 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
   $entity = entity_load_single($entity_type, $entity_id);
   $document = entity_load_single('document', $entity->document_id);
   $meeting = entity_load_single('meeting', $meeting_id);
+  // Check if advice and state changes are hidden.
+  $differences_hidden = $differences;
+  if ($meeting->hide_state) {
+    unset($differences_hidden['state']);
+    unset($differences_hidden['state_supplement']);
+  }
+  if ($meeting->hide_advice) {
+    unset($differences_hidden['advice']);
+    unset($differences_hidden['advice_supplement']);
+  }
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   if (ammo_admin_access() && !empty($meeting->admin_owner)) {
@@ -1025,11 +1046,14 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
     'motion_id' => $entity->motion_id,
     'document_title' => $document->title,
   );
-  //drupal_mail('ammo', 'change_message', 'webmaster@sp.nl', $language, $params, $sender_email, TRUE);
   drupal_mail('ammo', 'change_message', $sender_email, $language, $params, $sender_email, TRUE);
-  foreach ($relations as $relation) {
-    if (!empty($relation['contact_email'])) {
-      drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
+  if (!empty($differences_hidden)) {
+    drupal_set_message('Er is wordt een e-mail met de wijzigingen verzonden.');
+    $params['differences'] = $differences_hidden;
+    foreach ($relations as $relation) {
+      if (!empty($relation['contact_email'])) {
+        drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);
+      }
     }
   }
 }
@@ -1058,7 +1082,6 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
     'motion_id' => $entity->motion_id,
     'document_title' => $document->title,
   );
-  //drupal_mail('ammo', 'withdraw_ownership', 'webmaster@sp.nl', $language, $params, $sender_email, TRUE);
   drupal_mail('ammo', 'withdraw_ownership', $sender_email, $language, $params, $sender_email, TRUE);
   if (!empty($owner->contact_email)) {
     drupal_mail('ammo', 'withdraw_ownership', $owner->contact_email, $language, $params, $sender_email, TRUE);
