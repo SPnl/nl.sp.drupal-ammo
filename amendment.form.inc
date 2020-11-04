@@ -170,10 +170,8 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     $form['title']['#markup'] = '<h2>Wijzigingsvoorstel bewerken</h2>';
     $form['chapter'] = array(
       '#type' => 'textfield',
-      '#title' => 'Hoofdstuk nummer',
-      '#default_value' => 8,
-      '#description' => 'Het is voor dit document alleen mogelijk om wijzigingen in te dienen op hoofdstuk 8',
-      '#disabled' => true,
+      '#title' => 'Hoofdstuk nr.',
+      '#default_value' => ammo_default($form_state, 'chapter'),
     );
     $form['page'] = array(
       '#type' => 'textfield',
@@ -334,10 +332,6 @@ function ammo_amendment_form_validate($form, &$form_state) {
   case 6:
     if (!preg_match('/^[0-9][0-9]*$/', $values['chapter'])) {
       form_set_error('chapter', 'Hoofdstuk nr. moet een getal zijn.');
-    }
-    // Temporary fix of chapter 8 only for congres XXIV.
-    if ($values['chapter'] != 8) {
-      form_set_error('chapter', 'Er kunnen alleen wijzigingsvoorstellen op hoofdstuk 8 gedaan worden.');
     }
     if (!preg_match('/^[0-9][0-9]*$/', $values['page'])) {
       form_set_error('page', 'Pagina nr. moet een getal zijn.');
