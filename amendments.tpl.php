@@ -55,24 +55,15 @@
 
           <?php if (!empty($document['chapters'])): ?>
             <?php foreach ($document['chapters'] as $chapter) : ?>
-              <li>
-                <h3 id="chapter<?php print $chapter['nr']; ?>" class="chapter-nr">Hoofdstuk <?php print $chapter['nr']; ?></h3>
+              <?php $amendment_ids = $document['amendment_index'][$chapter['nr']]; ?>
+              <?php foreach ($amendment_ids as $amendment_id) : ?>
+                <?php $amendment = $document['amendments'][$amendment_id]; ?>
                 <ul>
-                  <?php foreach ($chapter['pages'] as $page) : ?>
-                    <li>
-                      <h3 id="page<?php print $page['nr']; ?>" class="page-nr">Pagina <?php print $page['nr']; ?></h2>
-                      <ul>
-                        <?php foreach ($page['amendments'] as $amendment_id) : ?>
-                          <?php $amendment = $document['amendments'][$amendment_id]; ?>
-                          <li class="ammo-element <?php print $amendment['state']; ?>">
-                            <?php print theme('amendment', array('entity_id' => $amendment['id'], 'destination' => $destination)); ?>
-                          </li>
-                        <?php endforeach; ?>
-                      </ul>
-                    </li>
-                  <?php endforeach; ?>
+                  <li class="ammo-element <?php print $amendment['state']; ?>">
+                    <?php print theme('amendment', array('entity_id' => $amendment['id'], 'destination' => $destination)); ?>
+                  </li>
                 </ul>
-              </li>
+              <?php endforeach; ?>
             <?php endforeach; ?>
           <?php endif; ?>
         </ul>
