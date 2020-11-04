@@ -15,9 +15,9 @@
   <p>Ingediend door <?php print $members_list; ?>.</p>
   <?php $number = count($backers) + count($owners_member); ?>
   <?php if (!empty($owners_branch)) : ?>
-    <p>Mede ingediend door <?php print $owners_list; ?>, dus voldoende steun.</p>
+    <p>Mede ingediend door <?php print $owners_list; ?>.</p>
   <?php endif; ?>
-	<p>Ondersteund door <?php print $number; ?> <?php print ($number == 1) ? 'lid' : 'leden'; ?><?php if (empty($owners_branch)) : print ' ('; print ($number >= 50) ? 'voldoende' : 'onvoldoende'; print ' steun)'; endif ?>.</p>
+	<p>Ondersteund door 50 leden (voldoende steun).</p>
 <?php else: ?>
   <?php if (!empty($owners_branch)) : ?>
     <p>Ingediend door <?php print $owners_list; ?>.</p>
@@ -51,13 +51,6 @@
   <?php endif; ?>
   </p>
 <?php endif; ?>
-<?php if ($support_access) : ?>
-  <?php if (!empty($owners_member)) : ?>
-    <?php if (!$owned_by_user)  : ?>
-    <p>Steunlink om te delen: <a href = "<?php print $shurly ?>"><?php print $shurly; ?></a></p>
-    <?php endif; ?>
-  <?php endif; ?>
-<?php endif; ?>
 <?php if ($no_links !== TRUE) : ?>
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
   <ul class="ammo-list">
@@ -71,15 +64,6 @@
       <?php endif; ?>
       <?php if ($superadmin_access) : ?>
         <li><?php print l('verwijder', 'ammo/motion/delete/' . $entity_id, array('query' => $dest))?></li>
-      <?php endif; ?>
-    <?php endif; ?>
-    <?php if ($support_access) : ?>
-      <?php if (!empty($owners_member)) : ?>
-        <?php if ($backed_by_user) : ?>
-          <li><?php print l('trek steun als lid in', 'ammo/support/withdraw/member/motion/' . $entity_id, array('query' => $dest))?></li>
-        <?php elseif (!$owned_by_user)  : ?>
-          <li><?php print l('steun als lid', 'ammo/support/add/member/motion/' . $entity_id, array('query' => $dest))?></li>
-        <?php endif; ?>
       <?php endif; ?>
     <?php endif; ?>
     <?php if (!empty($owners_branch) || !empty($owners_member)) : ?>

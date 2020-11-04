@@ -600,7 +600,7 @@ function ammo_afdelingen_access($admin_owner = NULL) {
   // Afdelingen filteren op gebruikers id.
   if (ammo_admin_access() && !empty($admin_owner)) {
     $afdelingen = ammo_get_afdelingen();
-    $afdelingen = array(0 => $admin_owner) + $afdelingen;
+    $afdelingen = array(0 => '- ' . $admin_owner) + $afdelingen;
   }
   else {
     $afdelingen = ammo_get_afdelingen($contact_id);
@@ -646,7 +646,7 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
     '#description' => $description,
     '#default_value' => $default,
     '#name' => 'backed',
-    '#disabled' => $meeting->no_member_owners,
+    '#disabled' => $form_state['storage']['branch_id'],
   );
   if (!$meeting->no_member_owners) {
     $form['owners'] = array(
