@@ -159,7 +159,7 @@ function ammo_get_all_members() {
 }
 
 function ammo_get_all_members_helper() {
-  civicrm_initialize();
+  db_set_active('cividb');
   $allmembers = array();
   $result = db_query("SELECT c.id, c.display_name FROM {civicrm_contact} c INNER JOIN {civicrm_membership} m ON c.id = m.contact_id WHERE (m.membership_type_id = 1 OR m.membership_type_id = 2) AND c.contact_type = 'Individual' AND (m.status_id = 1 OR m.status_id = 2)", array());
   if ($result) {
@@ -167,6 +167,7 @@ function ammo_get_all_members_helper() {
       $members[$row['id']] = $row['display_name'];
     }
   }
+  db_set_active();
   return $members;
 }
 
@@ -194,7 +195,7 @@ function ammo_get_afdeling_members($afdeling_id) {
 }
 
 function ammo_get_afdeling_members_helper($afdeling_id) {
-  civicrm_initialize();
+  db_set_active('cividb');
   $afdelingmembers = array();
   $result = db_query("SELECT c.id, c.display_name FROM {civicrm_contact} c INNER JOIN {civicrm_value_geostelsel} g ON c.id = g.entity_id INNER JOIN {civicrm_membership} m ON c.id = m.contact_id WHERE (m.membership_type_id = 1 OR m.membership_type_id = 2) AND g.afdeling = :afdeling AND c.contact_type = 'Individual' AND (m.status_id = 1 OR m.status_id = 2)", array(':afdeling' => $afdeling_id));
   if ($result) {
@@ -235,12 +236,13 @@ function ammo_autocomplete_members($scope, $string) {
 }
 
 function ammo_contact_get_display_name($contact_id) {
-  civicrm_initialize();
+  db_set_active('cividb');
   $result = db_query("SELECT display_name FROM {civicrm_contact} WHERE id = :id", array(':id' => $contact_id));
   if (isset($result)) {
     $row = $result->fetchAssoc();
-    return $row['display_name'];
   }
+  db_set_active();
+  return empty($row) ? NULL : $row['display_name'];
 }
 
 /*
