@@ -39,16 +39,6 @@ function ammo_menu() {
     'weight' => -2,
   );
 
-  $items['ammo/motion'] = array(
-    'title' => 'Motie indienen',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('ammo_motion_form', 2, 3),
-    'file' => 'motion.form.inc',
-    'type' => MENU_LOCAL_TASK,
-    'access callback' => 'ammo_add_motion_access',
-    'weight' => -1,
-  );
-
   $items['ammo/amendments'] = array(
     'title' => 'Overzicht wijzigingsvoorstellen',
     'page callback' => 'drupal_get_form',
@@ -56,6 +46,16 @@ function ammo_menu() {
     'file' => 'amendments.form.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'user_is_logged_in',
+    'weight' => -1,
+  );
+
+  $items['ammo/motion'] = array(
+    'title' => 'Motie indienen',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ammo_motion_form', 2, 3),
+    'file' => 'motion.form.inc',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'ammo_add_motion_access',
     'weight' => 0,
   );
 
