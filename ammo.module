@@ -118,14 +118,6 @@ function ammo_menu() {
     'access callback' => 'user_is_logged_in',
   );
 
-  $items['ammo/autocomplete_members/%/%'] = array(
-    'page callback' => 'ammo_autocomplete_members',
-    'page arguments' => array(2, 3),
-    'file' => 'ammo.inc',
-    'type' => MENU_CALLBACK,
-    'access callback' => 'user_is_logged_in',
-  );
-
   return $items;
 }
 

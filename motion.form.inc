@@ -343,48 +343,10 @@ function ammo_motion_form($form, &$form_state, $form_action, $path_id = NULL)
 function ammo_motion_form_validate($form, &$form_state)
 {
   $values = $form_state['values'];
-  $storage = $form_state['storage'];
-  $trigger = $form_state['triggering_element']['#name'];
   $step = $form_state['step'];
-
-  $backed = !(empty($values['backed']));
 
   // First we set up a switch for each of our three steps
   switch($step) {
-  case 4:
-    switch ($trigger) {
-    case 'action_button':
-      if (!$backed) {
-        $motion = entity_load_single('motion', $storage['motion']);
-        $owners =  ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member');
-        // Get motion owners.
-        if (empty($owners))
-        {
-          form_set_error('add_owner', t('Selecteer minstens één contact.'));
-        }
-      }
-      break;
-    case 'add_owner':
-      $motion = entity_load_single('motion', $storage['motion']);
-      // Check if already owner.
-      $owners =  ammo_get_related_contacts($motion->id, 'motion', 'owner');
-      if (array_key_exists($values['owner'], $owners)) {
-        form_set_error('add_owner', 'Contact was reeds toegevoegd.');
-      }
-      // Check if owner is member.
-      $admin_access = ammo_admin_access();
-      if ($admin_access) {
-        $members = ammo_get_all_members();
-      }
-      else {
-        $members = ammo_get_afdeling_members($storage['branch_id']);
-      }
-      if (!array_key_exists($values['owner'], $members)) {
-        form_set_error('add_owner', 'Contact bestaat niet.');
-      }
-      break;
-    }
-    break;
   case 5:
     if (empty($values['consideration_opening'])) {
       form_set_error('consideration_opening', 'Vul de overweging openingszin in.');

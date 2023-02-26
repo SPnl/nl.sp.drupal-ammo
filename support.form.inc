@@ -235,31 +235,6 @@ function ammo_support_form_submit($form, &$form_state) {
   $afdelingen = ammo_get_afdelingen('all');
 
   switch ($contact_type) {
-  case 'member':
-    switch ($action) {
-    case 'add':
-      $display_name = ammo_contact_get_display_name($contact_id);
-      // Sla nieuwe backer op.
-      $backer = ammo_save_relation('backer', $target_type, $entity_id, $contact_id, $contact_type, $display_name);
-      if ($backer) {
-        drupal_set_message('Uw steun is opgeslagen.');
-      }
-      else {
-        drupal_set_message('Er is een fout opgetreden.' , 'error');
-      }
-      break;
-    case 'withdraw':
-      $remove_id = ammo_is_related($entity_id, $target_type, 'backer', $contact_type);
-      $result = entity_delete('contact_relation', $remove_id);
-      if ($result !== FALSE) {
-        drupal_set_message('Uw steun is ingetrokken.');
-      }
-      else {
-        drupal_set_message('Er is een fout opgetreden.' , 'error');
-      }
-      break;
-    }
-    break;
   case 'branch':
     switch ($action) {
     case 'add':

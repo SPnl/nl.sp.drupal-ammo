@@ -282,49 +282,10 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
 
 function ammo_amendment_form_validate($form, &$form_state) {
   $values = $form_state['values'];
-  $storage = $form_state['storage'];
-  $trigger = $form_state['triggering_element']['#name'];
   $step = $form_state['step'];
-
-  $backed = !empty($values['backed']);
 
   // First we set up a switch for each of our three steps
   switch($step) {
-  case 5:
-    switch ($trigger) {
-    case 'action_button':
-      if (!$backed) {
-        $amendment = entity_load_single('amendment', $storage['amendment']);
-        $owners =  ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
-        // Get amendment owners.
-        if (empty($owners))
-        {
-          form_set_error('add_owner', t('Selecteer minstens één contact.'));
-        }
-      }
-      break;
-    case 'add_owner':
-      $amendment = entity_load_single('amendment', $storage['amendment']);
-      // Check if already owner.
-      $owners =  ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
-      if (array_key_exists($values['owner'], $owners)) {
-        form_set_error('add_owner', 'Contact was reeds toegevoegd.');
-      }
-      // Check if owner is member.
-
-      $admin_access = ammo_admin_access();
-      if ($admin_access) {
-        $members = ammo_get_all_members();
-      }
-      else {
-        $members = ammo_get_afdeling_members($storage['branch_id']);
-      }
-      if (!array_key_exists($values['owner'], $members)) {
-        form_set_error('add_owner', 'Contact bestaat niet.');
-      }
-      break;
-    }
-    break;
   case 6:
     if (!preg_match('/^[0-9][0-9]*$/', $values['chapter'])) {
       form_set_error('chapter', 'Hoofdstuk nr. moet een getal zijn.');
@@ -334,15 +295,6 @@ function ammo_amendment_form_validate($form, &$form_state) {
     }
     if (!preg_match('/^[0-9][0-9]*$/', $values['line'])) {
       form_set_error('line', 'Regelnummer moet een getal zijn.');
-    }
-    // Extra validation for specific document!
-    if ($storage['document'] == 4) {
-      if ($values['chapter'] > 3) {
-        form_set_error('chapter', 'Alleen de voorstellen in de eerste drie hoofdstukken zijn amendeerbaar.');
-      }
-      /*if ($values['page'] < 10) {
-        form_set_error('page', 'Controleer het paginanummer, alleen hoofdstuk 4 en verder zijn amendeerbaar.');
-      }*/
     }
     if (empty($values['amendment_text'])) {
       form_set_error('amendment_text', 'Vul de wijzigingsvoorstel tekst in.');
