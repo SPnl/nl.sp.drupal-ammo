@@ -68,13 +68,9 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
   }
 
   // Set laste page depending on permissions.
-  if (empty($form_state['storage']['last_step'])) {
-    if (ammo_admin_access()) {
-      $form_state['storage']['last_step'] = 7;
-    }
-    else {
-      $form_state['storage']['last_step'] = 6;
-    }
+  $form_state['storage']['last_step'] = 6;
+  if (ammo_admin_access()) {
+    $form_state['storage']['last_step'] = 7;
   }
 
   // If $form_state['step'] is not set, we set it to the first step.
@@ -207,7 +203,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       '#type' => 'select',
       '#title' => 'Advies',
       '#name' => 'advice',
-      '#options'=> ammo_amendment_advice(),
+      '#options' => ammo_amendment_advice(),
       '#empty_option' => 'kies:',
       '#default_value' => ammo_default($form_state, 'advice'),
     );
@@ -236,7 +232,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       '#type' => 'container',
     );
   // If we are on first step, we do not want a back button
-  if(
+  if (
     $form_state['step'] > $form_state['storage']['first_step'] &&
     $form_state['step'] <> 5 &&
     !empty($form_state['active_steps'])
@@ -258,7 +254,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
       );
   }
   // Create submit button.
-  if($form_state['step'] !== $form_state['storage']['last_step'])
+  if ($form_state['step'] !== $form_state['storage']['last_step'])
   {
     $button_text = 'Volgende';
   }
@@ -290,7 +286,7 @@ function ammo_amendment_form_validate($form, &$form_state) {
   $trigger = $form_state['triggering_element']['#name'];
   $step = $form_state['step'];
 
-  $backed = $values['backed'];
+  $backed = !empty($values['backed']);
 
   // First we set up a switch for each of our three steps
   switch($step) {
@@ -301,7 +297,7 @@ function ammo_amendment_form_validate($form, &$form_state) {
         $amendment = entity_load_single('amendment', $storage['amendment']);
         $owners =  ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
         // Get amendment owners.
-        if(empty($owners))
+        if (empty($owners))
         {
           form_set_error('add_owner', t('Selecteer minstens één contact.'));
         }
@@ -455,46 +451,6 @@ function ammo_amendment_form_submit($form, &$form_state)
       $form_state['step']++;
     }
     break;
-  case 'add_owner':
-    switch ($step) {
-    case 5:
-      $form_state['storage']['new'] = FALSE;
-      $amendment = entity_load_single('amendment', $storage['amendment']);
-      // Sla nieuwe owner op.
-      $display_name = ammo_contact_get_display_name($values['owner']);
-      $owner = ammo_save_relation('owner', 'amendment', $amendment->id, $values['owner'], 'member', $display_name, $storage['branch_id'], $storage['branch_display_name']);
-      if ($owner) {
-        drupal_set_message('Contact is toegevoegd.');
-        // Verwijder afdelingseigenaar.
-        $contact_relation_id = ammo_is_related($storage['amendment'], 'amendment', 'owner', 'branch', $storage['branch_id']);
-        if ($contact_relation_id) {
-          $result = entity_delete('contact_relation', $contact_relation_id);
-          if (FALSE === $result) {
-            drupal_set_message('Verwijderen contact is mislukt.', 'error');
-          }
-          else {
-            drupal_set_message('Contact is verwijderd');
-          }
-        }
-      }
-      else {
-        drupal_set_message('Er is een fout opgetreden.' , 'error');
-      }
-      break;
-    }
-    break;
-  }
-
-  // Check if delete button was pressed.
-  $pattern = '/^del-(\d+)$/';
-  if (preg_match($pattern, $trigger, $matches)) {
-    $result = entity_delete('contact_relation', $matches[1]);
-    if (FALSE === $result) {
-      drupal_set_message('Verwijderen contact is mislukt.', 'error');
-    }
-    else {
-      drupal_set_message('Contact is verwijderd');
-    }
   }
 
   $form_state['rebuild'] = TRUE;

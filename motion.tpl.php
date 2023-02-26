@@ -51,7 +51,7 @@
   <?php endif; ?>
   </p>
 <?php endif; ?>
-<?php if ($no_links !== TRUE) : ?>
+<?php if (empty($no_links)) : ?>
   <?php $dest = (!empty($destination) ? $destination : ammo_get_destination()); ?>
   <ul class="ammo-list">
     <li><a href="#inhoud">^</a></li>

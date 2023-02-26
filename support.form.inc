@@ -232,6 +232,7 @@ function ammo_support_form_submit($form, &$form_state) {
   $target_type = arg(4);
   $entity_id = arg(5);
   $entity = entity_load_single($target_type, $entity_id);
+  $afdelingen = ammo_get_afdelingen('all');
 
   switch ($contact_type) {
   case 'member':
@@ -262,13 +263,15 @@ function ammo_support_form_submit($form, &$form_state) {
   case 'branch':
     switch ($action) {
     case 'add':
+      $meeting_id = ammo_get_meeting_id($target_type, $entity_id);
       foreach ($values['branch_id'] as $key => $value) {
         if ($key == $value) {
-          $display_name = ammo_contact_get_display_name($value);
+          $display_name = $afdelingen[$value];
           // Sla nieuwe owner op.
           $owner = ammo_save_relation('owner', $target_type, $entity_id, $value, $contact_type, $display_name, $value, $display_name);
           if ($owner) {
             drupal_set_message('Uw afdeling is (mede) indiener.');
+            ammo_support_mail($target_type, $entity_id, $owner, $meeting_id);
           }
           else {
             drupal_set_message('Er is een fout opgetreden.' , 'error');

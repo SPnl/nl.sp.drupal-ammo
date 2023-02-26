@@ -10,11 +10,47 @@ function ammo_meeting_form($form, &$form_state) {
   $form['#prefix'] = '<div id="ammo-meeting-ajax">';
   $form['#suffix'] = '</div>';
 
+  if (empty($storage['meeting_id'])) {
+    $form['meetings'] = array(
+      '#title' => 'Bestaande bijeenkomsten',
+      '#type' => 'fieldset',
+    );
+
+    // Editing existing meeting.
+    $meetings = entity_load('meeting');
+    foreach ($meetings as $key => $meeting) {
+      $form['meetings'][$key]['del'] = array(
+        '#type' => 'submit',
+        '#value' => 'X',
+        '#name' => 'del_' . $key,
+        '#ajax' => array(
+          'callback' => 'ammo_meeting_form_ajax',
+          'wrapper' => 'ammo-meeting-ajax',
+          'method' => 'replace',
+          'effect' => 'fade',
+          'event' => 'click',
+        ),
+        '#prefix' => '<p>',
+      );
+      $form['meetings'][$key]['edit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Bewerk',
+        '#name' => 'edit_' . $key,
+        '#ajax' => array(
+          'callback' => 'ammo_meeting_form_ajax',
+          'wrapper' => 'ammo-meeting-ajax',
+          'method' => 'replace',
+          'effect' => 'fade',
+          'event' => 'click',
+        ),
+        '#suffix' => $meeting->title.'</p>',
+      );
+    }
+  }
+
   $form['form_title'] = array(
     '#type' => 'item',
-    '#markup' => 'Voeg een bijeenkomst toe',
-    '#prefix' => '<h2>',
-    '#suffix' => '</h2>',
+    '#markup' => '<h2>Voeg een bijeenkomst toe</h2>',
   );
 
   $form['title'] = array(
@@ -49,11 +85,6 @@ function ammo_meeting_form($form, &$form_state) {
     '#title' => 'Uiterste intrek/ondersteuningsdatum',
     '#type' => 'date_popup',
     '#date_format' => 'd-m-Y H:i',
-  );
-
-  $form['no_member_owners'] = array(
-    '#type' => 'checkbox',
-    '#title' => 'Geen individuele indieners.',
   );
 
   $form['hide_state'] = array(
@@ -99,46 +130,6 @@ function ammo_meeting_form($form, &$form_state) {
     ),
   );
 
-  if (empty($storage['meeting_id'])) {
-    $form['form_title2'] = array(
-      '#type' => 'item',
-      '#markup' => 'Bestaande bijeenkomsten',
-      '#prefix' => '<h2>',
-      '#suffix' => '</h2>',
-    );
-
-    // Editing existing meeting.
-    $meetings = entity_load('meeting');
-    foreach ($meetings as $key => $meeting) {
-      $form['meetings'][$key]['del'] = array(
-        '#type' => 'submit',
-        '#value' => 'X',
-        '#name' => 'del_' . $key,
-        '#ajax' => array(
-          'callback' => 'ammo_meeting_form_ajax',
-          'wrapper' => 'ammo-meeting-ajax',
-          'method' => 'replace',
-          'effect' => 'fade',
-          'event' => 'click',
-        ),
-        '#prefix' => '<p>',
-      );
-      $form['meetings'][$key]['edit'] = array(
-        '#type' => 'submit',
-        '#value' => 'Bewerk',
-        '#name' => 'edit_' . $key,
-        '#ajax' => array(
-          'callback' => 'ammo_meeting_form_ajax',
-          'wrapper' => 'ammo-meeting-ajax',
-          'method' => 'replace',
-          'effect' => 'fade',
-          'event' => 'click',
-        ),
-        '#suffix' => $meeting->title.'</p>',
-      );
-    }
-  }
-
   // Set defaults.
   if (!empty($storage['meeting'])) {
     unset($form_state['input']);
@@ -153,7 +144,6 @@ function ammo_meeting_form($form, &$form_state) {
     $form['withdrawal_closing_date']['#default_value'] = $date->format('Y-m-d H:i');
     $date = new DateTime($meeting->submission_closing_date);
     $form['submission_closing_date']['#default_value'] = $date->format('Y-m-d H:i');
-    $form['no_member_owners']['#default_value'] = $meeting->no_member_owners;
     $form['hide_state']['#default_value'] = $meeting->hide_state;
     $form['hide_advice']['#default_value'] = $meeting->hide_advice;
     $form['hide_meeting']['#default_value'] = $meeting->hide_meeting;
@@ -245,7 +235,7 @@ function ammo_meeting_form_submit($form, &$form_state) {
         'submission_closing_date' => $values['submission_closing_date'],
         'withdrawal_closing_date' => $values['withdrawal_closing_date'],
         'email' => $values['email'],
-        'no_member_owners' => $values['no_member_owners'],
+        'no_member_owners' => 1,
         'hide_state' => $values['hide_state'],
         'hide_advice' => $values['hide_advice'],
         'hide_meeting' => $values['hide_meeting'],

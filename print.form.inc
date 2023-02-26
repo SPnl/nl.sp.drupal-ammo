@@ -27,44 +27,44 @@ function ammo_print_form($form, &$form_state) {
     );
   }
 
-  switch ($form_state['values']['type']) {
-  case 'amendments':
-    $form['amendments_order'] = array(
-      '#type' => 'radios',
-      '#title' => 'Sorteer de wijzigingsvoorstellen op volgorde van',
-      '#required' => TRUE,
-      '#options' => array(
-        'location' => 'de plaats in het document',
-        'number' => 'het wijzigingsvoorstel nummer',
-      ),
-      '#default_value' => 'location',
-      '#ajax' => array(
-        'wrapper' => 'ajax-print-form-wrapper',
-        'callback' => 'ammo_print_form_ajax_callback',
-      ),
-    );
-    unset($form_state['values']['motions_order']);
-    break;
-  case 'motions':
-    $form['motions_order'] = array(
-      '#type' => 'radios',
-      '#title' => 'Sorteer de moties op volgorde van',
-      '#required' => TRUE,
-      '#options' => array(
-        'branch' => 'de afdeling',
-        'number' => 'het nummer van de motie',
-      ),
-      '#default_value' => 'branch',
-      '#ajax' => array(
-        'wrapper' => 'ajax-print-form-wrapper',
-        'callback' => 'ammo_print_form_ajax_callback',
-      ),
-    );
-    unset($form_state['values']['amendments_order']);
-    break;
-  }
-
   if (!empty($form_state['values']['type'])) {
+    switch ($form_state['values']['type']) {
+    case 'amendments':
+      $form['amendments_order'] = array(
+        '#type' => 'radios',
+        '#title' => 'Sorteer de wijzigingsvoorstellen op volgorde van',
+        '#required' => TRUE,
+        '#options' => array(
+          'location' => 'de plaats in het document',
+          'number' => 'het wijzigingsvoorstel nummer',
+        ),
+        '#default_value' => 'location',
+        '#ajax' => array(
+          'wrapper' => 'ajax-print-form-wrapper',
+          'callback' => 'ammo_print_form_ajax_callback',
+        ),
+      );
+      unset($form_state['values']['motions_order']);
+      break;
+    case 'motions':
+      $form['motions_order'] = array(
+        '#type' => 'radios',
+        '#title' => 'Sorteer de moties op volgorde van',
+        '#required' => TRUE,
+        '#options' => array(
+          'branch' => 'de afdeling',
+          'number' => 'het nummer van de motie',
+        ),
+        '#default_value' => 'branch',
+        '#ajax' => array(
+          'wrapper' => 'ajax-print-form-wrapper',
+          'callback' => 'ammo_print_form_ajax_callback',
+        ),
+      );
+      unset($form_state['values']['amendments_order']);
+      break;
+    }
+
     $form['writerordoc'] = array(
       '#type' => 'radios',
       '#title' => 'Bestand voor',

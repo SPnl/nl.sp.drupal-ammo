@@ -9,5 +9,6 @@ dependencies[] = entity
 dependencies[] = date
 dependencies[] = date_popup
 dependencies[] = shurly
+dependencies[] = swiftmailer
 
 stylesheets[all][] = ammo.css
