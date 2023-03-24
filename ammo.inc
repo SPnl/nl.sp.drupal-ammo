@@ -836,10 +836,62 @@ function ammo_diffline($line1, $line2)
   return $result;
 }
 
-function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeting_id) {
-  global $language;
+function ammo_mail_get_params($entity_type, $entity_id, $meeting_id, $sender_email, $owner = NULL) {
   $entity = entity_load_single($entity_type, $entity_id);
   $meeting = entity_load_single('meeting', $meeting_id);
+  $title = $meeting->title;
+  // Get first owner.
+  if (ammo_admin_access() && !empty($meeting->admin_owner)) {
+    $first_owner = $meeting->admin_owner;
+  }
+  else {
+    $first_owner_data = ammo_get_first_owner($entity_type, $entity_id);
+    $first_owner = $first_owner_data['contact_display_name'];
+  }
+  switch ($entity_type) {
+    case 'amendment':
+      $document = entity_load_single('document', $entity->document_id);
+      $title = $title . ': ' . $document->title;
+      $id = $entity->chapter . '.' . $entity->chapterized_id;
+      break;
+
+    case 'motion':
+      $id = $entity->motion_id;
+      break;
+  }
+  // Get recipients.
+  $rest_owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch');
+  $rest = (empty($rest_owners)) ? FALSE : TRUE;
+  // Set params.
+  $params = array(
+    'reply_to' => $sender_email,
+    'format' => SWIFTMAILER_FORMAT_HTML,
+    'entity_type' => $entity_type,
+    'entity_id' => $entity_id,
+    'id' => $id,
+    'markup' => '<h3>' . $title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
+    'meeting_id' => $meeting_id,
+    'rest' => $rest,
+    'first_owner' => $first_owner,
+  );
+  if ($entity_type == 'amendment') {
+    $document = entity_load_single('document', $entity->document_id);
+    $params['chapter'] = $entity->chapter;
+    $params['chapterized_id'] = $entity->chapterized_id;
+    $params['document_title'] = $document->title;
+  }
+  if (!empty($owner)) {
+    $params['branch_display_name'] = $owner->branch_display_name;
+  }
+  return $params;
+}
+
+function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeting_id) {
+  $meeting = entity_load_single('meeting', $meeting_id);
+  global $language;
+  $sender_email = ammo_mailadress($meeting_id);
+  $relations = ammo_get_related_contacts($entity_id, $entity_type);
+  $params = ammo_mail_get_params($entity_type, $entity_id, $meeting_id, $sender_email);
   // Check if advice and state changes are hidden.
   $differences_hidden = $differences;
   if ($meeting->hide_state) {
@@ -850,34 +902,7 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
     unset($differences_hidden['advice']);
     unset($differences_hidden['advice_supplement']);
   }
-  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
-  $sender_email = ammo_mailadress($meeting_id);
-  if (ammo_admin_access() && !empty($meeting->admin_owner)) {
-    $first_owner = $meeting->admin_owner;
-  }
-  else {
-    $first_owner_data = ammo_get_first_owner($entity_type, $entity_id);
-    $first_owner = $first_owner_data['contact_display_name'];
-  }
-  // Get recipients.
-  $relations = ammo_get_related_contacts($entity_id, $entity_type);
-  $params = array(
-    'reply_to' => $sender_email,
-    'format' => SWIFTMAILER_FORMAT_HTML,
-    'differences' => $differences,
-    'meeting_id' => $meeting_id,
-    'entity_type' => $entity_type,
-    'entity_id' => $entity_id,
-    'first_owner' => $first_owner,
-    'id' => $id,
-    'markup' => theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
-  );
-  if ($entity_type === 'amendment') {
-    $document = entity_load_single('document', $entity->document_id);
-    $params['document_title'] = $document->title;
-    $params['chapterized_id'] = $entity->chapterized_id;
-    $params['chapter'] = $entity->chapter;
-  }
+  $params['differences'] = $differences;
   drupal_mail('ammo', 'change_message', $sender_email, $language, $params, $sender_email, TRUE);
   if (!empty($differences_hidden)) {
     drupal_set_message('Er is wordt een e-mail met de wijzigingen verzonden.');
@@ -892,36 +917,9 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
 
 function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
   global $language;
-  $entity = entity_load_single($entity_type, $entity_id);
-  $meeting = entity_load_single('meeting', $meeting_id);
-  $title = $meeting->title;
-  if ($entity_type == 'amendment') {
-    $document = entity_load_single('document', $entity->document_id);
-    $title = $title . ': ' . $document->title;
-  }
-  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
-  // Get recipients.
   $relations = ammo_get_related_contacts($entity_id, $entity_type);
-  $rest_owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch');
-  $rest = (empty($rest_owners)) ? FALSE : TRUE;
-  $params = array(
-    'reply_to' => $sender_email,
-    'format' => SWIFTMAILER_FORMAT_HTML,
-    'entity_type' => $entity_type,
-    'entity_id' => $entity_id,
-    'id' => $id,
-    'markup' => '<h3>' . $title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
-    'meeting_id' => $meeting_id,
-    'branch_display_name' => $owner->branch_display_name,
-    'rest' => $rest,
-  );
-  if ($entity_type == 'amendment') {
-    $document = entity_load_single('document', $entity->document_id);
-    $params['chapter'] = $entity->chapter;
-    $params['chapterized_id'] = $entity->chapterized_id;
-    $params['document_title'] = $document->title;
-  }
+  $params = ammo_mail_get_params($entity_type, $entity_id, $meeting_id, $sender_email, $owner);
   drupal_mail('ammo', 'withdraw_ownership', $sender_email, $language, $params, $sender_email, TRUE);
   if (!empty($owner->contact_email)) {
     drupal_mail('ammo', 'withdraw_ownership', $owner->contact_email, $language, $params, $sender_email, TRUE);
@@ -935,35 +933,9 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
 
 function ammo_support_mail($entity_type, $entity_id, $owner, $meeting_id) {
   global $language;
-  $entity = entity_load_single($entity_type, $entity_id);
-  $meeting = entity_load_single('meeting', $meeting_id);
-  $title = $meeting->title;
-  if ($entity_type == 'amendment') {
-    $document = entity_load_single('document', $entity->document_id);
-    $title = $title . ': ' . $document->title;
-  }
-  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
-  // Get recipients.
   $relations = ammo_get_related_contacts($entity_id, $entity_type);
-  $rest_owners = ammo_get_related_contacts($entity_id, $entity_type, 'owner', 'branch');
-  $rest = (empty($rest_owners)) ? FALSE : TRUE;
-  $params = array(
-    'reply_to' => $sender_email,
-    'format' => SWIFTMAILER_FORMAT_HTML,
-    'entity_type' => $entity_type,
-    'entity_id' => $entity_id,
-    'id' => $id,
-    'markup' => '<h3>' . $title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
-    'meeting_id' => $meeting_id,
-    'branch_display_name' => $owner->branch_display_name,
-    'rest' => $rest,
-  );
-  if ($entity_type == 'amendment') {
-    $params['chapter'] = $entity->chapter;
-    $params['chapterized_id'] = $entity->chapterized_id;
-    $params['document_title'] = $document->title;
-  }
+  $params = ammo_mail_get_params($entity_type, $entity_id, $meeting_id, $sender_email, $owner);
   drupal_mail('ammo', 'support', $sender_email, $language, $params, $sender_email, TRUE);
   foreach ($relations as $relation) {
     if (!empty($relation['contact_email'])) {
@@ -973,24 +945,11 @@ function ammo_support_mail($entity_type, $entity_id, $owner, $meeting_id) {
 }
 
 function ammo_delete_mail($entity_type, $entity_id, $meeting_id, $mail_text) {
-  $entity = entity_load_single($entity_type, $entity_id);
-  $document = entity_load_single('document', $entity->document_id);
-  $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
+  global $language;
   $sender_email = ammo_mailadress($meeting_id);
-  // Get recipients.
   $relations = ammo_get_related_contacts($entity_id, $entity_type);
-  $params = array(
-    'reply_to' => $sender_email,
-    'format' => SWIFTMAILER_FORMAT_HTML,
-    'chapter' => $entity->chapter,
-    'chapterized_id' => $entity->chapterized_id,
-    'entity_type' => $entity_type,
-    'entity_id' => $entity_id,
-    'id' => $id,
-    'markup' => '<h3>' . $document->title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
-    'mail_text' => '<p>' . check_plain($mail_text) . '</p>',
-    'document_title' => $document->title,
-  );
+  $params = ammo_mail_get_params($entity_type, $entity_id, $meeting_id, $sender_email);
+  $params['mail_text'] = '<p>' . check_plain($mail_text) . '</p>';
   drupal_mail('ammo', 'delete_message', $sender_email, $language, $params, $sender_email, TRUE);
   foreach ($relations as $relation) {
     if (!empty($relation['contact_email'])) {
