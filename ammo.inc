@@ -414,10 +414,9 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
   $entity = entity_load_single($type, $entity_id);
   if ($entity) {
     // Check access.
-    $afdelingen = ammo_afdelingen_access($meeting->admin_owner);
-    // Get first owner.
     $first_owner = ammo_get_first_owner($type, $entity->id);
-    if (array_key_exists($first_owner['branch_id'], $afdelingen)) {
+    $edit_access = empty($first_owner) ? FALSE : ammo_edit_access($meeting_id, $first_owner['branch_id']);
+    if ($edit_access) {
       $storage['branch_id'] = $first_owner['branch_id'];
       $storage['branch_display_name'] = $first_owner['branch_display_name'];
       $storage['meeting'] = $meeting_id;
@@ -522,7 +521,6 @@ function ammo_select_owner_form($type, &$form, &$form_state) {
   $form['backed'] = array(
     '#type' => 'checkbox',
     '#title' => $title,
-    '#description' => $description,
     '#default_value' => $default,
     '#name' => 'backed',
     '#disabled' => $form_state['storage']['branch_id'],
@@ -630,8 +628,7 @@ function ammo_edit_access($meeting_id, $branch_id = NULL) {
   if (ammo_admin_access()) {
     return TRUE;
   }
-  $result = ammo_access($meeting_id, 'submit', $branch_id);
-  if ($result) {
+  if (ammo_access($meeting_id, 'submit', $branch_id)) {
     return TRUE;
   }
   return FALSE;
@@ -896,6 +893,12 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
 function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
   global $language;
   $entity = entity_load_single($entity_type, $entity_id);
+  $meeting = entity_load_single('meeting', $meeting_id);
+  $title = $meeting->title;
+  if ($entity_type == 'amendment') {
+    $document = entity_load_single('document', $entity->document_id);
+    $title = $title . ': ' . $document->title;
+  }
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
@@ -908,7 +911,7 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
     'entity_type' => $entity_type,
     'entity_id' => $entity_id,
     'id' => $id,
-    'markup' => theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
+    'markup' => '<h3>' . $title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
     'meeting_id' => $meeting_id,
     'branch_display_name' => $owner->branch_display_name,
     'rest' => $rest,
@@ -918,7 +921,6 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
     $params['chapter'] = $entity->chapter;
     $params['chapterized_id'] = $entity->chapterized_id;
     $params['document_title'] = $document->title;
-    $params['markup'] = '<h3>' . $document->title . '</h3>' . $params['markup'];
   }
   drupal_mail('ammo', 'withdraw_ownership', $sender_email, $language, $params, $sender_email, TRUE);
   if (!empty($owner->contact_email)) {
@@ -934,7 +936,12 @@ function ammo_withdraw_mail($entity_type, $entity_id, $owner, $meeting_id) {
 function ammo_support_mail($entity_type, $entity_id, $owner, $meeting_id) {
   global $language;
   $entity = entity_load_single($entity_type, $entity_id);
-  $document = entity_load_single('document', $entity->document_id);
+  $meeting = entity_load_single('meeting', $meeting_id);
+  $title = $meeting->title;
+  if ($entity_type == 'amendment') {
+    $document = entity_load_single('document', $entity->document_id);
+    $title = $title . ': ' . $document->title;
+  }
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;
   $sender_email = ammo_mailadress($meeting_id);
   // Get recipients.
@@ -947,14 +954,16 @@ function ammo_support_mail($entity_type, $entity_id, $owner, $meeting_id) {
     'entity_type' => $entity_type,
     'entity_id' => $entity_id,
     'id' => $id,
-    'markup' => '<h3>' . $document->title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
-    'chapter' => $entity->chapter,
-    'chapterized_id' => $entity->chapterized_id,
+    'markup' => '<h3>' . $title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
     'meeting_id' => $meeting_id,
     'branch_display_name' => $owner->branch_display_name,
     'rest' => $rest,
-    'document_title' => $document->title,
   );
+  if ($entity_type == 'amendment') {
+    $params['chapter'] = $entity->chapter;
+    $params['chapterized_id'] = $entity->chapterized_id;
+    $params['document_title'] = $document->title;
+  }
   drupal_mail('ammo', 'support', $sender_email, $language, $params, $sender_email, TRUE);
   foreach ($relations as $relation) {
     if (!empty($relation['contact_email'])) {
@@ -964,7 +973,6 @@ function ammo_support_mail($entity_type, $entity_id, $owner, $meeting_id) {
 }
 
 function ammo_delete_mail($entity_type, $entity_id, $meeting_id, $mail_text) {
-  watchdog('test', $entity_type . '<br/>' . $entity_id . '<br/>' . $mail_text);
   $entity = entity_load_single($entity_type, $entity_id);
   $document = entity_load_single('document', $entity->document_id);
   $id = ($entity_type == 'amendment') ? $entity->chapter.'.'.$entity->chapterized_id : $entity->motion_id;

@@ -185,9 +185,9 @@ function ammo_meeting_form_validate($form, &$form_state) {
         form_set_error('email', 'Vul een geldig e-mailadres in.');
         $error = TRUE;
       }
-      if (empty($form_state['meeting_id'])) {
+      if (empty($storage['meeting_id'])) {
         // New meeting.
-        $unique_title = ammo_entity_check_title('meeting', $title);
+        $unique_title = ammo_entity_check_title('meeting', $values['title']);
         if ($unique_title === FALSE) {
           form_set_error('title', 'Titel is reeds in gebruik.');
           $error = TRUE;

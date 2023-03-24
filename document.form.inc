@@ -140,7 +140,7 @@ function ammo_document_form_validate($form, &$form_state) {
       }
       if (empty($storage['document_id'])) {
         // New document.
-        $unique_title = ammo_entity_check_title('document', $title);
+        $unique_title = ammo_entity_check_title('document', $values['title']);
         if ($unique_title === FALSE) {
           form_set_error('title', 'Titel is reeds in gebruik.');
         }
