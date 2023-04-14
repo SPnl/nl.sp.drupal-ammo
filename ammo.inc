@@ -59,8 +59,9 @@ function ammo_motion_advice() {
 }
 
 function ammo_get_afdelingen($contact_id) {
+  $afdelingen = [];
   if (empty($contact_id)) {
-    $contact_id = 'all';
+    return [];
   }
   $afdelingen = &drupal_static(__FUNCTION__);
   if (!isset($afdelingen[$contact_id])) {
@@ -80,6 +81,9 @@ function ammo_get_afdelingen($contact_id) {
 }
 
 function ammo_get_afdelingen_helper($contact_id = NULL) {
+  if (empty($contact_id)) {
+    return FALSE;
+  }
 
   if ($contact_id == 'all') {
     // Return all chapters.
@@ -473,12 +477,13 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
 
 function ammo_afdelingen_access($admin_owner = NULL) {
   global $user;
+  $afdelingen = [];
   $user_wrapper = entity_metadata_wrapper('user', $user);
   $contact_id = $user_wrapper->field_contact_id->value();
 
   // Afdelingen filteren op gebruikers id.
   if (ammo_admin_access() && !empty($admin_owner)) {
-    $afdelingen = ammo_get_afdelingen($contact_id);
+    $afdelingen = ammo_get_afdelingen('all');
     $afdelingen = array(0 => '- ' . $admin_owner) + $afdelingen;
   }
   else {
