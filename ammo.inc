@@ -91,7 +91,7 @@ function ammo_get_afdelingen_helper($contact_id = NULL) {
       return $afdelingen;
     }
   }
-  else {
+  elseif (ammo_add_access()) {
     // Return contact chapter.
     $afdeling_info = ammo_get_contact_afdeling_info($contact_id);
     if (!empty($afdeling_info)) {
@@ -476,10 +476,7 @@ function ammo_populate_form($type, $entity_id, &$form_state) {
 }
 
 function ammo_afdelingen_access($admin_owner = NULL) {
-  global $user;
   $afdelingen = [];
-  $user_wrapper = entity_metadata_wrapper('user', $user);
-  $contact_id = $user_wrapper->field_contact_id->value();
 
   // Afdelingen filteren op gebruikers id.
   if (ammo_admin_access() && !empty($admin_owner)) {
@@ -487,6 +484,9 @@ function ammo_afdelingen_access($admin_owner = NULL) {
     $afdelingen = array(0 => '- ' . $admin_owner) + $afdelingen;
   }
   else {
+    global $user;
+    $user_wrapper = entity_metadata_wrapper('user', $user);
+    $contact_id = $user_wrapper->field_contact_id->value();
     $afdelingen = ammo_get_afdelingen($contact_id);
   }
   return $afdelingen;
@@ -622,25 +622,36 @@ function ammo_delete_entity_form($type, $entity_id) {
 }
 
 function ammo_support_access($meeting_id) {
-  // Check if meeting submit date has passed.
-  if (!ammo_passed_date($meeting_id, 'event')) {
+  if (ammo_passed_date($meeting_id, 'event')) {
+    return FALSE;
+  }
+  if (ammo_add_access()) {
     return TRUE;
   }
   return FALSE;
 }
 
-function ammo_edit_access($meeting_id, $branch_id = NULL) {
+function ammo_withdraw_access($meeting_id) {
+  if (ammo_passed_date($meeting_id, 'withdraw')) {
+    return FALSE;
+  }
+  if (ammo_add_access()) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+function ammo_edit_access($meeting_id, $branch_id) {
   if (ammo_admin_access()) {
     return TRUE;
   }
-  if (ammo_access($meeting_id, 'submit', $branch_id)) {
+  if (ammo_passed_date($meeting_id, 'submit')) {
+    return FALSE;
+  }
+  if (ammo_access($branch_id)) {
     return TRUE;
   }
   return FALSE;
-}
-
-function ammo_withdraw_access($meeting_id, $branch_id = NULL) {
-  return ammo_access($meeting_id, 'withdraw', $branch_id);
 }
 
 /*
@@ -648,26 +659,19 @@ function ammo_withdraw_access($meeting_id, $branch_id = NULL) {
  * date has not yet passed. If branch is not set only the latter is
  * checked.
  *
- * @branch_id: contact id local branch.
  * @meeting_id: id of meeting.
  * @date_type: submit, withdraw or meeting date.
  */
-function ammo_access($meeting_id, $date_type, $branch_id = NULL) {
-  // Check if meeting submit date has passed.
-  if (!ammo_passed_date($meeting_id, $date_type)) {
-    if ($branch_id !== NULL) {
-      // Check if branch is set.
-      $meeting = entity_load_single('meeting', $meeting_id);
-      $afdelingen = ammo_afdelingen_access($meeting->admin_owner);
-      // Check if owns afdeling.
-      if (is_array($afdelingen)) {
-        if (array_key_exists($branch_id, $afdelingen)) {
-          return TRUE;
-        }
+function ammo_access($branch_id) {
+  if (!empty($branch_id)) {
+    global $user;
+    $user_wrapper = entity_metadata_wrapper('user', $user);
+    $contact_id = $user_wrapper->field_contact_id->value();
+    $afdelingen = ammo_get_afdelingen($contact_id);
+    if (is_array($afdelingen)) {
+      if (array_key_exists($branch_id, $afdelingen)) {
+        return TRUE;
       }
-    }
-    else {
-      return TRUE;
     }
   }
   return FALSE;
@@ -1118,7 +1122,7 @@ function ammo_get_meetings() {
   foreach ($meetings as $meeting) {
     if (
       (
-        ammo_edit_access($meeting->id) ||
+        !ammo_passed_date($meeting->id, 'submit') ||
         in_array(arg(1), array('amendments', 'motions'))
       ) &&
       empty($meeting->hide_meeting)
