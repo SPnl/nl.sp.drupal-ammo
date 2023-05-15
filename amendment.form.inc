@@ -55,7 +55,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
     }
   }
   else {
-    $meetings = ammo_get_meetings();
+    $meetings = ammo_get_meetings('submit');
     if (empty($meetings)) {
       drupal_set_message('De termijn voor het indienen van wijzigingsvoorstellen is verstreken.', 'warning');
       return;
@@ -92,7 +92,7 @@ function ammo_amendment_form($form, &$form_state, $form_action = NULL, $path_id 
 
   if ($form_state['step'] == 2) {
     $form['title']['#markup'] = '<h2>Wijzigingsvoorstel indienen</h2>';
-    $options = ammo_get_meetings();
+    $options = ammo_get_meetings('submit');
     if (count($options) == 1) {
       $form_state['step'] ++;
       $form_state['storage']['meeting'] = key($options);

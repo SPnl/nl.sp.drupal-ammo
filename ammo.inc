@@ -1115,19 +1115,20 @@ function ammo_mailadress($meeting_id) {
   return $sender_mail;
 }
 
-function ammo_get_meetings() {
+function ammo_get_meetings($filter_type = NULL) {
   // Check if there is more than one option to choose from.
   $meetings = entity_load('meeting', FALSE, array(), TRUE);
   $options = array();
   foreach ($meetings as $meeting) {
-    if (
-      (
-        !ammo_passed_date($meeting->id, 'submit') ||
-        in_array(arg(1), array('amendments', 'motions'))
-      ) &&
-      empty($meeting->hide_meeting)
-    ) {
-      $options[$meeting->id] = $meeting->title;
+    if (empty($meeting->hide_meeting)) {
+      if (empty($filter_type)) {
+        $options[$meeting->id] = $meeting->title;
+      }
+      else {
+        if (!ammo_passed_date($meeting->id, $filter_type)) {
+          $options[$meeting->id] = $meeting->title;
+        }
+      }
     }
   }
   return $options;
