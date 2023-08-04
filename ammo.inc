@@ -303,6 +303,10 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
   $advices = $entity_type == 'amendment' ? ammo_amendment_advice() : ammo_motion_advice();
   $values = $form_state['values'];
   $fields = [];
+  $meeting_id = ammo_get_meeting_id($entity_type, $entity_id);
+  $meeting = entity_load_single('meeting', $meeting_id);
+  $hide_advice = $meeting->hide_advice;
+  $hide_state = $meeting->hide_state;
 
   if (!empty($entity_id)) {
     $original_entity = entity_load_single($entity_type, $entity_id);
@@ -318,6 +322,20 @@ function ammo_store($entity_type, $entity_id, $mapping, $form, &$form_state) {
       if ($original_entity->$database_field != $form_state['storage'][$form_field]) {
         // Store all changed fields to save in database.
         $fields[$database_field] = $form_state['storage'][$form_field];
+
+        // Skip differences for advice when hide advice is set.
+        if (in_array($database_field, ['advice', 'advice_supplement'])) {
+          if ($hide_advice) {
+            continue;
+          }
+        }
+        // Skip differences for state when hide state is set.
+        if (in_array($database_field, ['state', 'state_supplement'])) {
+          if ($hide_state) {
+            continue;
+          }
+        }
+
         // Check for differences.
         if (!empty($values[$form_field])) {
           $diff_data = ammo_diff_fields($form_field);
@@ -878,7 +896,7 @@ function ammo_mail_get_params($entity_type, $entity_id, $meeting_id, $sender_ema
     'entity_type' => $entity_type,
     'entity_id' => $entity_id,
     'id' => $id,
-    'markup' => '<h3>' . $title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE)),
+    'markup' => '<h3>' . $title . '</h3>' . theme($entity_type, array('entity_id' => $entity_id, 'no_links' => TRUE, 'mail' => TRUE)),
     'meeting_id' => $meeting_id,
     'rest' => $rest,
     'first_owner' => $first_owner,
@@ -901,21 +919,10 @@ function ammo_changes_update_mail($entity_type, $entity_id, $differences, $meeti
   $sender_email = ammo_mailadress($meeting_id);
   $relations = ammo_get_related_contacts($entity_id, $entity_type);
   $params = ammo_mail_get_params($entity_type, $entity_id, $meeting_id, $sender_email);
-  // Check if advice and state changes are hidden.
-  $differences_hidden = $differences;
-  if ($meeting->hide_state) {
-    unset($differences_hidden['state']);
-    unset($differences_hidden['state_supplement']);
-  }
-  if ($meeting->hide_advice) {
-    unset($differences_hidden['advice']);
-    unset($differences_hidden['advice_supplement']);
-  }
   $params['differences'] = $differences;
   drupal_mail('ammo', 'change_message', $sender_email, $language, $params, $sender_email, TRUE);
-  if (!empty($differences_hidden)) {
+  if (!empty($differences)) {
     drupal_set_message('Er is wordt een e-mail met de wijzigingen verzonden.');
-    $params['differences'] = $differences_hidden;
     foreach ($relations as $relation) {
       if (!empty($relation['contact_email'])) {
         drupal_mail('ammo', 'change_message', $relation['contact_email'], $language, $params, $sender_email, TRUE);

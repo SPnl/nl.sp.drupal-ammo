@@ -34,7 +34,7 @@
 <?php if (!empty($state) || !empty($advice)) : ?>
   <p>
   <?php if (!empty($state)) : ?>
-    <?php if (!$hide_state || $state === 'withdrawn' || $admin_access) : ?>
+    <?php if (!$hide_state || $state === 'withdrawn' || ($admin_access && empty($mail))) : ?>
       <?php $options = ammo_states(); ?>
       <strong>Status:</strong> <?php print strtolower($options[$state]); ?>
       <?php if (!empty($state_supplement)) : ?>
@@ -42,7 +42,7 @@
       <?php endif; ?>
     <?php endif; ?>
   <?php endif; ?>
-  <?php if (!empty($advice) && (!$hide_advice || $admin_access)) : ?>
+  <?php if (!empty($advice) && (!$hide_advice || ($admin_access && empty($mail)))) : ?>
   <?php $options = ammo_motion_advice(); ?>
       <br/><strong>Advies:</strong> <?php print strtolower($options[$advice]); ?>
       <?php if (!empty($advice_supplement)) : ?>
