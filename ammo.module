@@ -148,11 +148,11 @@ function ammo_add_access($type = NULL) {
 }
 
 function ammo_add_motion_access() {
-  return user_access('administer ammo') || user_access('administer amendments and motions') || (user_access('add amendments and motions') && ammo_show_motions());
+  return (user_access('administer ammo') || user_access('administer amendments and motions') || user_access('add amendments and motions')) && ammo_show_motions();
 }
 
 function ammo_show_motions_access() {
-  return user_access('administer ammo') || user_access('administer amendments and motions') || ammo_show_motions();
+  return ammo_show_motions();
 }
 
 function ammo_theme() {
