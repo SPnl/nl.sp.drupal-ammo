@@ -10,7 +10,7 @@ function ammo_export_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => 'Meeting',
     '#options' => $options,
-    '#required' => true,
+    '#required' => TRUE,
   );
 
   $form['submit'] = array(

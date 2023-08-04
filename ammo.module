@@ -498,7 +498,7 @@ function template_preprocess_overview_motions(&$variables) {
 }
 
 function template_preprocess_print_amendments_by_location(&$variables) {
-  $data = _ammo_preprocess_meeting_data($variables);
+  $data = _ammo_preprocess_meeting_data($variables['values']['meeting']);
   $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($documents_results as $document) {
     // Store document data.
@@ -545,7 +545,7 @@ function template_preprocess_print_amendments_by_location(&$variables) {
 }
 
 function template_preprocess_print_amendments_by_number(&$variables) {
-  $data = _ammo_preprocess_meeting_data($variables);
+  $data = _ammo_preprocess_meeting_data($variables['values']['meeting']);
   $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY title", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($documents_results as $document) {
     // Store document data.
@@ -592,7 +592,7 @@ function template_preprocess_print_amendments_by_number(&$variables) {
 }
 
 function template_preprocess_print_motions_by_branch(&$variables) {
-  $data = _ammo_preprocess_meeting_data($variables);
+  $data = _ammo_preprocess_meeting_data($variables['values']['meeting']);
   $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($motions_results as $motion) {
     $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member');
@@ -625,7 +625,7 @@ function template_preprocess_print_motions_by_branch(&$variables) {
 }
 
 function template_preprocess_print_motions_by_number(&$variables) {
-  $data = _ammo_preprocess_meeting_data($variables);
+  $data = _ammo_preprocess_meeting_data($variables['values']['meeting']);
   $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state != 'concept'", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($motions_results as $motion) {
     $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member');
@@ -656,7 +656,7 @@ function template_preprocess_print_motions_by_number(&$variables) {
 }
 
 function template_preprocess_export_meeting_xml(&$variables) {
-  $data = _ammo_preprocess_meeting_data($variables);
+  $data = _ammo_preprocess_meeting_data($variables['values']['meeting']);
   $documents_results = db_query("SELECT * FROM {ammo_documents} WHERE meeting_id = :meeting_id ORDER BY id", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($documents_results as $document) {
     // Store document data.
@@ -666,7 +666,7 @@ function template_preprocess_export_meeting_xml(&$variables) {
       'description' => $document->description,
       'meeting_id' => $document->meeting_id,
     );
-    $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE document_id = :document_id AND state = 'submitted' ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
+    $amendments_results = db_query("SELECT * FROM {ammo_amendments} WHERE document_id = :document_id AND (state = 'accepted') ORDER BY chapter, chapterized_id", array(":document_id" => $document->id));
     foreach ($amendments_results as $amendment) {
       // Get owners.
       $owners_member = ammo_get_related_contacts($amendment->id, 'amendment', 'owner', 'member');
@@ -697,7 +697,7 @@ function template_preprocess_export_meeting_xml(&$variables) {
       }
     }
   }
-  $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state = 'submitted'", array(":meeting_id" => $variables['values']['meeting']));
+  $motions_results = db_query("SELECT * FROM {ammo_motions} WHERE meeting_id = :meeting_id AND state = 'accepted'", array(":meeting_id" => $variables['values']['meeting']));
   foreach ($motions_results as $motion) {
     $owners_member = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'member');
     $owners_branch = ammo_get_related_contacts($motion->id, 'motion', 'owner', 'branch');
@@ -725,8 +725,8 @@ function template_preprocess_export_meeting_xml(&$variables) {
   $variables['meeting'] = $data['meeting'];
 }
 
-function _ammo_preprocess_meeting_data(&$variables) {
-  $meeting = entity_load_single('meeting', $variables['values']['meeting']);
+function _ammo_preprocess_meeting_data($meeting_id) {
+  $meeting = entity_load_single('meeting', $meeting_id);
   // Store meeting data.
   $data['meeting'] = array(
     'id' => $meeting->id,
