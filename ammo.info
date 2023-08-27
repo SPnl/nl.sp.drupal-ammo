@@ -10,5 +10,6 @@ dependencies[] = date
 dependencies[] = date_popup
 dependencies[] = shurly
 dependencies[] = swiftmailer
+dependencies[] = procoid
 
 stylesheets[all][] = ammo.css

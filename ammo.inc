@@ -93,7 +93,7 @@ function ammo_get_afdelingen_helper($contact_id = NULL) {
   }
   elseif (ammo_add_access()) {
     // Return contact chapter.
-    $afdeling_info = ammo_get_contact_afdeling_info($contact_id);
+    $afdeling_info = ammo_get_contact_add_access_afdelingen($contact_id);
     if (!empty($afdeling_info)) {
       return $afdeling_info;
     }
@@ -118,11 +118,39 @@ function ammo_get_contact($contact_id) {
   }
 }
 
-function ammo_get_contact_afdeling_info($contact_id) {
-  $user_wrapped = ammo_get_contact($contact_id);
-  if (!empty($afd_id = $user_wrapped->field_afdeling_id->value()) && !empty($afd_title = $user_wrapped->field_afdeling->value())) {
-    return [$afd_id => $afd_title];
+function ammo_get_contact_add_access_afdelingen($contact_id) {
+  global $user;
+  $user_add_access_departments = [];
+
+  // Get roles that give add access permission.
+  $add_access_roles = user_roles(TRUE, 'add amendments and motions');
+  // Get current user roles.
+  $user_roles = $user->roles;
+  // User roles that give access permission.
+  $user_add_access_roles = array_intersect($user_roles, $add_access_roles);
+  // Get function role mapping from procoid module.
+  $function_role_mapping = variable_get('procoid_function_role_mapping', array());
+  // Get all afdelingen.
+  $all_departments = ammo_get_afdelingen('all');
+
+  foreach ($user_add_access_roles as $add_access_role_id => $add_access_role) {
+    // Check if role is mapped to function in procoid.
+    if (!empty($function_role_mapping[$add_access_role_id])) {
+      foreach ($function_role_mapping[$add_access_role_id] as $function_id) {
+        if (!empty($function_id)) {
+          // Check if user has function.
+          $query = "SELECT did FROM {procoid_function} WHERE uid = :uid AND fid = :function_id";
+          $results = db_query($query, array(":uid" => $user->uid, ':function_id' => $function_id));
+          foreach ($results as $result) {
+            if (!empty($all_departments[$result->did])) {
+              $user_add_access_departments[$result->did] = $all_departments[$result->did];
+            }
+          }
+        }
+      }
+    }
   }
+  return $user_add_access_departments;
 }
 
 function ammo_get_all_afdelingen_list() {
